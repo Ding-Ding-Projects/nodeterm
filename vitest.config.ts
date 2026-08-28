@@ -14,6 +14,7 @@ export default defineConfig({
       'src/session-host/**/*.test.ts',
       'test/server/**/*.test.ts',
       'test/remote/**/*.test.ts',
+      'scripts/**/*.test.mjs',
       // Cross-layer acceptance chains (e.g. renderer store + main's pure gates in one flow):
       // production layering forbids these imports inside src/, so the chain lives here, like
       // test/server's cross-layer boots.
