@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "version": "0.3.4",
+  "releaseDate": "2026-08-28",
+  "implementationCommit": "3c1826edb571ffa6e30fe435433d127d4c753fef",
+  "codeName": {
+    "en": "Classic Har Gow",
+    "zhHant": "蝦餃",
+    "catalogTag": "catalog-v1",
+    "assetName": "hk-dish-0001-classic-har-gow.png",
+    "photoUrl": "https://github.com/Ding-Ding-Projects/dim-sum-photos/releases/download/catalog-v1/hk-dish-0001-classic-har-gow.png"
+  },
+  "localVerification": {
+    "typecheck": "passed",
+    "testFilesPassed": 592,
+    "testFilesSkipped": 2,
+    "testsPassed": 7714,
+    "testsSkipped": 49,
+    "focusedCounterTestsPassed": 6,
+    "buildScript": "build.bat /s",
+    "installerScript": "build-installer.bat /s"
+  }
+}

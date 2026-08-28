@@ -10,10 +10,22 @@ permissions:
 
 jobs:
   release-windows:
+    if: github.ref == 'refs/heads/main'
     runs-on: windows-latest
     steps:
+      - name: Record workflow start
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.ORG_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          $started = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/${{ github.run_id }}" --jq .run_started_at
+          if ([string]::IsNullOrWhiteSpace($started)) { throw 'Could not resolve the workflow start timestamp.' }
+          "NODETERM_WORKFLOW_STARTED=$($started.Trim())" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Check out source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Bootstrap and build unsigned Squirrel.Windows package
         shell: cmd
@@ -34,8 +46,22 @@ jobs:
           if ((Get-AuthenticodeSignature -LiteralPath $setup[0].FullName).Status -ne 'NotSigned') {
             throw 'The Windows installer must remain unsigned.'
           }
-          Get-FileHash -LiteralPath $setup[0].FullName -Algorithm SHA256
-          Get-FileHash -LiteralPath $full[0].FullName -Algorithm SHA256
+          $setupHash = (Get-FileHash -LiteralPath $setup[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $fullHash = (Get-FileHash -LiteralPath $full[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "NODETERM_SETUP_PATH=$($setup[0].FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "NODETERM_SETUP_NAME=$($setup[0].Name)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "NODETERM_SETUP_SHA256=$setupHash" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "NODETERM_FULL_PATH=$($full[0].FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "NODETERM_FULL_NAME=$($full[0].Name)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "NODETERM_FULL_SHA256=$fullHash" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "NODETERM_RELEASES_PATH=$releases" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Count tagged source lines
+        shell: pwsh
+        run: |
+          node scripts/count-lines.mjs --ref $env:GITHUB_SHA --markdown |
+            Out-File -FilePath dist/release-line-count.md -Encoding utf8
+          if ($LASTEXITCODE -ne 0) { throw 'The committed line counter failed.' }
 
       - name: Upload safe package evidence
         if: ${{ always() }}
@@ -43,7 +69,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-package-${{ github.run_id }}-${{ github.sha }}
-          path: dist/squirrel-windows/
+          path: |
+            dist/squirrel-windows/
+            dist/release-line-count.md
           if-no-files-found: warn
           retention-days: 7
 
@@ -52,11 +80,112 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.ORG_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
-          $version = node -p "require('./package.json').version"
-          $tag = "v$version-run${{ github.run_number }}"
-          gh release create $tag `
-            dist/squirrel-windows/* `
+          $metadata = Get-Content -LiteralPath release-metadata.json -Raw | ConvertFrom-Json
+          $version = [string]$metadata.version
+          $tag = "v$version"
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -eq 0) { throw "Release $tag already exists; refusing to create a duplicate." }
+
+          $assets = @(
+            $env:NODETERM_SETUP_PATH,
+            $env:NODETERM_FULL_PATH,
+            $env:NODETERM_RELEASES_PATH,
+            (Join-Path $env:GITHUB_WORKSPACE 'dist/release-line-count.md')
+          )
+          gh release create $tag @assets `
             --repo $env:GITHUB_REPOSITORY `
             --target $env:GITHUB_SHA `
-            --title $tag `
-            --notes "Windows x64 unsigned Squirrel.Windows release. The installer may trigger an unknown-publisher warning."
+            --title "nodeterm $version" `
+            --draft `
+            --notes "Windows release publication is being finalized."
+          if ($LASTEXITCODE -ne 0) { throw 'Draft release creation or asset upload failed.' }
+
+          $title = "nodeterm $version, $($metadata.codeName.en) · $($metadata.codeName.zhHant)"
+          gh release edit $tag --repo $env:GITHUB_REPOSITORY --draft=false --latest --title $title
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed.' }
+
+          $completed = [DateTimeOffset]::UtcNow
+          $started = [DateTimeOffset]::Parse($env:NODETERM_WORKFLOW_STARTED)
+          $duration = $completed - $started
+          $durationText = '{0:00}:{1:00}:{2:00}' -f [Math]::Floor($duration.TotalHours), $duration.Minutes, $duration.Seconds
+          $lineCounts = Get-Content -LiteralPath dist/release-line-count.md -Raw
+          $setupBytes = (Get-Item -LiteralPath $env:NODETERM_SETUP_PATH).Length
+          $fullBytes = (Get-Item -LiteralPath $env:NODETERM_FULL_PATH).Length
+          $notes = @"
+          # nodeterm $version
+
+          Code name: [$($metadata.codeName.en) · $($metadata.codeName.zhHant)]($($metadata.codeName.photoUrl))
+
+          > [!WARNING]
+          > The Squirrel.Windows installer is intentionally unsigned and may trigger an unknown-publisher or SmartScreen warning.
+
+          ## Provenance
+
+          - Release commit: $env:GITHUB_SHA
+          - Implementation milestone: $($metadata.implementationCommit)
+          - Platform: Windows x64
+          - Packaging: unsigned Squirrel.Windows
+
+          ## Local verification before publication
+
+          - Type checking: $($metadata.localVerification.typecheck)
+          - Test files: $($metadata.localVerification.testFilesPassed) passed, $($metadata.localVerification.testFilesSkipped) skipped
+          - Tests: $($metadata.localVerification.testsPassed) passed, $($metadata.localVerification.testsSkipped) skipped
+          - Line-counter tests: $($metadata.localVerification.focusedCounterTestsPassed) passed
+          - Build entry point: $($metadata.localVerification.buildScript)
+          - Installer entry point: $($metadata.localVerification.installerScript)
+
+          GitHub Actions built and packaged this release. It did not run tests or lint.
+
+          ## Release assets
+
+          | Asset | Bytes | SHA-256 |
+          | --- | ---: | --- |
+          | $env:NODETERM_SETUP_NAME | $setupBytes | $env:NODETERM_SETUP_SHA256 |
+          | $env:NODETERM_FULL_NAME | $fullBytes | $env:NODETERM_FULL_SHA256 |
+          | RELEASES | $((Get-Item -LiteralPath $env:NODETERM_RELEASES_PATH).Length) | update index |
+          | release-line-count.md | $((Get-Item -LiteralPath dist/release-line-count.md).Length) | reproducible source inventory |
+
+          ## Workflow timing
+
+          - Workflow started: $($started.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'))
+          - Workflow completed: $($completed.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'))
+          - Workflow duration: $durationText
+
+          $lineCounts
+          "@
+          [IO.File]::WriteAllText(
+            (Join-Path $env:GITHUB_WORKSPACE 'dist/release-notes.md'),
+            $notes.Trim() + [Environment]::NewLine,
+            [Text.UTF8Encoding]::new($false)
+          )
+          gh release edit $tag --repo $env:GITHUB_REPOSITORY --notes-file dist/release-notes.md
+          if ($LASTEXITCODE -ne 0) { throw 'Final release-note publication failed.' }
+          "NODETERM_RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Verify published release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.ORG_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = $env:NODETERM_RELEASE_TAG
+          $release = gh release view $tag --repo $env:GITHUB_REPOSITORY --json tagName,targetCommitish,isDraft,isPrerelease,assets,body,url | ConvertFrom-Json
+          if ($release.isDraft -or $release.isPrerelease) { throw 'The published release is not a final non-draft release.' }
+          if ($release.targetCommitish -ne $env:GITHUB_SHA) { throw 'The release targets the wrong commit.' }
+          foreach ($name in @($env:NODETERM_SETUP_NAME, $env:NODETERM_FULL_NAME, 'RELEASES', 'release-line-count.md')) {
+            $asset = @($release.assets | Where-Object name -eq $name)
+            if ($asset.Count -ne 1 -or [int64]$asset[0].size -le 0) { throw "Release asset $name is missing, duplicated, or empty." }
+          }
+          if ($release.body -notmatch 'Workflow duration:' -or $release.body -notmatch 'Line count at') {
+            throw 'Release notes are missing timing or line-count evidence.'
+          }
+          $download = Join-Path $env:RUNNER_TEMP "verify-$tag"
+          New-Item -ItemType Directory -Path $download -Force | Out-Null
+          gh release download $tag --repo $env:GITHUB_REPOSITORY --dir $download --pattern $env:NODETERM_SETUP_NAME --pattern $env:NODETERM_FULL_NAME
+          if ($LASTEXITCODE -ne 0) { throw 'Published package assets could not be downloaded.' }
+          $setupHash = (Get-FileHash -LiteralPath (Join-Path $download $env:NODETERM_SETUP_NAME) -Algorithm SHA256).Hash.ToLowerInvariant()
+          $fullHash = (Get-FileHash -LiteralPath (Join-Path $download $env:NODETERM_FULL_NAME) -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($setupHash -ne $env:NODETERM_SETUP_SHA256 -or $fullHash -ne $env:NODETERM_FULL_SHA256) {
+            throw 'Downloaded release asset hashes do not match the built packages.'
+          }
+          Write-Host "Verified release $($release.url)"

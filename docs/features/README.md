@@ -6,6 +6,7 @@ failure modes, security boundaries, and verification.
 ## Build and packaging
 
 - [One-click Windows build](windows-one-click-build.md)
+- [Release completeness audit](../release/completeness-audit.md)
 
 ## Runtime features
 

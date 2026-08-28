@@ -237,6 +237,10 @@ npm run dist:win         # unsigned Squirrel.Windows package
 npm run server:dev       # build + run the browser Server Edition
 ```
 
+Full product release readiness is tracked in the
+[fail-closed release completeness audit](docs/release/completeness-audit.md). A green Windows build
+does not silently mark absent product-wide features as complete.
+
 ## ⌨️ Keyboard shortcuts
 
 These are the defaults — every one of them is remappable in **Settings → Keyboard Shortcuts**.

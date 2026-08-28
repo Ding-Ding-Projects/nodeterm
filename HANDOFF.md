@@ -2,121 +2,112 @@
 
 ## Current state
 
-The work is being prepared in PR #494, targeting `eneskirca/nodeterm:main` from
-`Ding-Ding-Projects/nodeterm:feat/windows-complete-conversion`.
+The Windows platform conversion is implemented on `feat/windows-complete-conversion`.
 
-The latest source commit is:
+Key commits:
 
 ```text
-99380008
+3c1826edb571ffa6e30fe435433d127d4c753fef  native Windows conversion
+b2885e2                                  reproducible line counter
 ```
 
-The source checkout is clean and the source ref has been verified with `git ls-remote`.
+Release candidate metadata is prepared for version `0.3.4`, code name
+`Classic Har Gow · 蝦餃`. At the point this handoff was written, the candidate had not been pushed,
+integrated into `main`, published, or verified by GitHub Actions.
 
 ## User-facing headline
 
-The intended first-run experience is a ZIP-only Windows workflow:
+The highlighted first-run experience is a ZIP-only Windows workflow:
 
 1. Download the source ZIP.
 2. Extract it.
 3. Double-click `build.bat`.
 
-The script obtains the pinned toolchain and project packages, rebuilds native modules, builds the
-real desktop outputs, and supports `build.bat /s` for unattended operation. `build-installer.bat /s`
-uses the same bootstrap route and produces an unsigned x64 Squirrel.Windows installer.
+No build dependency needs to be installed by hand. The batch file requests administrator approval
+before toolchain work, downloads and SHA-256-verifies the pinned Node.js, Python, and Visual Studio
+bootstrap files, restores project packages, builds the real application, verifies required outputs,
+and asks whether to launch only after success.
 
-## Verified evidence
+`build-installer.bat` uses the same bootstrap and produces the unsigned x64 Squirrel.Windows
+package set. Silent mode is available through `/s`, `--silent`, or `SILENT=1`; it never opens UAC.
 
-### Full retained Windows test suite
+## Local verification
 
-Verified at commit `6ec87ac2520021f8d96ae85db12de575ce329b44`:
+### Type and complete suite
 
-- 591 test files passed
-- 2 test files skipped by explicit platform boundary
-- 7,739 tests passed
-- 52 tests skipped by explicit platform boundary
-- 0 failures
-- 0 uncaught errors
+- `npm run typecheck`: passed.
+- `npm test`: 592 files passed, 2 skipped.
+- Test cases: 7,714 passed, 49 skipped.
+- `npx vitest run scripts/count-lines.test.mjs`: 6 passed.
+- Native managed-hook wrapper, loopback payload, header, and permission-answer coverage: passed.
 
-The final source commit `d752e268` has a green full retained Windows suite with 591 passing files,
-7,737 passing tests, 2 skipped files, and 52 skipped tests. It also has green typecheck, focused
-session-budget, SSH-project, memory-pressure, and bug-report checks. The source scan at that commit
-reports no executable legacy non-Windows branches in the shipped source paths covered by the scan.
-The later font-stack cleanup commit `5667f07b` and neutral shortcut-name cleanup commit `160ddef2`
-have green production builds, focused renderer tests, and green typecheck. The final hidden-app
-verification was performed from the packaged executable built from this source state.
-The current public-surface commit `d30e754b` converts the landing page and release workflow to
-Windows-only unsigned Squirrel.Windows distribution. Its YAML parses successfully and the site
-and workflow scan contains no non-Windows package references.
-The Windows package-smoke workflow is also aligned with the same `dist/squirrel-windows` output,
-including Setup.exe, the full nupkg, RELEASES, and unsigned-status validation.
+### Source and documentation scans
 
-### Fresh ZIP build
+- No tracked retired desktop platform names, toolchains, credential stores, file managers,
+  shortcut glyphs, package formats, or platform paths remain outside generated lock metadata.
+- The only retained Apple text is exact non-desktop technical data: the iOS App Store URL,
+  `AppleWebKit` in real user-agent fixtures, and cryptographic `MAC` terminology.
+- No private conversational vocabulary appears in the public source tree.
+- `git diff --check`: passed.
 
-At commit `6ec87ac2520021f8d96ae85db12de575ce329b44`, a fresh ZIP extraction with no `node_modules`
-passed the exact root `build.bat /s` route. It detected Node.js 24.19.0, VS 2022 with the required
-Spectre support, Python, native module rebuilds, renderer output, session-host output, and relay
-output without manual toolchain preparation.
+### One-click build
 
-### Fresh ZIP installer
+`build.bat /s` passed and produced:
 
-At commit `b072daf67d3d6b86339a51d3a0bd144a2b013e7a`, a second fresh ZIP extraction with no
-`node_modules` produced:
+- `out/main/index.js`
+- `out/preload/index.js`
+- `out/renderer/index.html`
+- `out/session-host/host.cjs`
+- `out/main/codex-relay.js`
 
-- `nodeterm-Setup-0.3.2.exe`, 195,750,400 bytes
-- `node-terminal-0.3.2-full.nupkg`, 195,527,979 bytes
-- `RELEASES`, 84 bytes, referencing the full package
+The final dependency recovery run rebuilt native modules after four stale test session-host
+processes were identified and stopped. The batch callers now reject every nonzero bootstrap exit,
+including negative native error codes, so a partial package tree cannot fall through into a build.
 
-The setup executable SHA-256 was:
+### Unsigned Squirrel.Windows package
 
-```text
-15F16F129BD45274125A0586ED1A41DC9FDF15F1C01B0F2B829C139C4D0E599A
-```
+`build-installer.bat /s` passed for version `0.3.4` and produced:
 
-The full package SHA-256 was:
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `nodeterm-Setup-0.3.4.exe` | 195,746,816 | `8ce38652802fb13cca5f83daf7666f161da2e278862faa2972fec1e78c13f91b` |
+| `node-terminal-0.3.4-full.nupkg` | 195,524,645 | `61e1852ec6bf6dd80108c6d50ca5f944016a59d500904569c9e43f1b9ce6806a` |
+| `RELEASES` | 84 | `5947c2848412c98033d3c5dda5e6fd704dc4fd53761df08d2cadab4d8d4df612` |
 
-```text
-7825A0606AB99336DFC5CEF3D78963BD280A9186
-```
+Signing was skipped for the app executable, execution stub, Squirrel helper, and setup executable.
+The independent certificate check returned `NotSigned`.
 
-### Hidden built-app verification
+### Icon proof
 
-The packaged executable from the current source state was launched directly on a named hidden
-Win32 desktop through the local command-line runtime. The real product window was resolved by its
-non-empty title, `Chrome_WidgetWin_1` class, and non-zero `2121x1363` dimensions. A first-screen
-capture was visually inspected, then a control-targeted keyboard action advanced onboarding to
-Step 1 and a second capture was visually inspected.
+- `build/icon.ico` is a valid ICO with 7 frames at 16, 24, 32, 48, 64, 128, and 256 pixels.
+- `dist/win-unpacked/nodeterm.exe` exposes a 32 by 32 associated icon.
+- `nodeterm-Setup-0.3.4.exe` exposes a 32 by 32 associated icon.
 
-The two capture SHA-256 values were:
+## Release automation
 
-```text
-DA0DFAAF3D505FE5112FEB7F77316985B5B56DFD16ED8CD60FCE3905EDF6719C
-7C4FC370A6A6D464D7109E9C8F82CBC217D67D7C7213BB9365D78B7F23183B3E
-```
+- `.github/workflows/ci.yml` runs the one-click build on every push and manual dispatch.
+- `.github/workflows/release.yml` publishes only from `main`, preventing task-branch preservation
+  from creating duplicate releases.
+- Release automation checks out full history, builds through `build-installer.bat /s`, verifies
+  unsigned outputs, runs the committed line counter, publishes one version tag, records start,
+  completion, and duration, then downloads the setup and full package to compare hashes.
+- `actionlint -shellcheck=` passed for all retained workflows.
+- Every embedded PowerShell block in the release workflow passed the PowerShell parser after
+  replacing GitHub expression placeholders with inert test values.
 
-The task-owned process tree was terminated after capture. The hidden desktop release command
-reported that the short-lived CLI instance did not retain desktop bookkeeping, so process-tree
-termination is the authoritative cleanup evidence.
+## Release readiness blocker
 
-Packaging logs confirmed that signing was skipped. The installer is intentionally unsigned and may
-produce an unknown-publisher warning.
+The Windows conversion is locally verified and may be reviewed or integrated as its own change.
+The full product release is not ready under the fail-closed inventory in
+`docs/release/completeness-audit.md`.
 
-## Remaining work
+The upstream product lacks complete implementations and built interaction proof for the local
+personal-vocabulary upload, app-logo customization, categorized file converter, local Ollama
+manager, complete regex workbench, language and funny-level controls, shared School mode, narrator
+voice selection, ADHD modes, full per-element appearance editing, toy locks and authenticator,
+Git-backed local history for every record, browser-extension download dialogs, and a complete
+per-click capture ledger.
 
-- Refresh hosted documentation and release presentation after upstream review if those surfaces are
-  required for the release.
-- Merge only after upstream review approval.
-- The hosted release workflow has not yet produced a GitHub run for this PR head; its local YAML
-  structure and Windows package path are verified, but remote workflow evidence is pending.
-- The Windows-only `release.yml` is present on the PR source branch, but GitHub registers workflows
-  from the source repository's default branch. Because this is a new feature branch in a fork, the
-  workflow is not dispatchable from the source repository until that branch is merged or otherwise
-  installed on its default branch. `gh pr checks 494 -R eneskirca/nodeterm` reports no checks, and
-  the target repository has existing `action_required` CI and Security runs.
-
-## Known historical note
-
-Commit `bc37ad47` contains literal `\\n` sequences in its public commit body because of an earlier
-PowerShell message-encoding mistake. It was already pushed before discovery, so correcting it would
-require history rewriting. The commit is preserved and later commits use correctly formatted
-bilingual messages.
+No release, `main` merge, task-branch deletion, or cleanup claim should occur while that audit is
+blocked. Preserve the task branch and package evidence until the product owner either supplies a
+new explicit scope decision or the missing rows are fully implemented and verified.

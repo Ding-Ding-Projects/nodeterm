@@ -95,7 +95,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
 
   const pickModel = (m: SpeechModelInfo): void => {
     if (m.pro && !isPremium) {
-      setModelHint('Pro model — unlock later in Settings → License. Tiny is free and works offline.')
+      setModelHint('Pro model. Unlock later in Settings → License. Tiny is free and works offline.')
       return
     }
     setModelHint('')
@@ -108,7 +108,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
           delete next[m.id]
           return next
         })
-        setModelHint('Download failed — you can retry any time in Settings → Speech.')
+        setModelHint('Download failed. You can retry any time in Settings → Speech.')
       })
     }
   }
@@ -193,14 +193,14 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
             <OnbBrandMark />
             <span className="onb-cover__name">nodeterm</span>
           </div>
-          <p className="onb-cover__tagline">A canvas of terminals — spatial, not stacked.</p>
+          <p className="onb-cover__tagline">A canvas of terminals. Spatial, not stacked.</p>
           <div className="onb-cover__props">
             <div className="onb-prop">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="14" rx="2" />
                 <path d="M7 9l3 2.5L7 14M12.5 14H17" />
               </svg>
-              <span>Terminals never die — tmux keeps them running across restarts</span>
+              <span>Sessions keep running across application restarts</span>
             </div>
             <div className="onb-prop">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -208,7 +208,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                 <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
               </svg>
               <span>
-                AI agents are first-class nodes —{' '}
+                AI agents are first-class nodes:{' '}
                 {BUILTIN_AGENT_IDS.map((id) => AGENT_CONFIG[id].label).join(', ')}
               </span>
             </div>
@@ -218,7 +218,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                 <rect x="14" y="8" width="7" height="7" rx="1.5" />
                 <rect x="6" y="14" width="7" height="7" rx="1.5" />
               </svg>
-              <span>Lay your work out in space — pan, zoom, group, connect</span>
+              <span>Lay your work out in space. Pan, zoom, group, connect.</span>
             </div>
           </div>
           <button className="onb-btn onb-btn--primary onb-cover__cta" autoFocus onClick={next}>
@@ -244,8 +244,8 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
               <>
                 <h2>Everything is a node</h2>
                 <p>
-                  Right-click the canvas to open a terminal — or an AI agent. Each one runs in
-                  its own persistent tmux session.
+                  Right-click the canvas to open a terminal or an AI agent. Each one runs in
+                  its own persistent session.
                 </p>
                 <div className="onb-label">
                   {/* Follows a remap of `node.newAgent`. When the user unbound it there is no
@@ -267,7 +267,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                   ))}
                 </div>
                 <div className="onb-fineprint">
-                  Bring your own CLI too — add custom agents in Settings → Agents.
+                  Bring your own CLI too. Add custom agents in Settings → Agents.
                 </div>
               </>
             )}
@@ -282,10 +282,10 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                       {k}
                     </kbd>
                   ))}{' '}
-                  anywhere to dictate — on-device Whisper turns speech into text. Nothing is
+                  anywhere to dictate. On-device Whisper turns speech into text. Nothing is
                   sent to the cloud, and nothing auto-submits.
                 </p>
-                <div className="onb-label">Whisper model — optional</div>
+                <div className="onb-label">Whisper model (optional)</div>
                 <div className="onb-models">
                   {/* A real "I don't use dictation" choice (issue #143), not just the generic Next:
                       selects None, downloads nothing. It is also the DEFAULT, so doing nothing on
@@ -336,7 +336,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
               <>
                 <h2>One project, two views</h2>
                 <p>
-                  Every project is a canvas — and also a kanban board. Cards are your live
+                  Every project is a canvas and also a kanban board. Cards are your live
                   sessions: drag them across columns, open them, comment on them.
                 </p>
                 {/* No chord to press when the user unbound the toggle, so the try-it PROMPT is
@@ -349,11 +349,11 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                   <div className={`onb-tryit ${kanbanTried ? 'is-done' : ''}`}>
                     {kanbanTried ? (
                       <>
-                        <OnbCheck /> That's the toggle — it works in any project.
+                        <OnbCheck /> That's the toggle. It works in any project.
                       </>
                     ) : (
                       <>
-                        Try it now — press{' '}
+                        Try it now. Press{' '}
                         {kanbanKeys.map((k, i) => (
                           <kbd key={i} className="kbd">
                             {k}
@@ -387,8 +387,8 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
               <>
                 <h2>Know when an agent needs you</h2>
                 <p>
-                  nodeterm can notify you when an agent finishes — or gets stuck waiting on an
-                  approval — while you're somewhere else. Change any time in Settings →
+                  nodeterm can notify you when an agent finishes or gets stuck waiting on an
+                  approval while you're somewhere else. Change any time in Settings →
                   Notifications.
                 </p>
                 <div className="onb-notify-actions">
@@ -404,11 +404,11 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
               <>
                 <h2>Long runs survive your lunch break</h2>
                 <p>
-                  While an agent is working, nodeterm keeps this machine from idle-sleeping —
+                  While an agent is working, nodeterm keeps this machine from idle-sleeping,
                   and lets go the moment it finishes.
                 </p>
                 <p>
-                  Closing the lid still sleeps the machine — keep it open and plugged in for
+                  Closing the lid still sleeps the machine. Keep it open and plugged in for
                   overnight runs.
                 </p>
                 <div className="onb-toggle-row">
@@ -427,13 +427,13 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
               <>
                 <h2>Your sessions, in your pocket</h2>
                 <p>
-                  <strong>nodeterm mobile</strong> attaches to these same live tmux sessions from
-                  your phone — watch an agent work, answer a "needs you", or type into any
+                  <strong>nodeterm mobile</strong> attaches to these same live sessions from
+                  your phone. Watch an agent work, answer a "needs you", or type into any
                   terminal from anywhere.
                 </p>
                 <p>
                   Grab it from the App Store, then pair in seconds: Settings → Phone (or the
-                  phone button top-right) shows a QR — scan it and you're in.
+                  phone button top-right) shows a QR. Scan it and you're in.
                 </p>
                 <div className="onb-notify-actions">
                   <button

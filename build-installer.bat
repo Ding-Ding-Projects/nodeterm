@@ -28,7 +28,8 @@ if "%NODETERM_SILENT%"=="1" (
 ) else (
   call "%ROOT%\download-dependencies.bat"
 )
-if errorlevel 1 exit /b %ERRORLEVEL%
+set "BOOTSTRAP_EXIT=%ERRORLEVEL%"
+if not "%BOOTSTRAP_EXIT%"=="0" exit /b %BOOTSTRAP_EXIT%
 
 set "PINNED_NODE=%LOCALAPPDATA%\nodeterm\toolchain\node-v24.19.0-win-x64"
 if exist "%PINNED_NODE%\node.exe" set "PATH=%PINNED_NODE%;%PATH%"
