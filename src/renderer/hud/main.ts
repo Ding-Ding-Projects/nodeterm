@@ -1,5 +1,5 @@
-// Notch HUD renderer (docs/notch-hud.md). Plain TS/DOM — no React. Draws the collapsed indicator
-// (walking mascots beside the notch) and the expanded mini session panel, reusing lib/mascot.ts art
+// Windows Agent HUD renderer. Plain TS/DOM, with a collapsed top-edge indicator and an expanded
+// mini session panel that reuses lib/mascot.ts art
 // + the walk-cycle CSS. Reports pointer enter/leave of the hotspot to main to toggle click-through,
 // and row clicks to focus the node in nodeterm.
 
@@ -36,11 +36,9 @@ interface HudRow {
 }
 interface HudPush {
   rows: HudRow[]
-  bar: number
   width: number
-  notchWidth: number
-  notchCenterX: number
-  hasNotch: boolean
+  hudWidth: number
+  centerX: number
   hoverExpand: boolean
   percentMode?: 'used' | 'remaining' | 'tokens'
 }
@@ -60,9 +58,8 @@ declare global {
 
 const root = document.getElementById('hud') as HTMLDivElement
 
-// One black rounded-bottom surface — the DynamicNotch capsule — fused to the physical notch. It IS
-// the interactive hotspot: the walking mascots live INSIDE it (collapsed), and clicking it grows
-// the SAME surface downward into the session panel (expanded).
+// One floating top-edge surface is the interactive hotspot. Walking mascots live inside it while
+// collapsed, and clicking it expands the same surface into the session panel.
 const capsule = document.createElement('div')
 // Start hidden so there is no flash of an empty black pill before the first rows push.
 capsule.className = 'hud-capsule hud-capsule--hidden'
@@ -75,8 +72,6 @@ root.append(capsule)
 
 let expanded = false
 let latestRows: HudRow[] = []
-// Notch width from main's geometry push — drives the symmetric right-hand padding.
-let notchWidthPx = 168
 // Hover-to-expand (settings.notchHoverExpand). Off = the capsule only expands on click.
 let hoverExpand = true
 // settings.usagePercentMode — the same number/label the other context surfaces render (issue #78).
@@ -123,7 +118,6 @@ function setExpanded(next: boolean): void {
     renderPanel(latestRows)
   }
   capsule.classList.toggle('expanded', expanded)
-  syncCapsuleOverhang() // expanded: drop the padding so the panel gets the full width
   window.hud.setExpanded(expanded)
 }
 
@@ -141,16 +135,13 @@ function reltime(ts: number): string {
 
 // ---- Mascot / icon builders ----------------------------------------------------------------
 
-// Indicator mascot heights in the menu-bar strip (px). agent-notch draws Claude ~ the bar height
-// and the Codex pet at 26px; these are the sensible defaults — NAIL EXACTLY ON A MAC (the notch
-// bar height varies by model, and 26px overflows a short bar). Aspect ratios are preserved from
-// the sprite geometry, so only the height matters.
+// Indicator mascot heights in the collapsed HUD strip.
 /** Height of the quadrant-block sprite (claude), and of the pulsing brand marks — one number so the
  *  working indicators all sit on the same baseline in the strip. */
 const HUD_QUADRANT_H = 13
 const HUD_CODEX_H = 17
 
-/** A quadrant-block sprite mascot (claude today) — the sizing math is shared so the notch strip
+/** A quadrant-block sprite mascot (claude today). The sizing math is shared so the HUD strip
  *  and the canvas badge can never disagree about the geometry in lib/mascot.ts. */
 function quadrantMascot(
   mascot: { src: string; frameWidth: number; frameHeight: number },
@@ -240,8 +231,7 @@ function renderIndicator(rows: HudRow[]): void {
   // The aggregation is the pure `buildIndicator` (./indicator) — one definition of the rule, unit
   // tested; this function only paints its result.
   const { workingAgents, doneUnseen, needsYou } = buildIndicator(rows)
-  // Left→right paint order, centered inside the capsule's drop zone: a red "needs you" dot and the
-  // green "done" blob sit furthest left, then the working mascots with Claude last (notch-side).
+  // Left-to-right paint order: status marks first, followed by the working mascots.
   // Surfacing needsYou here keeps the collapsed capsule meaningful (never an empty black pill) for a
   // session that is waiting on the user even when nothing is actively working.
   if (needsYou) {
@@ -417,27 +407,11 @@ function buildSubItem(s: HudSubagentRow): HTMLElement {
 
 // ---- Render + geometry ---------------------------------------------------------------------
 
-// The capsule grows LEFT-ONLY: its right edge stays flush with the notch's right edge, and the
-// content (the mascots) occupies only the strip LEFT of the notch — the right padding covers
-// exactly the notch itself, nothing more. This retires the earlier symmetric growth ("soldan ne
-// kadar genişlettiysen sağdan da o kadar"): on a crowded menu bar the symmetric right-hand
-// overhang sat ON TOP of the status items, and because the capsule is the click-through hotspot,
-// hovering there also swallowed their clicks (issue #78 — grow-left approved by the owner there).
-function syncCapsuleOverhang(): void {
-  if (expanded) {
-    capsule.style.paddingRight = ''
-    return
-  }
-  const ext = indicator.offsetWidth
-  capsule.style.paddingRight = ext > 0 ? `${notchWidthPx}px` : ''
-}
-
 function render(rows: HudRow[]): void {
   latestRows = rows
   renderIndicator(rows)
   renderPanel(rows)
-  syncCapsuleOverhang()
-  // Idle → hide the whole capsule (no empty black pill); active → the fused capsule shows.
+  // Idle hides the whole capsule so no empty surface remains.
   capsule.classList.toggle('hud-capsule--hidden', rows.length === 0)
   // Auto-collapse if there is nothing to show.
   if (rows.length === 0 && expanded) setExpanded(false)
@@ -445,16 +419,10 @@ function render(rows: HudRow[]): void {
 
 function applyGeometry(push: HudPush): void {
   const rs = document.documentElement.style
-  rs.setProperty('--bar', `${push.bar}px`)
-  if (typeof push.notchWidth === 'number') {
-    notchWidthPx = push.notchWidth
-    rs.setProperty('--notch-width', `${push.notchWidth}px`)
-  }
-  if (typeof push.notchCenterX === 'number') rs.setProperty('--notch-center-x', `${push.notchCenterX}px`)
+  if (typeof push.hudWidth === 'number') rs.setProperty('--hud-width', `${push.hudWidth}px`)
+  if (typeof push.centerX === 'number') rs.setProperty('--hud-center-x', `${push.centerX}px`)
   if (typeof push.hoverExpand === 'boolean') hoverExpand = push.hoverExpand
   if (push.percentMode === 'used' || push.percentMode === 'remaining' || push.percentMode === 'tokens') percentMode = push.percentMode
-  // No physical notch → draw a standalone floating pill instead of fusing to y=0.
-  document.documentElement.classList.toggle('notchless', push.hasNotch === false)
 }
 
 window.hud.onRows((push: HudPush) => {

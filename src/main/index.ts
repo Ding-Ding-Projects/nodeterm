@@ -1652,7 +1652,7 @@ app.whenReady().then(async () => {
     const s = settingsStore.get()
     return {
       enabled: s.notchHud,
-      notchWidth: s.notchWidth,
+      hudWidth: s.notchWidth,
       hoverExpand: s.notchHoverExpand,
       percentMode: s.usagePercentMode
     }

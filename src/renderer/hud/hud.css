@@ -1,31 +1,18 @@
-/* Notch HUD (docs/notch-hud.md) — transparent overlay; only the indicator + panel paint. */
+/* Windows Agent HUD: transparent overlay with a floating top-edge indicator and panel. */
 
 :root {
-  /* agent-notch's panel is monospaced throughout (NSFont.monospacedSystemFont). Match it. */
-  --hud-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, 'Cascadia Mono', 'Roboto Mono',
-    monospace;
-
-  /* --- DynamicNotch capsule geometry — TUNE ON A MAC ---------------------------------------
-     A single black rounded-bottom surface that EXTENDS the physical notch (fused, seamless): its
-     top edge sits at y=0 sharing the notch's black, its bottom corners are rounded, and the
-     walking mascots live inside the few px that hang BELOW the menu-bar line. Clicking it grows the
-     SAME surface downward into the session panel. `--bar`, `--notch-width` and `--notch-center-x`
-     are pushed from main (notch-hud.ts geometry); the rest are visual tunables. */
-  --bar: 32px; /* menu-bar / notch strip height (from main) — the fused top zone */
-  --notch-width: 200px; /* physical notch width (from main) = the capsule's collapsed width */
-  --notch-center-x: 50%; /* notch horizontal center in px (from main) — the capsule anchor */
-  /* Unused while collapsed (the capsule never exceeds --bar); kept for the expand math only. */
+  --hud-mono: ui-monospace, 'Cascadia Mono', 'Roboto Mono', monospace;
+  --hud-width: 168px;
+  --hud-center-x: 50%;
   --capsule-drop: 0px;
-  --capsule-radius: 16px; /* bottom-corner radius of the fused capsule */
+  --capsule-radius: 18px;
   --panel-width: 400px; /* expanded panel width */
   --panel-max-h: 420px; /* expanded panel max content height (rows scroll past it) */
-  --capsule-bg: #000; /* opaque black — fuses with the physical notch (no seam) */
+  --capsule-bg: #000;
   --capsule-ease: cubic-bezier(0.22, 1, 0.36, 1); /* spring-ish grow */
   --capsule-dur: 0.22s;
-  /* Notchless fallback (no physical notch): a standalone floating pill. */
-  --pill-top-gap: 6px; /* gap above the floating pill */
-  --pill-radius: 18px; /* all-corner radius of the floating pill */
-  --pill-height: 30px; /* collapsed floating-pill height */
+  --hud-top-gap: 6px;
+  --pill-height: 30px;
 }
 
 * {
@@ -51,30 +38,18 @@ body {
   height: 100%;
 }
 
-/* The DynamicNotch capsule: one black surface at y=0 that shares the notch's black. COLLAPSED it
-   sits to the LEFT of the notch, exactly `--bar` tall and only as wide as its mascots — the notch
-   appears WIDER, never taller (owner's call: no extra height). Its right edge butts against the
-   notch (square), only the bottom-left corner rounds. EXPANDED the same surface re-centres under
-   the notch and grows DOWNWARD into the session panel. `max-height` (not `height`) drives the
-   vertical grow so the reveal animates with content of unknown height. */
+/* The collapsed HUD is centered along the Windows work area and expands downward in place. */
 .hud-capsule {
   position: absolute;
-  top: 0;
-  /* Widened SIDEWAYS, never taller (owner: "notch'a ekstra height vermek istemiyorum") — and
-     LEFT-ONLY: the right edge is pinned to the notch's right edge, so the capsule can never
-     creep over the menu-bar status items (or swallow their clicks) however many mascots are
-     running. main.ts pads the right by exactly the notch width; the mascots occupy the strip
-     LEFT of it (issue #78). */
-  left: calc(var(--notch-center-x, 50%) + var(--notch-width, 200px) / 2);
-  transform: translateX(-100%);
-  /* Shrink-to-fit so however many mascots are running, none clip. */
-  width: auto;
+  top: var(--hud-top-gap);
+  left: var(--hud-center-x, 50%);
+  transform: translateX(-50%);
+  width: var(--hud-width);
   height: auto;
-  max-height: var(--bar);
+  max-height: var(--pill-height);
   overflow: hidden;
   background: var(--capsule-bg);
-  /* Both bottom corners round — the notch simply reads as a wider notch. */
-  border-radius: 0 0 var(--capsule-radius) var(--capsule-radius);
+  border-radius: var(--capsule-radius);
   box-shadow: 0 12px 44px rgba(0, 0, 0, 0.55);
   display: flex;
   flex-direction: column;
@@ -89,53 +64,28 @@ body {
 .hud-capsule--hidden {
   display: none; /* idle: no empty black pill */
 }
-/* EXPANDED: re-centre under the notch and grow DOWNWARD into the panel. The height only appears
-   on click — collapsed, the strip is never taller than the real notch. */
+/* Expanded: grow downward into the panel while keeping the same top-edge anchor. */
 .hud-capsule.expanded {
-  left: var(--notch-center-x, 50%);
+  left: var(--hud-center-x, 50%);
   transform: translateX(-50%);
   width: var(--panel-width);
-  max-height: calc(var(--bar) + var(--panel-max-h) + 20px);
-  border-radius: 0 0 var(--capsule-radius) var(--capsule-radius);
-}
-
-/* Notchless display: a standalone floating pill (no notch to fuse with) — a small top gap and
-   all-corner radius so it reads as its own Dynamic-Island-like element, not a black bar at y=0. */
-.notchless .hud-capsule {
-  /* No notch to butt against — centre the pill instead of hanging it off the notch's left edge. */
-  left: var(--notch-center-x, 50%);
-  transform: translateX(-50%);
-  top: var(--pill-top-gap);
-  max-height: var(--pill-height);
-  border-radius: var(--pill-radius);
-}
-.notchless .hud-capsule.expanded {
   max-height: calc(var(--panel-max-h) + 16px);
-  border-radius: var(--pill-radius);
+  border-radius: var(--capsule-radius);
 }
 
-/* --- Collapsed indicator: the mascots, LEFT and vertically CENTRED in the notch strip ---
-   The capsule is exactly bar-tall, so the mascots sit centred on the bar's midline, left-packed,
-   inside black that extends the notch — the notch reads as wider, never taller.
-   Hidden when expanded (the rows carry their own icons). */
+/* Collapsed indicator, hidden when expanded because the rows carry their own icons. */
 .hud-indicator {
   display: flex;
-  /* Vertically CENTRED in the notch strip, horizontally left-packed (owner's placement). */
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 8px;
   width: auto;
-  height: var(--bar);
+  height: var(--pill-height);
   padding: 0 8px 0 10px;
 }
 .hud-capsule.expanded .hud-indicator {
   display: none;
 }
-.notchless .hud-indicator {
-  height: var(--pill-height);
-  padding-top: 0; /* no notch to clear — center in the pill */
-}
-
 /* --- Walking mascots (copied from styles.css .term-node__mascot*) --- */
 .mascot {
   display: inline-block;
@@ -259,23 +209,17 @@ body {
   }
 }
 
-/* --- Expanded panel: the session rows, INSIDE the same black capsule ---
-   No own background / border / radius — it IS the capsule's black surface. Rows start below the
-   fused top zone (padding-top clears the notch/menu-bar line). Fades in as the capsule grows. */
+/* Expanded panel: session rows inside the same floating surface. */
 .hud-panel {
   width: 100%;
   max-height: var(--panel-max-h);
   overflow-y: auto;
-  padding: 4px 10px 10px;
-  padding-top: calc(var(--bar) + 4px);
+  padding: 8px 10px 10px;
   font-family: var(--hud-mono);
   color: #f2f2f7;
   display: none;
   opacity: 0;
   transition: opacity 0.16s ease 0.06s;
-}
-.notchless .hud-panel {
-  padding-top: 8px; /* no notch to clear */
 }
 .hud-capsule.expanded .hud-panel {
   display: block;

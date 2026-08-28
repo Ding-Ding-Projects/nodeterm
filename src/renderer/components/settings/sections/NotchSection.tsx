@@ -4,7 +4,7 @@ import { SearchableRow } from '../SearchableRow'
 import { FieldRow } from '../FieldRow'
 import { Switch } from '@renderer/ui/Switch'
 
-/** Keep in sync with NOTCH_WIDTH_MIN/MAX in src/main/notch-hud.ts (which clamps anyway). */
+/** Keep in sync with HUD_WIDTH_MIN/MAX in the main-process HUD controller. */
 const WIDTH_MIN = 100
 const WIDTH_MAX = 320
 
@@ -29,7 +29,7 @@ const ENTRIES = Object.values(ROWS)
  *
  * Everything the Agent HUD exposes lives here rather than in Appearance: the enable toggle, the
  * width control, and hover-vs-click expansion. All three apply
- * live: dragging the width slider moves the capsule as you drag.
+ * live: dragging the width slider resizes the surface as you drag.
  */
 export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Element {
   const notchHud = useSettings((s) => s.settings.notchHud)
@@ -47,7 +47,7 @@ export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Ele
       <SearchableRow {...ROWS.enabled}>
         <FieldRow
           label="Show the Agent HUD"
-          description="Extends the notch into a black capsule while agents work: a walking mascot per busy agent, a red dot when one needs you, a green blob when one has finished and you haven't looked yet."
+          description="Shows a floating top-edge capsule while agents work: a walking mascot per busy agent, a red dot when one needs you, and a green mark when one has finished and you have not looked yet."
           control={
             <Switch
               checked={notchHud}
@@ -77,7 +77,7 @@ export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Ele
                   max={WIDTH_MAX}
                   step={2}
                   value={notchWidth}
-                  aria-label="Assumed notch width in pixels"
+                  aria-label="Agent HUD width in pixels"
                   onChange={(e) => update({ notchWidth: Number(e.target.value) })}
                   className="w-40 accent-[var(--accent)]"
                 />

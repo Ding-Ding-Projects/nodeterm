@@ -27,16 +27,12 @@ export interface HudRow {
 }
 export interface HudPush {
   rows: HudRow[]
-  /** HUD header height in px; content sits below it. */
-  bar: number
   /** Primary-display width in px. */
   width: number
-  /** Assumed physical notch width in px — the capsule's collapsed (fused) width. */
-  notchWidth: number
+  /** Collapsed HUD width in px. */
+  hudWidth: number
   /** HUD horizontal center in px (= width / 2). */
-  notchCenterX: number
-  /** Always false on Windows, where the HUD is a standalone floating pill. */
-  hasNotch: boolean
+  centerX: number
   /** Expand the panel on hover (settings.notchHoverExpand); false means click-only. */
   hoverExpand: boolean
   /** settings.usagePercentMode — how a row's context percentage renders ("42% used" / "58% left"). */
