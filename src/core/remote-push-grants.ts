@@ -1,13 +1,13 @@
-// SSH-possession push grants that live on a REMOTE host (the Mac → SSH-host topology).
+// SSH-possession push grants that live on a remote host.
 //
 // `push-grants.ts` reads `~/.nodeterm/push-grants` on the machine that owns the agent-status
 // mirror. That is the whole story when the phone and the mirror owner are the same box (a headless
 // Server Edition the phone SSHes into). It is NOT the story for the common desktop setup:
 //
-//   phone --SSH--> Linux dev host <--SSH-- macOS nodeterm (owns the canvas, the hooks, the mirror)
+//   phone --SSH--> Linux development host <--SSH-- Windows nodeterm
 //
 // There the phone drops its grant on the HOST — the only machine it can reach — while the process
-// that has something to push runs on the Mac and scans only its own `$HOME`. Result: an SSH-only
+// that has something to push runs on Windows and scans only its own user directory. Result: an SSH-only
 // user gets no push at all, and no error anywhere (`resolveTarget` just returns null: no paired
 // phone, no grants). The remote read-acks already had their counterpart sweep
 // (`SshProjectManager.sweepRemoteAcks`); grants did not. This module is that missing half.

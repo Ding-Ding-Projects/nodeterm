@@ -42,7 +42,7 @@ import { getDeviceId } from '../core/device-id'
 /**
  * Optional relay dependencies injected into the pairing service. When present AND phone access is
  * enabled, a successful LAN pair ALSO provisions the phone for the relay (a device token +
- * the host's relay identity), so it can reach this Mac from anywhere. Injected (not imported) so
+ * the host's relay identity), so it can reach this machine from anywhere. Injected (not imported) so
  * `pairing-core` stays pure and this stays testable. Absent / any failure ⇒ LAN-only (the phone
  * still pairs; it just won't get relay access).
  */
@@ -123,7 +123,7 @@ const REVOKE_TIMEOUT_MS = 8000
  * Three outcomes, because two cannot tell the truth here:
  *  - 'ok'      the route answered 204. It is deliberately idempotent and reveals nothing about
  *              WHICH of its four cases applied (revoked it / unknown device / the row carries a
- *              'free:'/'apple:' id so there was nothing of ours on it / already revoked) — all
+ *              unsupported or free id so there was nothing of ours on it / already revoked) — all
  *              four mean the phone holds no entitlement of ours, which is what we asked for.
  *  - 'failed'  we asked and were refused (403 = someone else's row, 401 = the token did not
  *              verify) or could not reach the server. The caller must NOT report a clean removal.
@@ -602,7 +602,7 @@ export function createPairingService(relayDeps?: PairingRelayDeps): PairingServi
           return
         }
         // Mint a device identity: the deviceId stamps the key line (attributable + revocable);
-        // the agentToken is the phone's bearer for the host-agent WebSocket (stored in its Keychain).
+        // the agentToken is the phone's bearer for the host-agent WebSocket, stored in its credential vault.
         const deviceId = randomUUID()
         const agentToken = randomBytes(24).toString('base64url')
         const name = normalizeDeviceName(body.deviceName)
@@ -731,8 +731,7 @@ export function createPairingService(relayDeps?: PairingRelayDeps): PairingServi
     // is never a key in `relay_devices` — it lives only in the non-key `host_device_id` column,
     // and /v1/relay/host-token writes no row at all — so this cannot reach the desktop's own
     // registration. Nor can it reach a stranger's: the route authorizes by the row's licenseId /
-    // hostDeviceId and answers 403 otherwise, and 204 (no write) for a row carrying a
-    // 'free:'/'apple:' id — which is what keeps an Apple purchase bridged to this desktop safe.
+    // hostDeviceId and answers 403 otherwise, and 204 with no write for a free or unsupported row.
     //
     // RESIDUAL LEAK, deliberately not closed here: a pre-Task-12 pairing where the phone DID send
     // its own id (every iOS build since 2026-07-10 does) has a row keyed by a value we never
