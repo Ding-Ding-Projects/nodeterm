@@ -17,13 +17,19 @@ const bytes = (s: string) => Buffer.byteLength(s, 'utf-8')
 /** Resolve a CLI binary to an absolute path (GUI apps don't inherit the shell PATH). */
 function resolveBinary(name: string): string | null {
   if (name.startsWith('/')) return fs.existsSync(name) ? name : null
-  const candidates = [
-    `${os.homedir()}/.local/bin/${name}`,
-    `${os.homedir()}/.claude/local/${name}`,
-    `/opt/homebrew/bin/${name}`,
-    `/usr/local/bin/${name}`,
-    `/usr/bin/${name}`
-  ]
+  const candidates = process.platform === 'win32'
+    ? [
+        `${os.homedir()}\\.local\\bin\\${name}.exe`,
+        `${os.homedir()}\\.claude\\local\\${name}.exe`,
+        `C:\\Program Files\\${name}\\${name}.exe`,
+        `C:\\Program Files\\GitHub CLI\\${name}.exe`
+      ]
+    : [
+        `${os.homedir()}/.local/bin/${name}`,
+        `${os.homedir()}/.claude/local/${name}`,
+        '/usr/bin/' + name,
+        '/usr/local/bin/' + name
+      ]
   for (const c of candidates) {
     try {
       if (fs.existsSync(c)) return c

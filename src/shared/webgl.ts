@@ -21,21 +21,6 @@ export const WEBGL_CONTEXT_CAP_DESKTOP = 32
  *  philosophy as the default 12-under-16. */
 export const WEBGL_BUDGET_DESKTOP = 24
 
-/**
- * Renderer budget on MAC desktop, still below the shared-desktop 24 — but no longer 10, and the
- * history of the number is the point. 10 was calibrated against "terminals composite BLACK after
- * a zoom-out grant burst", which was later root-caused to the addon-webgl 0.19 dispose crash
- * (dependency skew, fixed by the 0.18.0 pin + release heal) — evidence that no longer argues
- * for any particular ceiling. What remains genuinely macOS-specific is one UNCONFIRMED
- * 2026-07-30 whole-window-flicker report, filed while the mac budget was 24 (and while the 0.19
- * skew was live, so even that is confounded). 16 is the deliberate middle: enough that roaming
- * a busy canvas rarely hits budget-contention reclaims (the visible DOM→WebGL upgrade at the
- * pan frontier), while not re-creating the exact budget-24 configuration of the flicker report
- * in one step. Equalizing to `WEBGL_BUDGET_DESKTOP` is the next move if a device soak at 16
- * stays clean; if flicker returns, this constant is where the answer goes back down.
- */
-export const WEBGL_BUDGET_DESKTOP_MAC = 16
-
 /** How a terminal actually paints: xterm's own DOM renderer, one budgeted WebGL context per
  *  terminal (the coordinator described above), or glyphgrid — ONE context for the whole canvas,
  *  into which every terminal paints. */
