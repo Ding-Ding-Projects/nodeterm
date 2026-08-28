@@ -36,6 +36,7 @@
   "build": {
     "appId": "com.nodeterm.app",
     "productName": "nodeterm",
+    "afterPack": "./scripts/after-pack-windows.cjs",
     "directories": {
       "output": "dist",
       "buildResources": "build"
