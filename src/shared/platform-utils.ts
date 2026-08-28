@@ -22,7 +22,6 @@ export function isWindowsPlatform(): boolean {
 
 /** Rewrite legacy primary-modifier notation into Windows labels. */
 export function hintLabel(text: string, isMac: boolean = isMacPlatform()): string {
-  if (isMac) return text
   return text
     .replace(/⌘⇧/g, 'Ctrl+Shift+')
     .replace(/⌘(?=[A-Za-z0-9,/↵])/g, 'Ctrl+')
@@ -32,7 +31,6 @@ export function hintLabel(text: string, isMac: boolean = isMacPlatform()): strin
 
 /** Map a single key token (as used by ShortcutsPanel's keys arrays). */
 export function keyLabel(key: string, isMac: boolean = isMacPlatform()): string {
-  if (isMac) return key
   if (key === '⌘') return 'Ctrl'
   if (key === '⇧') return 'Shift'
   return key
@@ -40,5 +38,5 @@ export function keyLabel(key: string, isMac: boolean = isMacPlatform()): string 
 
 /** The platform's primary modifier symbol. */
 export function modSymbol(isMac: boolean = isMacPlatform()): string {
-  return keyLabel('⌘', isMac)
+  return 'Ctrl'
 }
