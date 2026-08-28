@@ -8,7 +8,7 @@ The work is being prepared in PR #494, targeting `eneskirca/nodeterm:main` from
 The latest source commit is:
 
 ```text
-ea66cca2
+99380008
 ```
 
 The source checkout is clean and the source ref has been verified with `git ls-remote`.
@@ -48,6 +48,8 @@ verification was performed from the packaged executable built from this source s
 The current public-surface commit `d30e754b` converts the landing page and release workflow to
 Windows-only unsigned Squirrel.Windows distribution. Its YAML parses successfully and the site
 and workflow scan contains no Apple or non-Windows package references.
+The Windows package-smoke workflow is also aligned with the same `dist/squirrel-windows` output,
+including Setup.exe, the full nupkg, RELEASES, and unsigned-status validation.
 
 ### Fresh ZIP build
 
