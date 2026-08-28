@@ -401,6 +401,8 @@ import type {
   SshProjectStatus,
   TranscriptHit
 } from '@shared/types'
+import { isWindowsPlatform } from '@shared/platform-utils'
+import { isBrowserRuntime } from '../bridge/runtime'
 import type { KanbanCreateChoice, KanbanSession } from '../components/kanban/KanbanView'
 import { assignNode, assignedTo, defaultKanban, labelsForCard, migrateProjectTags, resolveColumnRef, unassigned } from '../lib/kanban'
 import { registerWorkspaceDirty } from '../state/workspaceDirty'
@@ -6293,7 +6295,7 @@ export function Canvas() {
     // copy on a Linux box. The board is an opaque overlay over the canvas, so a copy there
     // would act on a selection the user cannot see (the canvas-only-shortcut discipline).
     const projects = useProjects.getState()
-    if (isKanbanOpen(projects.activeProjectId)) return false
+    if (!isWindowsPlatform() || isBrowserRuntime() || isKanbanOpen(projects.activeProjectId)) return false
     const paths = selectedLocalFilePaths(nodesRef.current, {
       projectIsRelay: !!projects.getProject(projects.activeProjectId ?? '')?.remote
     })
