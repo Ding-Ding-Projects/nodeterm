@@ -381,46 +381,6 @@ describe('parseTopFootprint', () => {
   })
 })
 
-describe('collectSessionMemory on darwin', () => {
-  const asDarwin = (fn: () => Promise<void>) => async (): Promise<void> => {
-    const real = Object.getOwnPropertyDescriptor(process, 'platform')!
-    Object.defineProperty(process, 'platform', { value: 'darwin', configurable: true })
-    try {
-      await fn()
-    } finally {
-      Object.defineProperty(process, 'platform', real)
-    }
-  }
-
-  const run = async (): Promise<{ calls: string[]; rows: unknown }> => {
-    const calls: string[] = []
-    const r = await collectSessionMemory({
-      tmuxBin: () => '/usr/bin/tmux',
-      sockets: ['s1'],
-      exec: async (bin, args) => {
-        calls.push(bin)
-        if (bin.includes('tmux')) return 'nt-a|4242|claude\n'
-        if (bin === 'ps') return 'PID PPID RSS\n4242 1 100000\n'
-        // 4242's footprint is DOUBLE its rss — the measured idle-process shape.
-        return 'PID    MEM  \n4242   200000K'
-      },
-      readTable: undefined,
-      readMem: () => null
-    })
-    return { calls, rows: r.rows }
-  }
-
-  it(
-    'prefers phys_footprint over rss — the idle-session number rss halves',
-    asDarwin(async () => {
-      const { calls, rows } = await run()
-      expect(calls).toContain('top')
-      // 200000 kB, not the 100000 kB `ps` reported.
-      expect((rows as { selfMb: number }[])[0].selfMb).toBe(Math.round(200000 / 1024))
-    })
-  )
-})
-
 import { parseMemInfoText, parsePsiMemory, readMemInfo } from './session-memory'
 
 /** A verbatim excerpt of the production host's /proc/meminfo, 2026-08-15 (62.7 GB, swap 74% spent). */

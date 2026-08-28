@@ -10,7 +10,7 @@
 
 import fs from 'fs'
 import os from 'os'
-import { execFile, execFileSync } from 'child_process'
+import { execFile } from 'child_process'
 import { promisify } from 'util'
 import type { MemInfo, SessionMemoryRow, SessionMemoryReport } from '../shared/types'
 import { TMUX_SOCKET } from './tmux-naming'
@@ -305,12 +305,6 @@ export function readMemInfo(): MemInfo | null {
   // see parseVmStat. Ask the kernel for the real breakdown instead. Sync on purpose: both callers
   // (the 30 s pill poll and the reaper's 10 min sweep) are far apart, and keeping ONE signature
   // means the reaper's watermark is fixed by the same change.
-  if (process.platform === 'darwin') {
-    return darwinMemInfo(
-      () => execFileSync('vm_stat', { encoding: 'utf8', timeout: 5_000 }),
-      os.totalmem()
-    )
-  }
   try {
     return {
       availableMb: Math.round(os.freemem() / 1048576),
@@ -475,14 +469,7 @@ export async function collectSessionMemory(
     // exactly the population this panel exists to describe. See parseTopFootprint.
     try {
       const rows = parseProcessTable(await exec('ps', ['-eo', 'pid,ppid,rss']))
-      if (process.platform === 'darwin') {
-        const fp = parseTopFootprint(await exec('top', ['-l', '1', '-stats', 'pid,mem']))
-        // A pid `top` did not list keeps its `rss`. The two snapshots are a moment apart, so a miss
-        // is a process that came or went between them — not a reason to report nothing.
-        table = rows.map((e) => ({ ...e, rssKb: fp.get(e.pid) ?? e.rssKb }))
-      } else {
-        table = rows
-      }
+      table = rows
     } catch {
       table = null
     }

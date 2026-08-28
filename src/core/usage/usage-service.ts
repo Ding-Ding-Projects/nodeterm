@@ -8,8 +8,6 @@
 import { promises as fs } from 'fs'
 import os from 'os'
 import path from 'path'
-import { execFile } from 'child_process'
-import { promisify } from 'util'
 import { IPC } from '../../shared/ipc'
 import type {
   ClaudeUsage,
@@ -39,8 +37,6 @@ import {
 import { usageCredsPaths } from '../claude-accounts-core'
 import { claudeConfigDirFor } from '../claude-config-dir'
 import { platform } from '../platform'
-
-const execFileP = promisify(execFile)
 
 const USAGE_URL = 'https://api.anthropic.com/api/oauth/usage'
 const OAUTH_BETA = 'oauth-2025-04-20'
@@ -97,29 +93,9 @@ export function parseCreds(raw: string): OAuthCreds {
  */
 async function resolveCreds(accountId?: string): Promise<OAuthCreds> {
   const configDir = accountId ? claudeConfigDirFor(accountId) : undefined
-  const { services, credsFile, identityFile } = usageCredsPaths(os.homedir(), configDir)
+  const { credsFile, identityFile } = usageCredsPaths(os.homedir(), configDir)
 
   let creds: OAuthCreds = { accessToken: null, email: null }
-
-  if (process.platform === 'darwin') {
-    for (const service of services) {
-      try {
-        const { stdout } = await execFileP('security', [
-          'find-generic-password',
-          '-s',
-          service,
-          '-w'
-        ])
-        const parsed = parseCreds(stdout.trim())
-        if (parsed.accessToken) {
-          creds = parsed
-          break
-        }
-      } catch {
-        // not in keychain under this service — try the next / the file
-      }
-    }
-  }
 
   if (!creds.accessToken) {
     try {
