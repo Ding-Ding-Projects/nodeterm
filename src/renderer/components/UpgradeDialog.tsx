@@ -17,7 +17,7 @@ export function UpgradeDialog() {
         <p className="confirm__msg">{feature} is a Pro feature</p>
         <p className="confirm__msg">
           Pro unlocks unlimited remote access from your phone (free plan: 5 connections/month),
-          3 team seats to share this Mac, and nodeterm mobile Pro. Complete your purchase in the
+          3 team seats to share this PC, and nodeterm mobile Pro. Complete your purchase in the
           browser — Pro unlocks here automatically.
         </p>
         <div className="confirm__actions">

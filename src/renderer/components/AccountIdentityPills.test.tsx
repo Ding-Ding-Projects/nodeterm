@@ -25,7 +25,7 @@ describe('AccountIdentityPills', () => {
   it('omits the selected check unless the account is chosen', () => {
     const html = renderToStaticMarkup(
       <AccountIdentityPills
-        account={{ identity: 'Home', provenance: 'Local', tooltip: 'Home · This Mac' }}
+        account={{ identity: 'Home', provenance: 'Local', tooltip: 'Home · This PC' }}
       />
     )
     expect(html).not.toContain('Selected')

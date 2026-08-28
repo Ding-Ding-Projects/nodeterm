@@ -38,18 +38,18 @@ beforeEach(() => {
 
 describe('createSession', () => {
   it('returns the pinned 5-field shape and preserves the api object by identity', () => {
-    const s = createSession('local', fakeApi, 'This Mac')
-    expect(s).toMatchObject({ source: 'local', label: 'This Mac', status: 'connected' })
+    const s = createSession('local', fakeApi, 'This PC')
+    expect(s).toMatchObject({ source: 'local', label: 'This PC', status: 'connected' })
     expect(typeof s.id).toBe('string')
     expect(s.api).toBe(fakeApi) // identity, not a copy — this is the whole guarantee
   })
 
   it('gives the local session the fixed id "local"', () => {
-    expect(createSession('local', fakeApi, 'This Mac').id).toBe('local')
+    expect(createSession('local', fakeApi, 'This PC').id).toBe('local')
   })
 
   it('registers per-session stores addressable by id', () => {
-    const s = createSession('local', fakeApi, 'This Mac')
+    const s = createSession('local', fakeApi, 'This PC')
     const stores = getSessionStores(s.id)
     expect(stores.presence).toBeDefined()
     expect(stores.agentStatus).toBeDefined()
@@ -59,7 +59,7 @@ describe('createSession', () => {
     // After Task 2 buildStores() constructs a REAL presence store with a live subscription.
     // A second createSession('local', …) (hot reload, a test helper, a reconnect path) must
     // NOT build a second store — that would violate Stage 1's "exactly one subscriber" invariant.
-    const first = createSession('local', fakeApi, 'This Mac')
+    const first = createSession('local', fakeApi, 'This PC')
     const storesBefore = getSessionStores(first.id)
     const again = createSession('local', { other: true } as unknown as NodeTerminalApi, 'Renamed')
     expect(again).toBe(first) // the existing session object, by identity
@@ -90,14 +90,14 @@ describe('createSession', () => {
     // session, a careless test double handing over window.nodeTerminal) must resolve to the
     // SAME presence store — a second store on the same bridge would subscribe second and miss
     // the pre-subscribe replay buffer (Stage 1: first subscriber only), silently diverging.
-    const local = createSession('local', fakeApi, 'This Mac')
+    const local = createSession('local', fakeApi, 'This PC')
     const relay = createSession('relay', fakeApi, 'loopback')
     expect(relay.id).not.toBe(local.id) // still two sessions…
     expect(getSessionStores(relay.id).presence).toBe(getSessionStores(local.id).presence) // …ONE store
   })
 
   it('tracks the active session and exposes its api to non-components', () => {
-    const s = createSession('local', fakeApi, 'This Mac')
+    const s = createSession('local', fakeApi, 'This PC')
     setActiveSession(s.id)
     expect(getActiveSession()).toBe(s)
     expect(activeSessionApi()).toBe(fakeApi)
@@ -110,7 +110,7 @@ describe('createSession', () => {
 
 describe('sessionForProject (runtime tab → session resolver, never persisted)', () => {
   it('sessionForProject returns the active (local) session for any project today', () => {
-    const s = createSession('local', fakeApi, 'This Mac')
+    const s = createSession('local', fakeApi, 'This PC')
     setActiveSession(s.id)
     expect(sessionForProject('any-project-id')).toBe(s)
     expect(sessionCount()).toBe(1)
@@ -118,7 +118,7 @@ describe('sessionForProject (runtime tab → session resolver, never persisted)'
 
   it('sessionCount counts registered sessions', () => {
     expect(sessionCount()).toBe(0)
-    createSession('local', fakeApi, 'This Mac')
+    createSession('local', fakeApi, 'This PC')
     expect(sessionCount()).toBe(1)
     createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
     expect(sessionCount()).toBe(2)
@@ -127,7 +127,7 @@ describe('sessionForProject (runtime tab → session resolver, never persisted)'
 
 describe('bindProjectToSession (4c remote-tab resolution)', () => {
   it('a bound project resolves to its remote session; an unbound one resolves to local', () => {
-    const local = createSession('local', fakeApi, 'This Mac')
+    const local = createSession('local', fakeApi, 'This PC')
     setActiveSession(local.id)
     const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
 
@@ -143,14 +143,14 @@ describe('bindProjectToSession (4c remote-tab resolution)', () => {
   })
 
   it('rejects a binding to an unknown session id', () => {
-    createSession('local', fakeApi, 'This Mac')
+    createSession('local', fakeApi, 'This PC')
     expect(() => bindProjectToSession('p', 'relay-999')).toThrow()
   })
 })
 
 describe('disposeSession (obligation 1 — the missing disposal path)', () => {
   it('runs every held teardown exactly once, drops the session, and unbinds its projects', () => {
-    const local = createSession('local', fakeApi, 'This Mac')
+    const local = createSession('local', fakeApi, 'This PC')
     setActiveSession(local.id)
     const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, 'remote')
     const presenceTeardown = vi.fn()
@@ -181,7 +181,7 @@ describe('disposeSession (obligation 1 — the missing disposal path)', () => {
 
 describe('takeSessionOffline (Stage 4 Task 7 — an INVOLUNTARY drop, not a user close)', () => {
   it('runs held teardowns once and flips status offline, but KEEPS the entry + its binding', () => {
-    const local = createSession('local', fakeApi, 'This Mac')
+    const local = createSession('local', fakeApi, 'This PC')
     setActiveSession(local.id)
     const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, 'remote')
     const presenceTeardown = vi.fn()
@@ -212,7 +212,7 @@ describe('takeSessionOffline (Stage 4 Task 7 — an INVOLUNTARY drop, not a user
     // iterated relayTabsRef could no longer reach the offline session — it leaked in the registry
     // forever. The fix disposes by the project BINDING instead, which takeSessionOffline KEEPS. This
     // proves the offline session is still reachable + fully removable that way.
-    const local = createSession('local', fakeApi, 'This Mac')
+    const local = createSession('local', fakeApi, 'This PC')
     setActiveSession(local.id)
     const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, 'remote')
     const presenceTeardown = vi.fn()
@@ -247,7 +247,7 @@ describe('takeSessionOffline (Stage 4 Task 7 — an INVOLUNTARY drop, not a user
 
 describe('activeSessionPresence (Task 1 — the ACTIVE session presence, non-hook accessor)', () => {
   it('returns the ACTIVE relay session\'s presence — a distinct instance from local', () => {
-    const local = createSession('local', fakeApi, 'This Mac')
+    const local = createSession('local', fakeApi, 'This PC')
     const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
     setActiveSession(relay.id)
     const p = activeSessionPresence()
@@ -256,14 +256,14 @@ describe('activeSessionPresence (Task 1 — the ACTIVE session presence, non-hoo
   })
 
   it('returns the LOCAL session\'s presence when local is active', () => {
-    const local = createSession('local', fakeApi, 'This Mac')
+    const local = createSession('local', fakeApi, 'This PC')
     createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
     setActiveSession(local.id)
     expect(activeSessionPresence()).toBe(getSessionStores(local.id).presence)
   })
 
   it('falls back to the local session\'s presence when no session is active (never throws)', () => {
-    const local = createSession('local', fakeApi, 'This Mac')
+    const local = createSession('local', fakeApi, 'This PC')
     // activeId is null (setActiveSession never called) — must not throw, resolves to local.
     expect(() => activeSessionPresence()).not.toThrow()
     expect(activeSessionPresence()).toBe(getSessionStores(local.id).presence)
@@ -281,7 +281,7 @@ describe('presenceForProject (Task 2 — the provider-INDEPENDENT resolver the a
     // This is what makes Facepile / PresenceNamePrompt (rendered OUTSIDE the SessionProvider) and
     // the presence-reading components see the ACTIVE (relay) session without moving in the tree:
     // the hook passes the store's activeProjectId here, and a relay tab's project is bound to it.
-    const local = createSession('local', fakeApi, 'This Mac')
+    const local = createSession('local', fakeApi, 'This PC')
     setActiveSession(local.id)
     const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
     bindProjectToSession('remote-tab', relay.id)
@@ -292,7 +292,7 @@ describe('presenceForProject (Task 2 — the provider-INDEPENDENT resolver the a
   })
 
   it('resolves an unbound (local) project to the LOCAL session\'s presence — byte-identical to today', () => {
-    const local = createSession('local', fakeApi, 'This Mac')
+    const local = createSession('local', fakeApi, 'This PC')
     setActiveSession(local.id)
     createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
     // A local project is never bound — it must resolve to the local session's presence (the exact
@@ -310,7 +310,7 @@ describe('setMeAll (obligation 2 — a rename re-helloes EVERY live session)', (
   it('re-helloes and updates identity on all registered sessions, not just the active one', () => {
     const a = apiWithHelloSpy('a')
     const b = apiWithHelloSpy('b')
-    const s1 = createSession('local', a.api, 'This Mac')
+    const s1 = createSession('local', a.api, 'This PC')
     const s2 = createSession('relay', b.api, "Ayşe's Mac")
     setActiveSession(s1.id)
 

@@ -3189,7 +3189,7 @@ export function TerminalNode({
         // line into the existing shell never picks up. The respawn's cold-restore auto-resume
         // relaunches the agent (`--resume <sid>`), so the conversation continues in the fresh shell.
         // Relay sessions are excluded for the same reason a model switch is: their shell env belongs
-        // to another core/settings store, and recycling here would respawn against this Mac's env.
+        // to another core/settings store, and recycling here would respawn against this PC's env.
         if (restartShell) {
           if (session.source === 'relay') return 'not-eligible'
           const exited = await performExitPhase({

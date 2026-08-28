@@ -46,7 +46,7 @@ export function presentAccount({
 }: {
   label?: string | null
   email?: string | null
-  /** Canonical SSH address (`user@host`). Omit for an account on this Mac. */
+  /** Canonical SSH address (`user@host`). Omit for an account on this PC. */
   host?: string | null
   /** Friendly saved SSH-machine name. */
   machineLabel?: string | null
@@ -55,7 +55,7 @@ export function presentAccount({
   const cleanEmail = email?.trim() || undefined
   const identity = displayLabel || cleanEmail || 'Default account'
   const provenance = host ? `SSH · ${machineLabel?.trim() || host}` : 'Local'
-  const originDetail = host ? `SSH ${host}` : 'This Mac'
+  const originDetail = host ? `SSH ${host}` : 'This PC'
   const identityDetail =
     cleanEmail && cleanEmail !== identity ? `${identity} (${cleanEmail})` : identity
   return {

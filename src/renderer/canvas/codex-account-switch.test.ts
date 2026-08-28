@@ -40,7 +40,7 @@ describe('codexAccountSelectable (fail-closed selection — Property 4)', () => 
   const connected = (host: string) => (host === 'u@box' ? 'proj-1' : undefined)
   const noConnection = () => undefined
 
-  it('allows the system account (no id) on this Mac', () => {
+  it('allows the system account (no id) on this PC', () => {
     expect(codexAccountSelectable(undefined, accounts, noConnection)).toEqual({ ok: true })
     expect(codexAccountSelectable('', accounts, noConnection)).toEqual({ ok: true })
   })

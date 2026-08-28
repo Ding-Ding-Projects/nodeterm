@@ -93,7 +93,7 @@ export function RemoteSection({
               <div className="space-y-2">
                 <p className="text-sm text-muted">
                   Sharing <strong className="text-text">{sharedName || 'this project'}</strong> —
-                  the joiner will see this project and can run commands on this Mac. Share this
+                  the joiner will see this project and can run commands on this PC. Share this
                   pairing code with the other device (single use):
                 </p>
                 <FieldRow
@@ -134,7 +134,7 @@ export function RemoteSection({
                 ) : (
                   <p className="text-sm text-muted">
                     Sharing <strong className="text-text">{sharedName || 'this project'}</strong> —
-                    the joiner sees this project and can run commands on this Mac.
+                    the joiner sees this project and can run commands on this PC.
                   </p>
                 )}
                 <Button disabled={hostBusy} onClick={() => void startHosting()}>

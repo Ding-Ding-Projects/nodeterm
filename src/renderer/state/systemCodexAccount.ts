@@ -2,7 +2,7 @@
 // Based on @Corvin's #112 (`src/renderer/state/systemCodexAccount.ts`).
 //
 // The system account is implicit (no CodexAccount record), so its email is resolved lazily and
-// once per machine: `ensure()` for this Mac, `ensureRemote(host, projectId)` for a connected SSH
+// once per machine: `ensure()` for this PC, `ensureRemote(host, projectId)` for a connected SSH
 // host. Every read is fail-closed — no login / unreachable host / read error resolves to `null`,
 // NEVER a fabricated identity (a machine panel with no discoverable system login shows no email
 // rather than borrowing another machine's).
@@ -10,7 +10,7 @@
 import { create } from 'zustand'
 
 interface SystemCodexAccountState {
-  /** This Mac's system Codex login email, or null (unknown / not logged in). */
+  /** This PC's system Codex login email, or null (unknown / not logged in). */
   email: string | null
   /** Once-guard: the local read fires a single time per app session. */
   loaded: boolean

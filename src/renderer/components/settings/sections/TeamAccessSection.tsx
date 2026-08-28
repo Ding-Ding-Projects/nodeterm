@@ -81,7 +81,7 @@ export function TeamAccessSection({
     <SettingsSection
       id="team-access"
       title="Team seats"
-      description="Share this Mac with your team — Pro includes 3 seats, extra seats $5/seat/month."
+      description="Share this PC with your team — Pro includes 3 seats, extra seats $5/seat/month."
       isActive={isActive}
       searchEntries={ENTRIES}
     >
@@ -116,7 +116,7 @@ export function TeamAccessSection({
             <div className="space-y-3">
               <h4 className="text-[13px] font-medium text-text">Invite a teammate</h4>
               <p className="text-sm text-muted">
-                A teammate on a seat can run commands on this Mac — the same as giving them SSH
+                A teammate on a seat can run commands on this PC — the same as giving them SSH
                 access. Only invite people you trust.
               </p>
               <FieldRow
@@ -185,12 +185,12 @@ export function TeamAccessSection({
               Upgrade to Pro — 3 collaborator seats included
             </h4>
             <p className="text-sm text-muted">
-              Pro comes with 3 seats to share this Mac with your team. Need more? Extra seats are
+              Pro comes with 3 seats to share this PC with your team. Need more? Extra seats are
               $5/seat/month. Each teammate connects from their own device over the end-to-end
               encrypted relay.
             </p>
             <p className="text-sm text-muted">
-              A seat grants shell access: a teammate on a seat can run commands on this Mac — the
+              A seat grants shell access: a teammate on a seat can run commands on this PC — the
               same as giving them SSH access. Every connection is still verified with a one-time
               pairing code you compare together.
             </p>

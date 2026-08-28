@@ -75,7 +75,7 @@ function makeDeps(over: Partial<RelayTabDeps> & { handle: RelayApiHandle }): {
 beforeEach(() => {
   resetSessionsForTest()
   // A local session must exist so a disposed remote tab resolves back to it (not a throw).
-  const local = createSession('local', { marker: 'local' } as unknown as NodeTerminalApi, 'This Mac')
+  const local = createSession('local', { marker: 'local' } as unknown as NodeTerminalApi, 'This PC')
   setActiveSession(local.id)
 })
 

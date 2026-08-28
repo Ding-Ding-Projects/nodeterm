@@ -16,7 +16,7 @@ describe('canvasSyncTarget (Task 4 — publisher/onMutation follow the ACTIVE se
   beforeEach(() => resetSessionsForTest())
 
   it('relay tab: the mutate/subscribe target is the RELAY api, and the gate arms when the relay presence has a peer', () => {
-    const local = createSession('local', localApi, 'This Mac')
+    const local = createSession('local', localApi, 'This PC')
     setActiveSession(local.id)
     const relay = createSession('relay', relayApi, "Ayşe's Mac")
     bindProjectToSession('remote-tab', relay.id)
@@ -37,7 +37,7 @@ describe('canvasSyncTarget (Task 4 — publisher/onMutation follow the ACTIVE se
   })
 
   it('local tab: the target is window.nodeTerminal (the local api) — byte-identical to today', () => {
-    const local = createSession('local', localApi, 'This Mac')
+    const local = createSession('local', localApi, 'This PC')
     setActiveSession(local.id)
     createSession('relay', relayApi, "Ayşe's Mac") // registered but not the active tab's binding
 
@@ -47,7 +47,7 @@ describe('canvasSyncTarget (Task 4 — publisher/onMutation follow the ACTIVE se
   })
 
   it('empty peer table → no peers (nothing published on a fresh, still-connecting session)', () => {
-    const local = createSession('local', localApi, 'This Mac')
+    const local = createSession('local', localApi, 'This PC')
     setActiveSession(local.id)
     expect(canvasSyncTarget(local, { peers: {} }).hasPeers).toBe(false)
   })

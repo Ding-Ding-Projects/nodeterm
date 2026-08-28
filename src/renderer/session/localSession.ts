@@ -8,5 +8,5 @@ import { createSession, setActiveSession, type WorkspaceSession } from './sessio
  *  the only importer of App (which imports this module). A static import of App from main.tsx
  *  would hoist this line ahead of the bridge install and silently capture `undefined` by identity
  *  in the browser. Keep the dynamic import. */
-export const localSession: WorkspaceSession = createSession('local', window.nodeTerminal, 'This Mac')
+export const localSession: WorkspaceSession = createSession('local', window.nodeTerminal, 'This PC')
 setActiveSession(localSession.id)

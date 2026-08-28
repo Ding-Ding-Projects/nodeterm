@@ -175,7 +175,7 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
   const [addingCodex, setAddingCodex] = useState(false)
   const [codexAddError, setCodexAddError] = useState<string | null>(null)
 
-  // The reachable machines: this Mac first, then every saved SSH server unioned with the active
+  // The reachable machines: this PC first, then every saved SSH server unioned with the active
   // project's own server (deduped by host key). Accounts partition onto them by `host`.
   const remoteTargets = codexRemoteTargets(sshServers, activeProject?.ssh?.server)
   const codexGroups = groupCodexAccountsByMachine(codexAccounts, remoteTargets)
@@ -228,7 +228,7 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
     applyCodexAccounts((accs) => accs.map((a) => (a.id === id ? { ...a, label } : a)))
 
   // Add a LOCAL managed Codex account and open its device-login node. Remote Codex account creation
-  // is fail-closed here: the base `codexAccounts.add()` mints on THIS Mac, so offering it under a
+  // is fail-closed here: the base `codexAccounts.add()` mints on this PC, so offering it under a
   // remote machine would silently create a local account — the remote leg lands with the host relay.
   const onAddCodexAccount = async (): Promise<void> => {
     if (addingCodex) return
@@ -586,7 +586,7 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
           )}
 
           {activeHostKey ? (
-            // Inside an SSH project: choose where the new account lives. "On this Mac" is a normal
+            // Inside an SSH project: choose where the new account lives. "On this PC" is a normal
             // local account; "On <host>" creates it on the remote host (usable only there).
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -596,9 +596,9 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
                   onClick={() => void onAddAccount()}
                 >
                   {addingOn === LOCAL_TARGET ? (
-                    <AddingLabel where="this Mac" />
+                    <AddingLabel where="this PC" />
                   ) : (
-                    'Add account — On this Mac'
+                    'Add account — On this PC'
                   )}
                 </Button>
                 <Button
@@ -632,7 +632,7 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
                 disabled={addingOn !== null}
                 onClick={() => void onAddAccount()}
               >
-                {addingOn === LOCAL_TARGET ? <AddingLabel where="this Mac" /> : 'Add account'}
+                {addingOn === LOCAL_TARGET ? <AddingLabel where="this PC" /> : 'Add account'}
               </Button>
               {addingOn !== null ? (
                 <p className="text-[12px] leading-relaxed text-muted">
@@ -659,7 +659,7 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
           {codexGroups.map((group) => (
             <MachinePanel
               key={group.host || 'local'}
-              label={group.remote ? (group.server?.label ?? group.host) : 'This Mac'}
+              label={group.remote ? (group.server?.label ?? group.host) : 'This PC'}
               remote={group.remote}
               hostKey={group.host || undefined}
               connected={group.remote ? !!connectedProjectIdForHost(group.host) : true}
@@ -671,7 +671,7 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
                     {addingCodex ? (
                       <span className="inline-flex items-center gap-2">
                         <span className="ui-spinner" aria-hidden />
-                        Setting up on this Mac…
+                        Setting up on this PC…
                       </span>
                     ) : (
                       'Add Codex account'

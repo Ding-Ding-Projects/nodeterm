@@ -54,12 +54,12 @@ export function licenseSentence(detail: LicenseDetail | null): string {
     if (detail.error === 'inactive') {
       // A server ANSWER, not a failure to look. Pro is verified locally so it still works right
       // now, and saying "unaffected" would promise it keeps working — which it will not.
-      return 'This license is not active, so there is no key or device count to show — and Pro on this Mac will stop when its current entitlement expires.'
+      return 'This license is not active, so there is no key or device count to show — and Pro on this PC will stop when its current entitlement expires.'
     }
     if (detail.error === 'unauthorized') {
-      // Also an answer: the server refused this Mac's entitlement. It may recover on the next
+      // Also an answer: the server refused this PC's entitlement. It may recover on the next
       // refresh, hence "may" — but it is not the "nothing changed" story the codes below tell.
-      return 'This Mac is not authorized on this license, so the key and device count are unavailable — and Pro here may stop when its current entitlement expires.'
+      return 'This PC is not authorized on this license, so the key and device count are unavailable — and Pro here may stop when its current entitlement expires.'
     }
     if (detail.error === 'offline' || detail.error === 'network' || detail.error === 'disabled') {
       // Deliberately not "could not reach the server": `disabled` is a build that never asked.
@@ -89,7 +89,7 @@ export function licenseSentence(detail: LicenseDetail | null): string {
     if (detail.used === detail.seats) {
       return `All ${detail.seats} devices are in use. Release the others below to free them up.`
     }
-    return `${detail.used} of ${detail.seats} devices in use — this Mac and each paired phone counts as a device.`
+    return `${detail.used} of ${detail.seats} devices in use — this PC and each paired phone counts as a device.`
   }
 
   // A clean read that stated no source (only reachable by merging a release reply over an empty
@@ -110,7 +110,7 @@ export function canReleaseDevices(detail: LicenseDetail | null): boolean {
 }
 
 /**
- * Whether to tell the user they can paste this key on another Mac.
+ * Whether to tell the user they can paste this key on another PC.
  *
  * A key with no free device is an invitation to an activation that CANNOT succeed — the server
  * answers `seat_limit` and the user is left holding a key and an error. So the line appears only
@@ -123,7 +123,7 @@ export function canUseKeyElsewhere(detail: LicenseDetail | null): boolean {
 
 /**
  * Is this reason code a REFUSAL of the release (about the license), rather than a failure of the
- * call (about the network / this Mac's standing)?
+ * call (about the network / this PC's standing)?
  *
  * The store asks this to decide what may be merged onto `detail`, and the panel's release note is
  * the complement of it. One definition, because two copies of "which codes are refusals" is
@@ -149,7 +149,7 @@ export function isReleaseRefusal(code: string | null | undefined): boolean {
 export function releaseFailureSentence(code: string | null | undefined): string {
   if (!code || isReleaseRefusal(code)) return ''
   if (code === 'unauthorized') {
-    return 'Could not release the other devices — this Mac is not authorized on this license. Nothing was released.'
+    return 'Could not release the other devices — this PC is not authorized on this license. Nothing was released.'
   }
   if (code === 'inactive') {
     return 'Could not release the other devices — this license is not active. Nothing was released.'
@@ -174,7 +174,7 @@ export function activationErrorSentence(code: string | null | undefined): string
   if (code === 'seat_limit') {
     // The one code this feature was built around. The remedy lives on a machine that HAS Pro —
     // this one does not, so "release devices here" would be advice the user cannot follow.
-    return 'This license already has all its devices in use. On a Mac (or phone) where Pro is active, open Settings → License and choose “Release other devices”, then activate here again.'
+    return 'This license already has all its devices in use. On a PC (or phone) where Pro is active, open Settings → License and choose “Release other devices”, then activate here again.'
   }
   if (code === 'suspended') {
     return 'This license has been suspended, so it cannot be activated. Get in touch and we will sort it out.'

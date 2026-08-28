@@ -44,7 +44,7 @@ export function PresenceIdentitySection({ isActive }: { isActive: boolean }): Re
     <SettingsSection
       id="presence"
       title="Your name"
-      description="The name and color other people see when they connect to this Mac — in the facepile, cursor labels, and board comments."
+      description="The name and color other people see when they connect to this PC — in the facepile, cursor labels, and board comments."
       isActive={isActive}
       searchEntries={ENTRIES}
     >

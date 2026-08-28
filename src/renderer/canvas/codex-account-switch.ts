@@ -73,7 +73,7 @@ export type CodexAccountSelectability =
 
 /**
  * Fail-closed gate for the create/switch menus (§5 Property 4). `selectedId` empty/undefined = the
- * SYSTEM account on this Mac (always selectable). Any managed id must:
+ * SYSTEM account on this PC (always selectable). Any managed id must:
  *   - pass `isSafeAccountId` — a hostile settings/relay id never becomes a launch target;
  *   - name an account still present in `accounts` — an explicitly selected MISSING account is
  *     refused, never silently resolved to the system or another login;
@@ -88,7 +88,7 @@ export function codexAccountSelectable(
   accounts: readonly CodexAccount[],
   connectedProjectIdForHost: (host: string) => string | undefined
 ): CodexAccountSelectability {
-  // The system account (no id) always lives on this Mac — nothing to connect to, nothing to miss.
+  // The system account (no id) always lives on this PC — nothing to connect to, nothing to miss.
   if (!selectedId) return { ok: true }
   // Supply-chain: an id that could escape the filesystem is never a valid selection.
   if (!isSafeAccountId(selectedId)) return { ok: false, reason: 'unavailable' }
