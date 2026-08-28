@@ -1,4 +1,4 @@
-// Tiny, HUD-only preload (docs/notch-hud.md). The Notch HUD is a separate BrowserWindow with a
+// Tiny, HUD-only preload (docs/notch-hud.md). The Agent HUD is a separate BrowserWindow with a
 // minimal surface — it does not need the full `window.nodeTerminal` API, so it gets its own bridge
 // exposing exactly the HUD channels. contextIsolation stays on; no node integration.
 
@@ -27,17 +27,17 @@ export interface HudRow {
 }
 export interface HudPush {
   rows: HudRow[]
-  /** Notch/menu-bar strip height in px (the capsule's fused top zone; content sits below it). */
+  /** HUD header height in px; content sits below it. */
   bar: number
   /** Primary-display width in px. */
   width: number
   /** Assumed physical notch width in px — the capsule's collapsed (fused) width. */
   notchWidth: number
-  /** Notch horizontal center in px (= width / 2) — where the capsule anchors. */
+  /** HUD horizontal center in px (= width / 2). */
   notchCenterX: number
-  /** True when a physical notch is present (fuse to it); false = draw a standalone floating pill. */
+  /** Always false on Windows, where the HUD is a standalone floating pill. */
   hasNotch: boolean
-  /** Expand the panel on hover (settings.notchHoverExpand); false = click-only. */
+  /** Expand the panel on hover (settings.notchHoverExpand); false means click-only. */
   hoverExpand: boolean
   /** settings.usagePercentMode — how a row's context percentage renders ("42% used" / "58% left"). */
   percentMode: 'used' | 'remaining' | 'tokens'

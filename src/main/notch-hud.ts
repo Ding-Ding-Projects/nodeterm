@@ -1,10 +1,10 @@
-// macOS Notch HUD (docs/notch-hud.md) — a transparent, always-on-top, click-through strip along
-// the top edge that shows walking agent mascots beside the MacBook notch while agents work, and
-// expands into a mini session panel. macOS + desktop only; default on (settings.notchHud).
+// Windows Agent HUD (docs/notch-hud.md): a transparent, always-on-top, click-through activity
+// surface along the display work area that shows agent mascots while agents work and expands into
+// a mini session panel. Windows desktop only; default on (settings.notchHud).
 //
 // This module owns the BrowserWindow + the getHudWindow/sendToHud singleton (mirroring
 // main-window.ts) and the mirror/IPC subscriptions. The DATA folding lives in the pure,
-// Electron-free notch-hud-model.ts so it is unit-testable without a window. index.ts feeds two
+// Electron-free HUD model so it is unit-testable without a window. index.ts feeds two
 // extra streams in (the normalized agent-event stream for prompt+subagents, and context-update for
 // the model) via the module-level notchHudOn* functions, which no-op when the HUD is off.
 
@@ -32,7 +32,7 @@ const NOTCH_BAR_FLOOR = 24
  * capsule LEFT, lower it to slide the capsule RIGHT toward the notch.
  */
 const NOTCH_WIDTH = 168
-/** Bounds for the user-tunable notch width (settings.notchWidth). */
+/** Bounds for the user-tunable HUD width (settings.notchWidth). */
 export const NOTCH_WIDTH_MIN = 100
 export const NOTCH_WIDTH_MAX = 320
 /**
