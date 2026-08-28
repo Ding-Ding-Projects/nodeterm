@@ -398,7 +398,7 @@ export function buildStubApi(): Omit<
       stop: U('pairing.stop'),
       onDone: noopUnsub,
       probeSsh: U('pairing.probeSsh'),
-      openRemoteLoginSettings: U('pairing.openRemoteLoginSettings'),
+      openRemoteAccessSettings: U('pairing.openRemoteAccessSettings'),
       listDevices: U('pairing.listDevices'),
       revokeDevice: U('pairing.revokeDevice')
     },

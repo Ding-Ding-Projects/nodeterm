@@ -185,7 +185,7 @@ async function buildRelayContext(
 }
 
 /** How long the listener waits for the phone before giving up. 10 minutes, not 2: the QR can
- *  now be gated behind enabling Remote Login first, and a field report showed a user scanning a
+ *  now be gated behind enabling OpenSSH Server first, and a field report showed a user scanning a
  *  long-expired QR — a wider window plus the UI's explicit timeout state beats a tight one. */
 const PAIR_TIMEOUT_MS = 10 * 60 * 1000
 /** Probe timeout for the "is sshd listening on :22?" check. */
@@ -229,7 +229,7 @@ export interface PairingService {
    * how the server leg went missing in the first place.
    */
   revokeDevice(id: string): Promise<DeviceRevokeResult>
-  /** Live re-probe of sshd (127.0.0.1:22), for the Remote Login warning's auto-clear. */
+  /** Live re-probe of sshd (127.0.0.1:22), for the OpenSSH Server warning's auto-clear. */
   probeSsh(): Promise<boolean>
 }
 
@@ -286,7 +286,7 @@ async function computerName(): Promise<string> {
   return os.hostname()
 }
 
-/** Quick TCP probe of 127.0.0.1:22 to guess whether Remote Login (sshd) is on. */
+/** Quick TCP probe of 127.0.0.1:22 to determine whether OpenSSH Server is reachable. */
 function probeSsh(): Promise<boolean> {
   return new Promise((resolve) => {
     let done = false

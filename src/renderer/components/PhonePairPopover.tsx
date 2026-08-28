@@ -64,10 +64,10 @@ export function PhonePairPopover({
 
         {phase === 'waiting' && qr ? (
           !sshOpen ? (
-            // No QR while Remote Login is off — pairing against an unreachable sshd installs a
+            // No QR while OpenSSH Server is off: pairing against an unreachable sshd installs a
             // key the phone can never use. The live probe flips sshOpen and the QR appears.
             <div className="phone-pair__warn">
-              <strong>Remote Login</strong> is off — the pairing QR appears the moment it is on
+              <strong>OpenSSH Server</strong> is off. The pairing QR appears when it is reachable.
               .
             </div>
           ) : (
@@ -85,7 +85,7 @@ export function PhonePairPopover({
                   toggle below first to also connect from anywhere — the QR refreshes by itself.
                 </div>
               ) : null}
-              {sshHealed ? <div className="phone-pair__ok">✓ Remote Login is on.</div> : null}
+              {sshHealed ? <div className="phone-pair__ok">✓ OpenSSH Server is reachable.</div> : null}
             </>
           )
         ) : phase === 'paired' ? (

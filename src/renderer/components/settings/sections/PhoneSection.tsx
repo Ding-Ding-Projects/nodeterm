@@ -197,16 +197,16 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
           {phase === 'waiting' && qr ? (
             <div className="space-y-3">
               {!sshOpen ? (
-                // No QR until Remote Login is on: a pairing completed against an unreachable
+                // No QR until OpenSSH Server is on: a pairing completed against an unreachable
                 // sshd installs a key the phone can never use — the scan must wait, not the fix.
                 // The live probe (usePhonePairing) flips sshOpen and the QR appears by itself.
                 <div className="space-y-2">
                   <p className="text-sm" style={{ color: '#ff9f0a' }}>
-                    <strong>Remote Login</strong> is off, so your phone wouldn&apos;t be able to
+                    <strong>OpenSSH Server</strong> is off, so your phone would not be able to
                     connect after pairing. Turn it on — the QR appears here the moment it is
                     .
                   </p>
-                  <Button onClick={() => void window.nodeTerminal.pairing.openRemoteLoginSettings()}>
+                  <Button onClick={() => void window.nodeTerminal.pairing.openRemoteAccessSettings()}>
                     Open remote-access settings
                   </Button>
                 </div>
@@ -235,7 +235,7 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
                   ) : null}
                   {sshHealed ? (
                     <p className="text-sm" style={{ color: '#30d158' }}>
-                      ✓ Remote Login is on — scan away.
+                      ✓ OpenSSH Server is reachable. Scan away.
                     </p>
                   ) : null}
                 </>

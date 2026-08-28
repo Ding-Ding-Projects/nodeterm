@@ -1259,9 +1259,7 @@ app.whenReady().then(async () => {
 
   // Show an OS notification — but only when the window is in the background. Clicking it
   // brings the app forward and asks the renderer to focus the originating node.
-  // Resolves 'shown' | 'failed' | 'skipped' so the renderer can SEE a macOS permission
-  // denial (UNErrorCodeNotificationsNotAllowed) instead of it dying silently — that broke
-  // once already after an Electron upgrade invalidated the ncprefs signature record.
+  // Resolves shown, failed, or skipped so the renderer can expose an operating-system refusal.
   ipcMain.handle(
     IPC.appNotify,
     async (_e, payload: { title: string; body: string; nodeId: string; force?: boolean }) => {
@@ -1284,8 +1282,7 @@ app.whenReady().then(async () => {
       // clicking would then only activate the app, never focus the originating node.
       retainUntilDismissed(n)
       return await new Promise<'shown' | 'failed'>((resolve) => {
-        // macOS reports delivery async; if neither event lands quickly, assume shown
-        // (Windows/Linux never emit 'failed').
+        // Delivery is asynchronous. If neither event lands quickly, assume it was shown.
         const timer = setTimeout(() => resolve('shown'), 1500)
         n.on('show', () => {
           clearTimeout(timer)
@@ -1335,7 +1332,7 @@ app.whenReady().then(async () => {
   ipcMain.handle(IPC.pairingProbeSsh, () => pairingService.probeSsh())
   // Open the Windows optional-features surface where OpenSSH Server can be enabled. This is a
   // main-side constant and never accepts a renderer-provided URL.
-  ipcMain.handle(IPC.pairingOpenRemoteLoginSettings, () => {
+  ipcMain.handle(IPC.pairingOpenRemoteAccessSettings, () => {
     void shell.openExternal('ms-settings:optionalfeatures')
   })
   ipcMain.handle(IPC.pairingListDevices, () => pairingService.listDevices())

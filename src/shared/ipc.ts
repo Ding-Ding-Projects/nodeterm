@@ -509,7 +509,7 @@ export const IPC = {
   pairingStop: 'pairing:stop',
   pairingDone: 'pairing:done',
   pairingProbeSsh: 'pairing:probe-ssh',
-  pairingOpenRemoteLoginSettings: 'pairing:open-remote-login-settings',
+  pairingOpenRemoteAccessSettings: 'pairing:open-remote-access-settings',
   pairingListDevices: 'pairing:listDevices',
   pairingRevokeDevice: 'pairing:revokeDevice',
   // Dictation (desktop/server). speechProgress is a main/server → renderer broadcast of

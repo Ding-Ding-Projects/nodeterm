@@ -1884,7 +1884,7 @@ export interface NotifyPayload {
   body: string
   /** Node to focus/center when the notification is clicked. */
   nodeId: string
-  /** Show even when the window is focused (used to trigger the macOS permission prompt). */
+  /** Show even when the window is focused. */
   force?: boolean
 }
 
@@ -2700,13 +2700,10 @@ export interface PairingApi {
   stop(): Promise<void>
   /** Fires once when pairing finishes (ok=true paired, ok=false timeout). Returns unsubscribe. */
   onDone(cb: (result: { ok: boolean; relay?: 'ok' | 'off' | 'failed' | 'dev' }) => void): () => void
-  /** Live re-probe of 127.0.0.1:22, so the Remote Login warning can clear the moment the user
-   *  flips the toggle in System Settings (polled by the UI only while the warning is showing). */
+  /** Live re-probe of 127.0.0.1:22 so the OpenSSH Server warning can clear after activation. */
   probeSsh(): Promise<boolean>
-  /** Open System Settings → General → Sharing (Remote Login). The deep link is a main-side
-   *  constant — x-apple.* schemes never pass shellOpenExternal's http(s) allowlist. macOS-only;
-   *  a no-op elsewhere. */
-  openRemoteLoginSettings(): Promise<void>
+  /** Open the Windows Optional Features settings where OpenSSH Server can be enabled. */
+  openRemoteAccessSettings(): Promise<void>
   /** List paired devices from ~/.nodeterm/agent.json (never includes the token). */
   listDevices(): Promise<PairedDevice[]>
   /**
@@ -2847,10 +2844,9 @@ export interface NodeTerminalApi {
   getPathForFile(file: File): string
   /** Absolute writable base dir (Electron userData) for app-managed files like default worktrees. */
   userDataDir(): Promise<string>
-  /** Show an OS notification (main suppresses it if the window is focused). 'failed' =
-   *  the OS rejected it (e.g. macOS permission denied) — surface it, don't ignore it. */
+  /** Show an OS notification. `failed` means the operating system rejected it. */
   notify(payload: NotifyPayload): Promise<'shown' | 'failed' | 'skipped'>
-  /** Open the OS notification settings pane (macOS; no-op elsewhere) to re-grant permission. */
+  /** Open the Windows notification settings pane to re-grant permission. */
   openNotificationSettings(): Promise<void>
   /** Fires when a notification is clicked, asking the renderer to focus a node. Returns unsubscribe. */
   onFocusNode(listener: (nodeId: string) => void): () => void

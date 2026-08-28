@@ -3,7 +3,7 @@ import { toDataURL } from 'qrcode'
 
 export type PairingPhase = 'idle' | 'waiting' | 'paired' | 'timeout'
 
-/** How often the Remote Login warning re-probes sshd while it is showing. */
+/** How often the OpenSSH Server warning re-probes sshd while it is showing. */
 const SSH_RECHECK_MS = 2000
 
 /**
@@ -44,8 +44,8 @@ export function usePhonePairing(onPaired?: () => void): {
   // Track whether a pairing listener is currently running so unmount can stop it.
   const runningRef = useRef(false)
 
-  // Live re-check while the Remote Login warning is visible: the initial probe runs once at
-  // pairing start, so without this the warning could never clear — the user enables Remote Login
+  // Live re-check while the OpenSSH Server warning is visible: the initial probe runs once at
+  // pairing start, so without this the warning could never clear after the user enables the server
   // in System Settings and nothing changes on screen. Poll only in that exact state (waiting +
   // unreachable); the interval dies with the warning.
   useEffect(() => {

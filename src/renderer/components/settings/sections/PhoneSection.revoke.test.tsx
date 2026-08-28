@@ -49,7 +49,7 @@ function stubBridge(result: DeviceRevokeResult | Error): void {
       stop: vi.fn(async () => undefined),
       onDone: vi.fn(() => () => undefined),
       probeSsh: vi.fn(async () => true),
-      openRemoteLoginSettings: vi.fn(),
+      openRemoteAccessSettings: vi.fn(),
       listDevices: vi.fn(async () => devices),
       revokeDevice
     },
