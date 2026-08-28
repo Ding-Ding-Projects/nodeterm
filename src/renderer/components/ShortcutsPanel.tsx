@@ -6,7 +6,6 @@ import { isBrowserRuntime } from '../bridge/runtime'
 import { commandKeys, dictationBinding } from '../lib/keybindingOverrides'
 import { useSettings } from '../state/settings'
 
-const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
 import { keyLabel } from '@shared/platform-utils'
 
 export interface ShortcutsPanelProps {
@@ -41,7 +40,7 @@ function buildSections(dictationChord: string): { title: string; rows: Row[] }[]
       ? []
       : [
           {
-            keys: shortcutKeyParts(dictationChord, isMac),
+            keys: shortcutKeyParts(dictationChord, false),
             label: isHoldChord(dictationChord) ? 'Dictate (hold)' : 'Dictate'
           }
         ]

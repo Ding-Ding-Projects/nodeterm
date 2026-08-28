@@ -5,12 +5,10 @@ import { useSettings } from '@renderer/state/settings'
 import { usePhonePairing } from './settings/usePhonePairing'
 import { IOS_APP_STORE_URL } from '@renderer/lib/links'
 
-const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
-
 /**
  * Quick phone pairing, anchored under the top-right phone button: opens straight into a live QR
  * (no "Start pairing" click — that's the whole point of the shortcut), with the standing
- * "Reach this Mac from anywhere" toggle below and a link into the full Phone settings.
+ * "Reach this machine from anywhere" toggle below and a link into the full Phone settings.
  * Closing the popover stops an unfinished pairing (the shared hook's unmount rule).
  */
 export function PhonePairPopover({
@@ -70,26 +68,12 @@ export function PhonePairPopover({
             // key the phone can never use. The live probe flips sshOpen and the QR appears.
             <div className="phone-pair__warn">
               <strong>Remote Login</strong> is off — the pairing QR appears the moment it is on
-              {isMac ? (
-                <>
-                  {' '}
-                  (
-                  <button
-                    className="phone-pair__link"
-                    onClick={() => void window.nodeTerminal.pairing.openRemoteLoginSettings()}
-                  >
-                    System Settings
-                  </button>
-                  &nbsp;— watching).
-                </>
-              ) : (
-                '.'
-              )}
+              .
             </div>
           ) : (
             <>
               <img src={qr} width={208} height={208} alt="Pairing QR code" className="phone-pair__qr" />
-              <div className="phone-pair__hint">Scan with the nodeterm iOS app · waiting (10 min)</div>
+              <div className="phone-pair__hint">Scan with the nodeterm phone app · waiting (10 min)</div>
               {relayPlan === 'dev' ? (
                 <div className="phone-pair__warn">
                   Dev build: the relay is off regardless of the toggle, so this code pairs
@@ -97,7 +81,7 @@ export function PhonePairPopover({
                 </div>
               ) : !phoneAccessEnabled ? (
                 <div className="phone-pair__warn">
-                  LAN-only code: the phone will reach this Mac only on this network. Flip the
+                  LAN-only code: the phone will reach this machine only on this network. Flip the
                   toggle below first to also connect from anywhere — the QR refreshes by itself.
                 </div>
               ) : null}
@@ -138,13 +122,13 @@ export function PhonePairPopover({
 
         <div className="phone-pair__row">
           <div className="phone-pair__row-text">
-            <div className="phone-pair__row-title">Reach this Mac from anywhere</div>
+            <div className="phone-pair__row-title">Reach this machine from anywhere</div>
             <div className="phone-pair__row-sub">E2E encrypted over the relay — not just your LAN.</div>
           </div>
           <Switch
             checked={phoneAccessEnabled}
             onChange={togglePhoneAccess}
-            ariaLabel="Reach this Mac from anywhere"
+            ariaLabel="Reach this machine from anywhere"
           />
         </div>
 
@@ -152,7 +136,7 @@ export function PhonePairPopover({
           className="phone-pair__link phone-pair__footer"
           onClick={() => window.nodeTerminal.shell.openExternal(IOS_APP_STORE_URL)}
         >
-          Get the nodeterm iOS app ↗
+          Get the nodeterm phone app ↗
         </button>
         <button className="phone-pair__link phone-pair__footer" onClick={onOpenSettings}>
           All phone settings…

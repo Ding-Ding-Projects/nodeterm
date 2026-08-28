@@ -13,7 +13,6 @@ import { SegmentedPill } from '@renderer/ui/SegmentedPill'
 import { Button } from '@renderer/ui/Button'
 import type { SettingsSectionId } from '../nav'
 
-const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
 
 const ROWS = {
   engine: {
@@ -243,8 +242,8 @@ export function SpeechSection({
             dictationChord === ''
               ? 'Currently disabled.'
               : isHoldChord(dictationChord)
-                ? `Currently hold-to-talk: hold ${formatShortcut(dictationChord, isMac)}.`
-                : `Currently toggle: press ${formatShortcut(dictationChord, isMac)}.`
+                ? `Currently hold-to-talk: hold ${formatShortcut(dictationChord, false)}.`
+                : `Currently toggle: press ${formatShortcut(dictationChord, false)}.`
           }
           control={
             <Button variant="ghost" onClick={() => onNavigate('shortcuts')}>

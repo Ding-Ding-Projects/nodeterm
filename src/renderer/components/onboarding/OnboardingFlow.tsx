@@ -11,9 +11,9 @@ import {
   dictationBinding,
   effectiveBindings
 } from '../../lib/keybindingOverrides'
-import { IOS_APP_STORE_URL } from '../../lib/links'
 import { useSettings } from '../../state/settings'
 import { useEntitlement } from '../../state/entitlement'
+import { IOS_APP_STORE_URL } from '../../lib/links'
 import { Switch } from '@renderer/ui/Switch'
 import { AgentIcon } from '../../lib/agentIcons'
 import {
@@ -24,12 +24,9 @@ import {
   SceneDictation,
   SceneKanban,
   SceneKeepAwake,
-  SceneNotch,
   SceneNotify,
   ScenePhone
 } from './scenes'
-
-const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
 
 /** `large-v3-turbo` -> `"Large V3 Turbo"` (same rendering as Settings → Speech). */
 function modelLabel(id: string): string {
@@ -53,7 +50,6 @@ const STEPS = [
   'kanban',
   'notify',
   'keepawake',
-  ...(isMac ? (['notch'] as const) : []),
   'phone'
 ] as const
 type StepId = (typeof STEPS)[number]
@@ -132,7 +128,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
     if (STEPS[step] !== 'kanban') return
     const onKey = (e: KeyboardEvent) => {
       // Read at event time, not at effect setup: a remap mid-tour takes effect immediately.
-      if (effectiveBindings('view.kanbanToggle').some((s) => matchesShortcut(e, s, isMac))) {
+      if (effectiveBindings('view.kanbanToggle').some((s) => matchesShortcut(e, s, false))) {
         e.preventDefault()
         e.stopPropagation()
         setKanbanTried(true)
@@ -177,7 +173,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
   // off" on a screen whose whole job is to introduce dictation would be a worse lie than the
   // chord being stale for the one user who re-opened the tour after unbinding it.
   const dictationChord = useSettings(() => dictationBinding()) || DEFAULT_SETTINGS.speech.shortcut
-  const dictKeys = shortcutKeyParts(dictationChord, isMac)
+  const dictKeys = shortcutKeyParts(dictationChord, false)
   const dictHold = isHoldChord(dictationChord)
   // Both read through the SAME `settings` subscription above (`useSettings((s) => s.settings)`
   // re-renders this component on every settings write, a remap included), so these plain calls
@@ -238,13 +234,12 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
         <div className="onb-card">
           <div className="onb-scene">
             {stepId === 'agents' && <SceneAgents agentId={agentId} label={agent.label} color={agent.color} />}
-            {stepId === 'dictation' && <SceneDictation keys={dictKeys.map((k) => keyLabel(k, isMac))} hold={dictHold} />}
+            {stepId === 'dictation' && <SceneDictation keys={dictKeys.map((k) => keyLabel(k, false))} hold={dictHold} />}
             {stepId === 'kanban' && <SceneKanban pulseKey={kanbanPulse} />}
             {stepId === 'notify' && <SceneNotify />}
             {stepId === 'keepawake' && (
               <SceneKeepAwake agentId={agentId} label={agent.label} color={agent.color} />
             )}
-            {stepId === 'notch' && <SceneNotch />}
             {stepId === 'phone' && <ScenePhone />}
           </div>
           <div className="onb-pane">
@@ -289,7 +284,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                   {dictHold ? 'Hold' : 'Press'}{' '}
                   {dictKeys.map((k, i) => (
                     <kbd key={i} className="kbd">
-                      {keyLabel(k, isMac)}
+                      {keyLabel(k, false)}
                     </kbd>
                   ))}{' '}
                   anywhere to dictate — on-device Whisper turns speech into text. Nothing is
@@ -430,33 +425,6 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                   <span>Keep awake while agents work</span>
                 </div>
                 <div className="onb-fineprint">Change any time in Settings → Behavior.</div>
-              </>
-            )}
-
-            {stepId === 'notch' && (
-              <>
-                <h2>Your agents, inside the notch</h2>
-                <p>
-                  On a MacBook, nodeterm can grow the notch into a small black capsule: a walking
-                  mascot for every agent that's working, a red dot when one needs you, and a green
-                  blob when one has finished and you haven't looked yet.
-                </p>
-                <p>
-                  Point at it and it opens a mini panel of your live sessions — hit <strong>Go</strong>{' '}
-                  and nodeterm comes forward with that node centred.
-                </p>
-                <div className="onb-toggle-row">
-                  <Switch
-                    checked={settings.notchHud}
-                    ariaLabel="Notch HUD"
-                    onChange={(on) => update({ notchHud: on })}
-                  />
-                  <span>Show the notch HUD</span>
-                </div>
-                <div className="onb-fineprint">
-                  Fine-tune it any time in Settings → Interface → Notch — including the notch width,
-                  which is what makes the capsule sit flush on your Mac.
-                </div>
               </>
             )}
 

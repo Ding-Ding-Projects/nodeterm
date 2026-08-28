@@ -35,9 +35,6 @@ function formatPairedAt(ms: number): string {
   })
 }
 
-/** The pairing host is this machine, so the renderer's own UA answers "is this a Mac?". */
-const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
-
 export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Element {
   const [devices, setDevices] = useState<PairedDevice[]>([])
   const [pendingRevoke, setPendingRevoke] = useState<PairedDevice | null>(null)
@@ -142,7 +139,7 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
     <SettingsSection
       id="phone"
       title="Phone"
-      description="Pair the nodeterm iOS app so it can connect to this machine over your local network — no terminal commands needed."
+      description="Pair the nodeterm phone app so it can connect to this machine over your local network, with no terminal commands needed."
       isActive={isActive}
       searchEntries={ENTRIES}
     >
@@ -152,7 +149,7 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
             <div className="min-w-0">
               <h4 className="text-[13px] font-medium text-text">Remote access from your phone</h4>
               <p className="mt-1 text-sm text-muted">
-                Reach this Mac from anywhere — not just your local network — end-to-end encrypted
+                Reach this machine from anywhere, not just your local network, end-to-end encrypted
                 over the relay. Your paired phone connects through the relay; the connection is
                 verified with a code the first time.
               </p>
@@ -170,7 +167,7 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
         <div className="space-y-4">
           <h4 className="text-[13px] font-medium text-text">Pair phone</h4>
           <p className="text-sm text-muted">
-            Pair the nodeterm iOS app: scan this QR with your phone. Your phone generates its own
+            Pair the nodeterm phone app: scan this QR with your phone. Your phone generates its own
             key on-device — nothing secret leaves this machine except a single-use pairing token.
           </p>
           <p className="text-sm text-muted">
@@ -179,7 +176,7 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
               className="cursor-pointer underline hover:text-text"
               onClick={() => window.nodeTerminal.shell.openExternal(IOS_APP_STORE_URL)}
             >
-              Get nodeterm for iOS on the App Store
+              Get the nodeterm phone app
             </button>
           </p>
 
@@ -207,15 +204,11 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
                   <p className="text-sm" style={{ color: '#ff9f0a' }}>
                     <strong>Remote Login</strong> is off, so your phone wouldn&apos;t be able to
                     connect after pairing. Turn it on — the QR appears here the moment it is
-                    {isMac ? ' (watching, no need to restart pairing).' : '.'}
+                    .
                   </p>
-                  {isMac ? (
-                    <Button
-                      onClick={() => void window.nodeTerminal.pairing.openRemoteLoginSettings()}
-                    >
-                      Open System Settings
-                    </Button>
-                  ) : null}
+                  <Button onClick={() => void window.nodeTerminal.pairing.openRemoteLoginSettings()}>
+                    Open remote-access settings
+                  </Button>
                 </div>
               ) : (
                 <>
@@ -330,7 +323,7 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
           // Both legs, and the timing of the one that is not instant. "If" rather than a flat
           // claim: a free-tier desktop has no Pro of ours on that phone to take back, and this
           // dialog cannot tell — the server leg reports that only after the fact ('skipped').
-          message={`Revoke “${pendingRevoke.name}”? Its key is removed from this machine and it will no longer be able to connect. If its Pro comes from this Mac’s license, that is revoked too — the phone loses Pro within 7 days.`}
+          message={`Revoke “${pendingRevoke.name}”? Its key is removed from this machine and it will no longer be able to connect. If its Pro comes from this desktop license, that is revoked too, and the phone loses Pro within 7 days.`}
           confirmLabel="Revoke"
           onConfirm={() => void revokeDevice(pendingRevoke)}
           onCancel={() => setPendingRevoke(null)}

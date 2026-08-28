@@ -6,7 +6,6 @@ export type SettingsSectionId =
   | 'shell'
   | 'behavior'
   | 'appearance'
-  | 'notch'
   | 'phone'
   | 'speech'
   | 'shortcuts'
@@ -39,8 +38,6 @@ export interface ProjectNavItem {
 export interface SettingsSectionRef {
   id: SettingsSectionId
   title: string
-  /** Only meaningful on macOS (the notch capsule) — hidden elsewhere by `visibleSettingsGroups`. */
-  macOnly?: boolean
   /** Project-section rows only (`project-${string}` ids): the project's own color/icon, so the
    *  sidebar can render its `ProjectGlyph` beside the title instead of the generic folder glyph
    *  every project section used to share. Absent on every static section. */
@@ -85,7 +82,6 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     title: 'Interface',
     sections: [
       { id: 'appearance', title: 'Appearance' },
-      { id: 'notch', title: 'Notch', macOnly: true },
       { id: 'notifications', title: 'Notifications' },
       { id: 'speech', title: 'Speech' },
       { id: 'shortcuts', title: 'Keyboard Shortcuts' }
@@ -125,11 +121,8 @@ export function allSectionIds(): SettingsSectionId[] {
  * entirely off macOS (an empty group would be dropped too, though none exists today). Pure — the
  * caller passes the platform so this stays testable.
  */
-export function visibleSettingsGroups(isMac: boolean): SettingsGroup[] {
-  if (isMac) return SETTINGS_GROUPS
-  return SETTINGS_GROUPS.map((g) => ({ ...g, sections: g.sections.filter((s) => !s.macOnly) })).filter(
-    (g) => g.sections.length > 0
-  )
+export function visibleSettingsGroups(_isMac: boolean): SettingsGroup[] {
+  return SETTINGS_GROUPS
 }
 
 /**

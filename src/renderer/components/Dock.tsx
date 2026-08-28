@@ -10,7 +10,6 @@ import { useProjects } from '../state/projects'
 import { accountsForProject, sshAccountsHint } from '../state/workspace'
 import { CONTENT_ADD_ITEMS, contentAddItemsToDockRows, type AddHandlers } from '../lib/addMenuSpec'
 
-const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
 
 interface DockProps {
   dirty: boolean
@@ -334,8 +333,8 @@ export function Dock({
                 dictationShortcut === ''
                 ? 'Dictate'
                 : isHoldChord(dictationShortcut)
-                  ? `Dictate (hold ${formatShortcut(dictationShortcut, isMac)})`
-                  : `Dictate (${formatShortcut(dictationShortcut, isMac)})`
+                  ? `Dictate (hold ${formatShortcut(dictationShortcut, false)})`
+                  : `Dictate (${formatShortcut(dictationShortcut, false)})`
           }
           onClick={onDictate}
         >
