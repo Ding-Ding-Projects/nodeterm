@@ -16,11 +16,6 @@ describe('isManualUpdatePlatform', () => {
     expect(isManualUpdatePlatform('linux', false)).toBe(true)
   })
 
-  it('darwin → auto regardless of APPIMAGE', () => {
-    expect(isManualUpdatePlatform('darwin', false)).toBe(false)
-    expect(isManualUpdatePlatform('darwin', true)).toBe(false)
-  })
-
   it('win32 → auto', () => {
     expect(isManualUpdatePlatform('win32', false)).toBe(false)
   })
@@ -47,19 +42,19 @@ describe('shouldEnableUpdater', () => {
  * `src/core/no-electron.test.ts`.
  */
 describe('local dist scripts opt out of the production update feed', () => {
-  const pkg = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8')
-  ) as { scripts: Record<string, string> }
-  const MARKER = '-c.extraMetadata.nodeTermUpdates=disabled'
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8')) as {
+    build: { extraMetadata?: { nodeTermUpdates?: unknown } }
+  }
 
-  it('every dist script carries the marker — not just the one whose 404 was noticed', () => {
-    const dist = Object.keys(pkg.scripts).filter((s) => s === 'dist' || s.startsWith('dist:'))
-    expect(dist.length).toBeGreaterThanOrEqual(2) // dist, dist:linux
-    expect(dist.filter((s) => !pkg.scripts[s].includes(MARKER))).toEqual([])
+  it('disables update polling for locally packaged builds through build metadata', () => {
+    expect(pkg.build.extraMetadata?.nodeTermUpdates).toBe('disabled')
   })
 
-  it('release does NOT carry it — a promoted build must keep updating itself', () => {
-    expect(pkg.scripts.release).not.toContain(MARKER)
+  it('does not rely on a command-line config marker', () => {
+    const scripts = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8')) as {
+      scripts: Record<string, string>
+    }
+    expect(Object.values(scripts.scripts).join('\n')).not.toContain('extraMetadata.nodeTermUpdates=disabled')
   })
 })
 

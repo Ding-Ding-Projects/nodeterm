@@ -6,7 +6,7 @@
  * the `APPIMAGE` env var, which quitAndInstall re-execs). A .deb / .rpm install has no
  * APPIMAGE, so quitAndInstall throws "APPIMAGE env is not defined" AND every 6h check would
  * still download the full ~231MB AppImage for nothing. For that case we degrade to a
- * manual-download link. macOS (dmg/zip) and Windows self-install as before.
+ * manual-download link. The Windows desktop package uses the native Squirrel.Windows updater.
  */
 import type { UpdateInfo } from './types'
 
