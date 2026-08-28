@@ -22,6 +22,35 @@ export default defineConfig({
       // NODETERM_SSH_DOCKER is set, so a machine without Docker still runs a green suite.
       'test/ssh-docker/**/*.test.ts'
     ],
+    // These suites exercise a POSIX shell, a POSIX Unix socket, or a real tmux installation.
+    // Windows has separate session-host, ConPTY, and Windows shell-profile coverage; collecting
+    // the POSIX harnesses here only creates false failures when `sh`, tmux, or Unix sockets are
+    // unavailable. The POSIX suites remain active on Linux and macOS CI.
+    exclude: process.platform === 'win32'
+      ? [
+          '**/*.realsh.test.ts',
+          '**/*.realtmux.test.ts',
+          '**/*.realtty.test.ts',
+          'src/core/codex-launcher-sh.test.ts',
+          'src/core/context-link.cli.test.ts',
+          'src/core/codex-thread-identity-sh.test.ts',
+          'src/core/agents/hooks/opencode.test.ts',
+          'src/core/codex-session-name.test.ts',
+          'src/core/pty-background-write.test.ts',
+          'src/core/pty-shadow.test.ts',
+          'src/core/pty-single-user.test.ts',
+          'src/core/pty-spawn-preflight.test.ts',
+          'src/core/pty-proc-timeout.test.ts',
+          'src/core/pty-bundled-tmux.test.ts',
+          'src/core/session-memory-remote.test.ts',
+          'src/core/tmux-*.test.ts',
+          'src/main/canvas-control-shim.test.ts',
+          'src/main/canvas-control-shim.failover.test.ts',
+          'src/main/codex-relay-daemon.test.ts',
+          'src/main/remote-ssh/remote-hooks.test.ts',
+          'src/main/remote-ssh/ssh-askpass.test.ts'
+        ]
+      : [],
     environment: 'node',
     // Issue #160: with the default (one worker per core), a 10-core Mac runs ~10 fs-heavy suites
     // at once and transient fd exhaustion (EMFILE) turns into silent test flakiness — probes like
@@ -29,7 +58,10 @@ export default defineConfig({
     // reproduce alone and vanish with --no-file-parallelism. Half the cores keeps wall-clock
     // close (the suite is fs/IO-bound, not CPU-bound) while halving peak fd pressure. CI's 2-core
     // runners resolve to 1 worker, which is what they effectively ran anyway.
-    maxWorkers: '50%'
+    // Windows native filesystem and process fixtures share global platform and host state. Run
+    // them serially so one fixture cannot invalidate another fixture's temporary socket or host.
+    fileParallelism: process.platform !== 'win32',
+    maxWorkers: process.platform === 'win32' ? 1 : '50%'
   },
   resolve: {
     alias: {
