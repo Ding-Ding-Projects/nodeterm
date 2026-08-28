@@ -1,16 +1,12 @@
 name: Windows package smoke
 
-# Manual-only packaging smoke test for the Windows target (groundwork from #276 / #300 stack):
-# proves that `electron-builder --win` produces an NSIS installer + zip from a clean checkout on
-# windows-latest, whose runner image already ships the Visual Studio Build Tools + Python that
-# node-pty/smart-whisper compilation needs.
+# Manual-only packaging smoke test for the Windows target:
+# proves that the supported Squirrel.Windows package is produced from a clean checkout on
+# windows-latest, whose runner image supplies the native build prerequisites.
 #
 # BUILD ONLY — this workflow must NEVER publish. `dist:win` passes `--publish never`, nothing
 # here uploads to the update feed or creates a release, and the produced installer is unsigned.
-# The session-host phase (#305) has merged and release.yml's `release-win` job now ships this
-# same build as an UNSIGNED BETA on every version tag (#454). Still deliberate follow-ups:
-# code signing, and — gated on it — the auto-update leg (latest.yml on nodeterm.dev/updates);
-# an unsigned auto-update is a trust downgrade, so the beta ships with its updater disabled.
+# The installer is intentionally unsigned. Automatic updates are not claimed by this smoke test.
 on:
   workflow_dispatch:
 
@@ -21,29 +17,31 @@ jobs:
   package-win:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: .nvmrc
           cache: 'npm'
 
-      # postinstall patches node-pty and rebuilds node-pty + smart-whisper against Electron's
-      # ABI — the same install the quality-windows CI job already proves green on this image.
       - name: Install dependencies
         run: npm ci
 
-      # make-icon (build/icon.png + build/icon.ico) + electron-vite build + electron-builder
-      # --win --x64 --publish never. Unsigned by design: no signing secrets are exposed here.
-      - name: Package (NSIS installer + zip, never published)
+      - name: Package (unsigned Squirrel.Windows, never published)
         run: npm run dist:win
 
-      # The artifact names are the contract: a silent target/artifactName regression should
-      # fail here, not on a release day.
       - name: Verify expected artifacts
-        shell: bash
+        shell: pwsh
         run: |
-          ls -la dist
-          version=$(node -p "require('./package.json').version")
-          test -f "dist/nodeterm-Setup-${version}.exe" || { echo "::error::NSIS installer missing"; exit 1; }
-          ls dist/nodeterm-*-win.zip >/dev/null 2>&1 || { echo "::error::win zip missing"; exit 1; }
+          $dir = Join-Path $env:GITHUB_WORKSPACE 'dist/squirrel-windows'
+          $setup = @(Get-ChildItem -LiteralPath $dir -Filter '*-Setup.exe' -File)
+          $full = @(Get-ChildItem -LiteralPath $dir -Filter '*-full.nupkg' -File)
+          $releases = Join-Path $dir 'RELEASES'
+          if ($setup.Count -ne 1) { throw 'Expected exactly one Squirrel.Windows Setup.exe.' }
+          if ($full.Count -ne 1) { throw 'Expected exactly one full Squirrel.Windows nupkg.' }
+          if (-not (Test-Path -LiteralPath $releases)) { throw 'Expected Squirrel.Windows RELEASES.' }
+          $index = Get-Content -LiteralPath $releases -Raw
+          if ($index -notmatch [regex]::Escape($full[0].Name)) { throw 'RELEASES does not reference the full package.' }
+          if ((Get-AuthenticodeSignature -LiteralPath $setup[0].FullName).Status -ne 'NotSigned') {
+            throw 'The Windows installer must remain unsigned.'
+          }
