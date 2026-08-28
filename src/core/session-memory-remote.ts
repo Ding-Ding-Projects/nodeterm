@@ -63,8 +63,7 @@ export function remoteSessionMemoryCommand(): string {
       `echo "${SOCKRC} $?"`
     ].join('\n')
   return [
-    // tmux may live off the exec channel's PATH (Homebrew on macOS — issue #449, same append as
-    // remoteTmuxPathPrologue). Without this every socket answers 127 and the sweep reports
+    // tmux may live off the exec channel's PATH. Without this every socket answers 127 and the sweep reports
     // ok:false ("Could not measure") on a host whose sessions are perfectly readable.
     `PATH="$PATH:${REMOTE_TMUX_PATH_DIRS}"`,
     `echo '${MEM}'`,

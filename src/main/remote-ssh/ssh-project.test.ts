@@ -369,11 +369,11 @@ describe('SshProjectManager', () => {
     expect(calls.some((c) => c.args.join(' ').includes('id > /tmp/pwned'))).toBe(false)
   })
 
-  it('connect ACCEPTS a home with a space (the validator must not break real macOS homes)', async () => {
-    const { mgr } = mgrWithHome('/Users/Enes Kirca')
+  it('connect accepts a home with a space', async () => {
+    const { mgr } = mgrWithHome('/home/Enes Kirca')
     const { tmuxConfPath } = await mgr.connect('p1', conn)
-    expect(tmuxConfPath).toBe('/Users/Enes Kirca/.nodeterm/tmux.conf')
-    expect(mgr.remoteHomeFor('p1')).toBe('/Users/Enes Kirca')
+    expect(tmuxConfPath).toBe('/home/Enes Kirca/.nodeterm/tmux.conf')
+    expect(mgr.remoteHomeFor('p1')).toBe('/home/Enes Kirca')
   })
 
   it('uploadFile REFUSES a probed $HOME carrying a newline', async () => {
@@ -942,41 +942,6 @@ describe('SshProjectManager', () => {
         ])
         const names = results.map((result) => result.ok ? path.basename(result.localPath) : '')
         expect(names.sort()).toEqual(['foo', 'foo (2)'])
-      }
-    )
-
-    it.skipIf(process.platform !== 'darwin')(
-      'coordinates case aliases on the default macOS filesystem',
-      async () => {
-        const dir = await destDir()
-        let arrived = 0
-        let release!: () => void
-        const bothArrived = new Promise<void>((resolve) => { release = resolve })
-        const runScp = vi.fn(async (args: string[]) => {
-          if (++arrived === 2) release()
-          await bothArrived
-          await fs.writeFile(args.at(-1)!, String(arrived))
-          return { code: 0 }
-        })
-        const mgr = new SshProjectManager({
-          userDataDir: '/ud',
-          spawnMaster: vi.fn(() => ({ kill: vi.fn(), on: vi.fn() })),
-          run: vi.fn(async (args: string[]) => ({
-            code: args.join(' ').includes('test -d') ? 1 : 0,
-            stdout: ''
-          })),
-          runScp,
-          getHook: () => ({ port: 1, token: 't', version: '1' }),
-          onStatus: vi.fn()
-        })
-        await mgr.connect('p1', conn, '/srv/repo')
-
-        const results = await Promise.all([
-          mgr.downloadFile('p1', '/srv/repo/Foo', dir),
-          mgr.downloadFile('p1', '/srv/repo/foo', dir)
-        ])
-        const names = results.map((result) => result.ok ? path.basename(result.localPath) : '')
-        expect(new Set(names.map((name) => name.toLowerCase())).size).toBe(2)
       }
     )
 

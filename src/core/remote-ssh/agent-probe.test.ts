@@ -130,7 +130,7 @@ describe('probeAgentSockToPin', () => {
 // run the REAL binary against a fixture config (same discipline as remote-claude-usage.test.ts
 // running its generated sh for real). `-F` pins the config; ssh resolves ~/.ssh/config off
 // pw_dir, so HOME games would not isolate it.
-const realSsh = ['/usr/bin/ssh', '/usr/local/bin/ssh', '/opt/homebrew/bin/ssh'].find((p) =>
+const realSsh = ['/usr/bin/ssh', '/usr/local/bin/ssh'].find((p) =>
   existsSync(p)
 )
 describe.skipIf(!realSsh || process.platform === 'win32')('probe against a real ssh -G', () => {

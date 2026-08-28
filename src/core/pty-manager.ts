@@ -2445,8 +2445,7 @@ export class PtyManager {
     delete env.TMUX
     delete env.TMUX_PANE
 
-    // A GUI app launched from Finder/Dock inherits only a minimal PATH, so spawned terminals
-    // couldn't find tools in /usr/local/bin, Homebrew, ~/.local/bin, nvm, bun, etc. (the classic
+    // A GUI app can inherit only a minimal PATH, so spawned terminals may miss user-installed tools.
     // `command not found: claude`). Replace PATH with the user's real login-shell PATH so every
     // terminal — and any agent CLI it launches — resolves exactly what a normal terminal would.
     // Reads the cache filled by the async probe: create() awaits it, and the detached/host

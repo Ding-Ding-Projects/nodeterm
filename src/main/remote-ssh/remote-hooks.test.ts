@@ -323,9 +323,9 @@ describe('RemoteHooks.ensureFullscreenTui — the fourth $(dirname …) site', (
   it('quotes the substitution, so a home with a space gets ONE mkdir argument', async () => {
     // Unquoted, `$(dirname '/Users/Enes Kirca/.claude/settings.json')` word-splits into two mkdir
     // args (measured ARGC=2): junk directories, then the quoted `cat >` fails and the catch
-    // swallows it — fullscreen-TUI silently never written for any macOS user with a spaced home.
+    // swallows it, so the fullscreen TUI setting is never written for a spaced home.
     const { rh, conn: c, runs } = harness({ responses: { 'settings.json': '{}' } })
-    await rh.ensureFullscreenTui(c, '/s.sock', '/Users/Enes Kirca')
+    await rh.ensureFullscreenTui(c, '/s.sock', '/home/Enes Kirca')
     const write = runs.map((r) => r.args[r.args.length - 1]).find((l) => l.includes('mkdir -p'))
     expect(write).toBeTruthy()
     expect(write).toContain(`mkdir -p "$(dirname '/Users/Enes Kirca/.claude/settings.json')"`)

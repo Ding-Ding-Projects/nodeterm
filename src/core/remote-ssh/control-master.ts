@@ -28,8 +28,7 @@ export const RMT_TMUX_SOCKET = 'nodeterm-rmt'
 /**
  * Every remote command that invokes `tmux` goes through this: the PATH-append prologue
  * (`remoteTmuxPathPrologue`, issue #449) plus the command. Without it a bare `tmux` dies with
- * `command not found` on any host whose ssh exec-channel PATH misses the install dir — most
- * visibly macOS with Homebrew's tmux in `/opt/homebrew/bin`. The prologue is one assignment, so
+ * `command not found` on any host whose ssh exec-channel PATH misses the install directory. The prologue is one assignment, so
  * the command's own exit code (what `probeSaysAbsent` and every caller reads) is unchanged.
  */
 function tmuxCmd(body: string): string {
@@ -37,11 +36,8 @@ function tmuxCmd(body: string): string {
 }
 
 /**
- * Per-project ControlMaster socket path. Deliberately SHORT and space-free. The macOS userData dir
- * (`~/Library/Application Support/<app>`) cannot host the socket: it both exceeds the unix-domain
- * socket `sun_path` limit (104 bytes — and ssh appends a ~17-char temp suffix while binding the
- * master, pushing a ~102-char path over) AND contains a space, which ssh's `-o ControlPath=` parser
- * rejects ("extra arguments at end of line"). Either makes the master silently fail to bind. So we
+ * Per-project ControlMaster socket path. Deliberately short and space-free so the SSH bind suffix
+ * stays within Unix-domain socket limits and the `-o ControlPath=` parser receives one argument. We
  * hash the project id to a fixed length under a short home dir (`~/.nodeterm/ssh-cm/`) — the master
  * socket then always binds, regardless of project id or platform userData location.
  */
@@ -756,7 +752,7 @@ export function remoteTmuxPtyArgs(
 const REMOTE_TMUX_MISSING_LINES = [
   'nodeterm: tmux was not found on this host.',
   'nodeterm runs remote terminals inside tmux so they survive disconnects, app restarts and project switches.',
-  'Install tmux on the host (brew install tmux / apt install tmux / dnf install tmux) and reopen this terminal.',
+  'Install tmux on the host (apt install tmux / dnf install tmux) and reopen this terminal.',
   'Starting a plain shell instead - it will NOT persist when this terminal closes.'
 ]
 

@@ -836,7 +836,7 @@ export class RemoteHooks {
         // (`/Users/Enes Kirca`) word-splits the substitution into two mkdir args — measured
         // ARGC=2 — so junk directories are created, the correctly-quoted `cat >` then fails, and
         // the catch below swallows it. Symptom: fullscreen-TUI silently never written for any
-        // macOS user whose home has a space in it.
+        // user whose home path contains a space.
         childArgs(conn, controlPath, `mkdir -p "$(dirname ${posixQuote(config)})" && cat > ${posixQuote(config)}`),
         JSON.stringify(next, null, 2)
       )

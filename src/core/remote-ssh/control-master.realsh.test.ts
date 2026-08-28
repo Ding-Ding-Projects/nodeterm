@@ -194,7 +194,7 @@ describe('REAL sh: the four vectors that survived the first fix', () => {
 
 /**
  * Issue #449 — `zsh:1: command not found: tmux` on an SSH host whose exec-channel PATH misses the
- * tmux install dir (Homebrew on macOS being the field report). Two behaviors, both executed under
+ * tmux install directory. Two behaviors, both executed under
  * a real /bin/sh because both are generated shell:
  *  - the PATH append finds a tmux that only lives in one of the known dirs;
  *  - a host with NO tmux prints a readable explanation and degrades to a plain login shell,

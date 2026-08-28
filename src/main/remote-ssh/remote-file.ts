@@ -21,7 +21,7 @@ export function tailFromOffsetCappedArgs(
   maxBytes: number
 ): string[] {
   // base64 wraps at 76 cols on GNU and not at all on BSD — the reader strips whitespace, so
-  // no -w flag is used (macOS/BSD base64 has none).
+  // No GNU-only wrapping flag is used, so the command stays portable across remote base64 tools.
   return childArgs(conn, controlPath, `tail -c +${offset + 1} ${posixQuote(path)} | head -c ${maxBytes} | base64`)
 }
 export function tailLastBytesArgs(conn: SshConnection, controlPath: string, path: string, bytes: number): string[] {

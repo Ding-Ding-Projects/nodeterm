@@ -1972,7 +1972,7 @@ export class SshProjectManager {
    * Best-effort `claude --version` ON THE REMOTE HOST. Null when it can't be determined.
    *
    * An ssh EXEC channel gets a non-interactive, non-login shell, whose rc file usually bails out
-   * early, so a claude installed via nvm/asdf/homebrew-on-PATH may be invisible to a plain
+   * early, so a CLI installed via a user-scoped version manager may be invisible to a plain
    * `claude --version`. The remote tmux session that actually RUNS the node uses a login shell, so
    * the probe tries that first and only then the bare command. A login shell also sources the
    * user's profile, whose STDOUT noise (banners, neofetch, …) would otherwise be parsed as the
@@ -2133,7 +2133,7 @@ const pendingPassphrasePrompts = new Map<string, (value: string | null) => void>
  * be delivered.
  *
  * The explicit getMainWindow() probe is the other half: sendToMain's optional chain silently
- * NO-OPS when there is no window at all (macOS close-to-dock, or before the first window exists),
+ * no-ops when there is no live window,
  * so without the probe this returned true for a send nobody received. That false "delivered" kept
  * promptForPassphrase's no-UI branch dead exactly when it was needed: with the window closed and
  * the watchdog respawning a master after a network drop, the prompt was "sent" to nothing and the
@@ -2232,7 +2232,7 @@ export function initSshProject(
   const scp = scpBin()
   // No window reference is threaded through here on purpose: every renderer push resolves the
   // live window AT SEND TIME (getMainWindow/sendToMain), because a captured BrowserWindow goes
-  // stale across a macOS close/reopen cycle (see main-window.ts).
+  // stale after window replacement (see main-window.ts).
   ipcMain.handle(IPC.sshPassphraseSubmit, (_e, requestId: string, value: string | null) =>
     resolvePassphrasePrompt(requestId, value)
   )
@@ -2335,7 +2335,7 @@ export function initSshProject(
     nodeTokenMinter: () => remoteNodeTokenMinter(),
     onStatus: (e) => {
       // sendToMain resolves the window AT SEND TIME (see main-window.ts): the `win` captured here
-      // is destroyed and recreated by a macOS close/reopen, and sending to the stale reference is
+      // can be destroyed and recreated, and sending to the stale reference is
       // silently dropped. The try/catch is the other half: webContents.send THROWS when the render
       // frame is disposed even though isDestroyed() is false (renderer crash, reload, quit), and a
       // status push must never be load-bearing. It used to abort connect() mid-flight, which left

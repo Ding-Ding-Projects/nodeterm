@@ -155,7 +155,7 @@ describe('AppSshAgent', () => {
     // Remote PTYs (pty-manager) and remote git (remote-git) shell out to ssh from src/core, which
     // cannot import this main-process module - they find the agent through this env var. Losing
     // the publish reopens the pane-prompt / login-agent leak; losing the DELETE leaves core
-    // pointing at a socket that no longer exists after quit-in-place (macOS window close).
+    // pointing at a socket that no longer exists after shutdown.
     const p = await sock()
     const { spawnAgent } = fakeAgent(p)
     const agent = new AppSshAgent(spawnAgent, p)

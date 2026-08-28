@@ -62,8 +62,7 @@ describe('mkDirArgs', () => {
 
 describe('controlPathFor', () => {
   it('returns a SHORT, space-free socket path under ~/.nodeterm/ssh-cm (not the long/spaced userData)', () => {
-    // Regression: macOS userData is `~/Library/Application Support/<app>` — too long for a unix
-    // socket (sun_path 104, minus ssh's ~17-char bind suffix) AND has a space ssh's `-o` rejects.
+    // Regression: a long or spaced data path can exceed Unix socket limits or split the SSH option.
     const cp = controlPathFor('a-fairly-long-project-id-0123456789')
     expect(cp.startsWith(`${os.homedir()}/.nodeterm/ssh-cm/`)).toBe(true)
     expect(cp.endsWith('.sock')).toBe(true)
