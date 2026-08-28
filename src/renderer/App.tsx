@@ -18,9 +18,8 @@ import { resolveUiScale } from '../shared/ui-scale'
 import { useAppTheme } from './state/useAppTheme'
 
 export default function App() {
-  // Apply the terminal-rendering setting to the two GPU coordinators, live. 'auto' is
-  // per-terminal WebGL on every platform (see `resolveTerminalRenderer` for the history of the
-  // macOS branch and the evidence that collapsed it). 'off' reclaims every context; 'shared'
+  // Apply the terminal-rendering setting to the two GPU coordinators, live. Auto is
+  // per-terminal WebGL. Off reclaims every context; shared
   // takes the per-terminal budget down entirely and brings up the one canvas-wide glyph context
   // instead. `applyRendererMode` owns the ordering contract between the two (and its test).
   // Subscribed at the root so it holds whatever view is showing.

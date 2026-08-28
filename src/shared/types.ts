@@ -1228,14 +1228,8 @@ export interface Settings {
    * has no settings row and is flipped in settings.json.
    */
   ptyShadowClients: boolean
-  /** GPU (WebGL) terminal rendering. 'off' routes every terminal to xterm's DOM renderer.
-   *  'auto' (default) = one WebGL context PER TERMINAL everywhere except macOS, where it is
-   *  'shared'. Repeated macOS field reports (whole-window flicker; terminals compositing black
-   *  after renderer swaps, with zero JS-visible errors) point at the OS compositor mishandling
-   *  many live WebGL canvases — which is why per-terminal WebGL stays a deliberate opt-in ('on')
-   *  there, and why the ONE-context renderer is what macOS defaults to instead. Legacy boolean
-   *  values are migrated on load: `false` (an explicit escape-hatch choice) → 'off'; `true`
-   *  (indistinguishable from the old merged-in default) → 'auto'.
+  /** GPU terminal rendering. Auto and on use per-terminal WebGL, off uses the DOM renderer, and
+   *  shared uses one canvas-wide glyph renderer. Legacy booleans migrate to off or auto.
    *
    *  'shared' is the glyphgrid renderer: instead of one WebGL context per terminal (which is what
    *  the ~16-context cap and the whole budget coordinator exist to ration), every terminal on the

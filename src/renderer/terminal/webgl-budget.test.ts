@@ -106,7 +106,7 @@ describe('webgl-budget coordinator', () => {
     expect(clients.every((c) => c.rec.held)).toBe(true)
   })
 
-  // ── The GPU-rendering master switch (Settings toggle → macOS flicker escape hatch) ──────────
+  // GPU-rendering master switch.
   it('setWebglEnabled(false) reclaims every live context and blocks new grants', () => {
     const a = fakeClient('a')
     const b = fakeClient('b')

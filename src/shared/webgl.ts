@@ -26,36 +26,9 @@ export const WEBGL_BUDGET_DESKTOP = 24
  *  into which every terminal paints. */
 export type TerminalRenderer = 'dom' | 'webgl' | 'shared'
 
-/**
- * Resolve the `terminalGpuRendering` setting to the renderer the terminals should use. THE single
- * resolver: there is deliberately no second "is GPU rendering on?" boolean helper, because
- * 'shared' is a GPU mode whose PER-TERMINAL budget must be off, so a boolean answer is wrong for
- * one of its two callers no matter which way it goes.
- *
- * 'auto' (the default) is per-terminal WebGL on EVERY platform. The macOS branch has moved
- * twice before, and the history is the justification for collapsing it:
- *
- *   - It was 'dom', then 'shared' (2026-08-05): per-terminal WebGL on macOS composited BLACK
- *     after zoom-out bursts and was blamed on the OS compositor, so the default first avoided
- *     the GPU and then avoided per-terminal contexts.
- *   - It is now 'webgl', because that macOS evidence collapsed. The blackout was root-caused to
- *     a dependency skew — addon-webgl 0.19's dispose crashed on the 5.5 core and aborted its own
- *     DOM-renderer restore, on every platform (pinned + healed; see
- *     `renderer/terminal/webgl-addon-pair.test.ts`) — and the mass swap waves that amplified it
- *     went with the zoom gate when the context lifecycle became budget-only. What actually
- *     guards macOS is `WEBGL_BUDGET_DESKTOP_MAC` (16), which caps compositor pressure at every
- *     zoom. The one unconfirmed macOS report left is the 2026-07-30 whole-window flicker, whose
- *     escape hatches survive unchanged: 'off' (no GPU) and 'shared' (one canvas-wide context)
- *     are both explicit choices. If a field report contradicts this promotion, the macOS branch
- *     comes back and 'shared' is where it points.
- *
- * The four-way setting is unchanged: 'on' is per-terminal WebGL (now the same as 'auto'), 'off'
- * is the DOM renderer, 'shared' is the canvas-wide glyph renderer on every platform.
- *
- * Legacy booleans still mean their own explicit choice ('on'/'off'); anything unrecognised
- * resolves exactly like 'auto' — the settings-store migration normalizes the file, and a value
- * that slipped past it must land on the DEFAULT.
- */
+/** Resolve the four-way terminal rendering setting. Auto and on use budgeted per-terminal WebGL,
+ * off uses the DOM renderer, and shared uses one canvas-wide glyph renderer. Legacy booleans
+ * retain their explicit on/off meaning; unknown values resolve to the auto default. */
 export function resolveTerminalRenderer(
   value: 'auto' | 'on' | 'off' | 'shared' | boolean | undefined
 ): TerminalRenderer {
