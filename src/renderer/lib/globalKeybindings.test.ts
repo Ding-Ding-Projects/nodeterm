@@ -3,12 +3,17 @@ import type { CommandId } from '@shared/keybindings'
 import { dispatchGlobalKeydown, type GlobalKeydownDeps, type GlobalKeyEvent } from './globalKeybindings'
 import { XTERM_INPUT_CLASS, type ContextElement } from './keyContext'
 
-const ev = (over: Partial<GlobalKeyEvent>): GlobalKeyEvent => ({
+const ev = (over: Partial<GlobalKeyEvent>): GlobalKeyEvent => {
+  const input = {
   metaKey: false, ctrlKey: false, shiftKey: false, altKey: false, key: '',
   defaultPrevented: false,
   preventDefault() { this.defaultPrevented = true },
   ...over
-})
+  }
+  // Historical cases use the old primary-modifier spelling. The Windows contract maps that
+  // primary gesture to Control before dispatch, just as the real keyboard event does here.
+  return { ...input, metaKey: false, ctrlKey: input.ctrlKey || input.metaKey }
+}
 const noGesture = () => false
 const noGestures = {
   keyedDictation: noGesture, zoom: noGesture, projectJump: noGesture, copy: noGesture
@@ -22,7 +27,7 @@ const deps = (over: Partial<GlobalKeydownDeps> = {}): GlobalKeydownDeps => ({
   activeElement: () => null,
   kanbanOpen: () => false,
   overrides: () => ({}),
-  isMac: true,
+  isMac: false,
   terminalFirst: () => false,
   handlers: {},
   gestures: { ...noGestures },

@@ -1,6 +1,6 @@
 import { createWriteStream } from 'node:fs'
 import { mkdir, readdir, rm, stat } from 'node:fs/promises'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { renameAtomic } from '../fs-atomic'
 import { Writable } from 'node:stream'
 import { WHISPER_DOWNLOAD_BASE, WHISPER_MODELS, whisperModel } from '../../shared/speech'
@@ -65,7 +65,7 @@ export class WhisperModelStore {
    * deterministic rm would ever find — sweep by prefix instead. */
   private async removeParts(id: string): Promise<void> {
     const base = this.modelPath(id)
-    const prefix = `${base.split('/').pop()}.part`
+    const prefix = `${basename(base)}.part`
     const entries = await readdir(this.dir).catch(() => [] as string[])
     await Promise.all(
       entries.filter((e) => e.startsWith(prefix)).map((e) => rm(join(this.dir, e), { force: true })),
