@@ -8,14 +8,11 @@ export interface CorePlatform {
   readonly userDataDir: string
   readonly appVersion: string
   readonly isPackaged: boolean
-  /** Electron's `process.resourcesPath` — `<app>/Contents/Resources` in a packaged build, where
-   *  extraResources (today: the bundled tmux, see tmux-hint.ts `bundledTmuxPath`) land. OPTIONAL
-   *  because it is an Electron notion: the Server Edition has no such directory and simply omits
-   *  it, which is also how src/core stays Electron-free (no-electron.test.ts). */
+  /** Electron's packaged resource root. Optional because the Server Edition has no such directory. */
   readonly resourcesPath?: string
   /** Seal / unseal a secret at rest, byte-in byte-out. Present together on a shell that can
    *  encrypt (Desktop: Electron safeStorage). Their ABSENCE is a supported configuration, not a
-   *  degradation: the Server Edition runs headless with no OS keychain and deliberately stores
+   *  degradation: the Server Edition runs headless with no OS credential vault and stores
    *  node secrets as raw 0600 bytes instead. A shell supplies BOTH hooks or NEITHER — supplying
    *  exactly one is a programming error that node-auth-secret.ts rejects. */
   sealSecret?(b: Buffer): Buffer

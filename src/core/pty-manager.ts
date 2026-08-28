@@ -17,7 +17,7 @@ import {
   type Settings,
   type TmuxStatus
 } from '../shared/types'
-import { bundledTmuxPath, findCommand, findFixedTmux, tmuxInstall } from './tmux-hint'
+import { findCommand, findFixedTmux, tmuxInstall } from './tmux-hint'
 import { hookServer, PERM_WAIT_SECS_DEFAULT } from './agents/hook-server'
 import {
   probeSaysAbsent,
@@ -67,7 +67,6 @@ import { encodeSendKeysHex } from './tmux-control'
 import { releasePty, type ReleasablePty } from './pty-release'
 import { terminateWindowsProcessTree } from '../session-host/windows-process-tree'
 import { effectiveSize, type PtySize } from './pty-size'
-import { machOArch, archMismatch } from './macho-arch'
 import { writeScrollback, readScrollback, deleteScrollback } from './scrollback-store'
 import { claudeConfigDirFor } from './claude-config-dir'
 import { findExecutableSync, findInPathString, resolveShellPath, shellPathNow } from './exec-path'
@@ -244,8 +243,7 @@ function runWithStdin(file: string, args: readonly string[], input: string): Pro
 // on tmux 3.2+ the old `terminal-overrides ',xterm*:Ms=\E]52;...'` route does NOT work (measured:
 // a copy emitted ZERO OSC 52 to the attached client with the `Ms=` override, and the correct
 // payload with `terminal-features`). The renderer's OSC 52 handler writes the system clipboard, so
-// this is the copy path on EVERY platform and over SSH — no `pbcopy` pipe (that was macOS-only,
-// and half of why copying was broken).
+// this is the copy path on every platform and over SSH.
 /**
  * Session-identity env names the LOCAL conf's `update-environment` carries on top of the stock +
  * gateway list (issue #419). The point is the REMOVAL half of update-environment's contract: the
@@ -322,15 +320,7 @@ ${leadPaneHookLines(leadPaneWidth)}`
  * fallback here was a SYNC login-shell `command -v tmux` — sourcing the profile (nvm/conda:
  * 100-800ms) on the main thread, re-triggered every 3s by the tmux-missing banner's install poll,
  * freezing all windows and IPC each time. Now it walks a fixed candidate list
- * (`tmuxCandidatePaths` — Homebrew, MacPorts, Nix, Linuxbrew, the distro paths), then the
- * cached login-shell PATH, and only THEN the tmux the macOS app bundles.
- *
- * THE BUNDLED COPY IS DELIBERATELY LAST. A tmux client attaches to a tmux SERVER that outlives the
- * app and was started by whatever tmux the user has installed; preferring our binary could pair a
- * new client with their old running server, which upstream refuses ("server version is too old").
- * System-first means every user who already has tmux sees zero change, and the bundle only rescues
- * the population that had none — where there is no server to be incompatible with. See
- * `bundledTmuxPath` in tmux-hint.ts and scripts/build-tmux.mjs.
+ * (`tmuxCandidatePaths` covers distro and Nix paths), then the cached login-shell PATH.
  *
  * BEFORE THAT ASYNC PATH PROBE SETTLES, a tmux living ONLY on the user's shell PATH is still
  * invisible, and a session spawned in that window silently becomes a plain shell with no
@@ -341,10 +331,8 @@ ${leadPaneHookLines(leadPaneWidth)}`
  * process into a tmux pane); its recovery is the node's own Refresh/respawn, which re-creates it
  * through the now-resolved tmux.
  */
-function findTmux(resourcesPath?: string): string | null {
-  // Windows has none of `tmuxCandidatePaths`' targets (Homebrew, MacPorts, Nix, the distro
-  // `/usr/bin` family — all POSIX filesystem layouts) and no bundled tmux (macOS-only, see
-  // `bundledTmuxPath`'s doc comment; `scripts/build-tmux.mjs` never runs for a Windows package).
+function findTmux(): string | null {
+  // Windows has none of the fixed POSIX filesystem targets.
   // Walking either list would just be `existsSync` calls against paths that can never resolve on
   // this platform — skip straight to the PATH probe, the one route that can find a real tmux a
   // Windows user installed themselves (WSL's own tmux is a different filesystem entirely and is
@@ -367,53 +355,11 @@ function findTmux(resourcesPath?: string): string | null {
   }
   const fixed = findFixedTmux((p) => fs.existsSync(p), home, user)
   if (fixed) return fixed
-  const onPath = findInPathString('tmux', shellPathNow() ?? process.env.PATH)
-  if (onPath) return onPath
-  // Last: the binary the macOS app ships. `process.cwd()` is the repo root under
-  // `electron-vite dev`, which is where scripts/build-tmux.mjs writes its artifact; in a packaged
-  // app it is meaningless and simply misses.
-  return bundledTmuxPath({
-    resourcesPath,
-    repoRoot: process.cwd(),
-    exists: (p) => fs.existsSync(p)
-  })
+  return findInPathString('tmux', shellPathNow() ?? process.env.PATH)
 }
 
 /** Resolve an absolute ssh path (GUI apps don't inherit the shell PATH). */
 let cachedSsh: string | null | undefined
-/**
- * macOS-only diagnostic for the recurring release-clobber incident: `electron-builder --x64`
- * rebuilds node-pty IN PLACE in node_modules, leaving an x86_64 spawn-helper that an arm64 app
- * cannot posix_spawn — every terminal then fails with an opaque "posix_spawnp failed.". Returns
- * the precise message (with the `npm run rebuild` remedy) when the helper's arch mismatches this
- * process, else null. Fail-open: any read/parse problem returns null (diagnostics only).
- */
-function spawnHelperArchMismatch(): string | null {
-  if (os.platform() !== 'darwin') return null
-  try {
-    const helper = path.join(
-      path.dirname(require.resolve('node-pty/package.json')),
-      'build',
-      'Release',
-      'spawn-helper'
-    )
-    const fd = fs.openSync(helper, 'r')
-    const buf = Buffer.alloc(8)
-    fs.readSync(fd, buf, 0, 8, 0)
-    fs.closeSync(fd)
-    const arch = machOArch(buf)
-    if (archMismatch(arch, process.arch)) {
-      return (
-        `node-pty's spawn-helper is ${arch} but this app is ${process.arch} — a cross-arch ` +
-        `release build clobbered node_modules. Fix: run \`npm run rebuild\`, then restart the app.`
-      )
-    }
-  } catch {
-    /* diagnostics only — never mask the real spawn error */
-  }
-  return null
-}
-
 function findSsh(): string | null {
   if (cachedSsh !== undefined) return cachedSsh
   // Subprocess-free (was a sync login-shell `command -v ssh` + an `ssh -V` spawn per fallback,
@@ -490,7 +436,7 @@ export function resolveLocalSessionShell(
  * apps) then render ASCII box-drawing — rounded borders come out as `_`/`|`. Same root cause as
  * the missing-PATH problem: the GUI process never sourced the shell environment. If the inherited
  * env already declares a UTF-8 locale (e.g. the app was launched from a terminal), keep it;
- * otherwise force `en_US.UTF-8`, which is always installed on macOS and guarantees UTF-8 handling.
+ * otherwise force a UTF-8 locale for POSIX shells.
  */
 function resolveLocaleLang(): string | null {
   const cur = process.env.LC_ALL || process.env.LC_CTYPE || process.env.LANG || ''
@@ -787,7 +733,7 @@ export const BACKGROUND_WRITE_LINGER_MS = 10_000
 /**
  * Manages all live PTY processes and bridges them to the renderer over IPC.
  *
- * On macOS/Linux with tmux available, each terminal node attaches to a persistent
+ * On a POSIX host with tmux available, each terminal node attaches to a persistent
  * tmux session named after its node id (`tmux new-session -A`). Closing a node's
  * window only detaches the client — the tmux session (and everything running in it)
  * survives, so reopening the node or restarting the app reattaches and continues
@@ -1538,10 +1484,7 @@ export class PtyManager {
    *  No-op while tmux is already resolved or before init() provided settings. */
   ensureTmux(): void {
     if (this.tmuxPath || !this.getSettings) return
-    // platform() is safe past the guard above: getSettings is only set by init(), which the shell
-    // calls after initPlatform(). resourcesPath is undefined on the Server Edition, so the bundled
-    // candidate is simply absent there (Linux keeps system-tmux-only).
-    const found = findTmux(platform().resourcesPath)
+    const found = findTmux()
     if (!found) return
     this.confPath = path.join(platform().userDataDir, 'tmux.conf')
     try {
@@ -3051,15 +2994,12 @@ export class PtyManager {
         })
       } catch (err) {
         // node-pty surfaces the underlying failure as a bare "posix_spawnp failed." with no errno.
-        // Two different field causes wear that same message, so BOTH are measured before anything is
-        // said: a cross-arch `electron-builder --x64` run clobbering node-pty's spawn-helper (arm64
-        // app can't exec an x86_64 helper), and the machine being out of pty DEVICES
-        // (`kern.tty.ptmx_max`, 2026-08-11 — 515 `/dev/ttys*` against a ceiling of 511).
+        // Re-read the machine-wide pty-device state before reporting the generic spawn failure.
         const reason = err instanceof Error ? err.message : String(err)
         // Re-read the devices rather than reusing the pre-flight's reading: this spawn just consumed
         // (and, per the leak above, kept) devices of its own, so the number the user is shown should
         // be the one that was true when the failure happened.
-        throw this.spawnFailureError(reason, file, cwd, spawnHelperArchMismatch(), readPtyDevices())
+        throw this.spawnFailureError(reason, file, cwd, null, readPtyDevices())
       }
     }
 

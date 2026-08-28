@@ -9,15 +9,7 @@ export interface TmuxInstallHint {
   label: string
 }
 
-/** Suggested one-shot install for the host, or null when there is nothing sensible to run
- *  (win32; a linux with no known package manager). Order within linux is Debian-family first
- *  (the Server Edition's documented target), then the other majors.
- *
- *  darwin WITHOUT brew is never text-only: macOS has no built-in package manager, so the button
- *  chains the OFFICIAL Homebrew installer (which itself prompts for confirmation + password —
- *  the user watches it run in the terminal node) and then calls the fresh brew BY ABSOLUTE PATH
- *  (Apple Silicon /opt/homebrew, Intel /usr/local): the just-installed brew is not on the
- *  launching shell's PATH, so a bare `brew install tmux` would fail right after succeeding. */
+/** Suggested one-shot install for a Linux host, or null when no known package manager exists. */
 export function tmuxInstall(
   platform: NodeJS.Platform | string,
   hasCommand: (cmd: string) => boolean
@@ -43,7 +35,7 @@ export function tmuxInstall(
 
 /** Dirs GUI apps routinely miss (they don't inherit the shell PATH) — same reasoning as
  *  findTmux in pty-manager. Checked after the process PATH. */
-const COMMON_BIN_DIRS = ['/opt/homebrew/bin', '/usr/local/bin', '/opt/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin']
+const COMMON_BIN_DIRS = ['/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin']
 
 /**
  * Absolute places a tmux binary is routinely installed, walked in order by `findFixedTmux` — the
@@ -56,11 +48,8 @@ const COMMON_BIN_DIRS = ['/opt/homebrew/bin', '/usr/local/bin', '/opt/local/bin'
  * into the plain-shell fallback, where a park/offscreen dispose kills the shell AND whatever agent
  * CLI is running in it (issue #126) instead of merely detaching a tmux client.
  *
- * The first four are the historical list and keep their historical order (Homebrew arm64, then
- * Homebrew Intel / manual `/usr/local`, then the distro paths); the rest are the package managers
- * that were falling through: MacPorts, Nix (system profile, per-user profile, home-manager /
- * nix-darwin) and Linuxbrew. `home`/`user` come from the caller (`os.homedir()` /
- * `os.userInfo().username`); an unknown home simply omits the paths derived from it.
+ * The fixed list covers distro paths and per-user Nix profiles. `home` and `user` come from the
+ * caller; an unknown home simply omits paths derived from it.
  */
 export function tmuxCandidatePaths(home?: string | null, user?: string | null): string[] {
   const paths = ['/usr/bin/tmux', '/bin/tmux']
@@ -83,47 +72,6 @@ export function findFixedTmux(
   for (const candidate of tmuxCandidatePaths(home, user)) {
     try {
       if (exists(candidate)) return candidate
-    } catch {
-      // unreadable — keep looking
-    }
-  }
-  return null
-}
-
-/**
- * The tmux nodeterm SHIPS (macOS only — `scripts/build-tmux.mjs` builds a static universal binary
- * into `resources/bin/tmux`, and electron-builder copies it to `<app>/Contents/Resources/bin/tmux`
- * via extraResources). Returns the packaged copy if it is there, else the dev artifact under the
- * repo root, else null — a checkout that never ran the build script behaves exactly as before.
- *
- * WHY IT IS THE LAST RESORT and not the first (`findTmux` appends it after every system path):
- * a tmux CLIENT talks to a tmux SERVER that may already be running on this machine — started by
- * whatever tmux the user has installed, and outliving the app by design. Preferring our own binary
- * would pair a client we chose with a server we did not, which upstream rejects outright when the
- * protocol differs ("server version is too old"). System-first means every user who already has
- * tmux sees literally zero change in behavior; the bundled copy exists solely for the population
- * that has none, where there is no server to be incompatible with.
- *
- * `resourcesPath` is Electron's `process.resourcesPath`, injected through CorePlatform — src/core
- * must stay Electron-free (see no-electron.test.ts), and the Server Edition supplies neither it nor
- * a repo root, so this correctly returns null there (Linux keeps system-tmux-only).
- *
- * `exists` is injected (fs.existsSync in production) so the walk stays pure; a throwing `exists`
- * reads as "not here", never as a failed probe.
- */
-export function bundledTmuxPath(opts: {
-  /** Electron's process.resourcesPath — `<app>/Contents/Resources` in a packaged build. */
-  resourcesPath?: string | null
-  /** Repo root for a dev run (process.cwd() under `electron-vite dev`). */
-  repoRoot?: string | null
-  exists: (path: string) => boolean
-}): string | null {
-  const candidates: string[] = []
-  if (opts.resourcesPath) candidates.push(`${opts.resourcesPath}/bin/tmux`)
-  if (opts.repoRoot) candidates.push(`${opts.repoRoot}/resources/bin/tmux`)
-  for (const candidate of candidates) {
-    try {
-      if (opts.exists(candidate)) return candidate
     } catch {
       // unreadable — keep looking
     }

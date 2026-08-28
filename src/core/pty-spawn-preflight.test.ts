@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import os from 'os'
 import { initPlatform, resetPlatformForTests } from './platform'
 import { fakePlatform, type FakePlatform } from './platform-fake'
 import { IPC } from '../shared/ipc'
@@ -64,20 +63,6 @@ vi.mock('./pty-devices', async (importOriginal) => ({
   readPtyDevices: () => devices.current
 }))
 
-/**
- * Force `spawnHelperArchMismatch` to find a cross-arch spawn-helper.
- *
- * The arch note OUTRANKS the device note in `spawnFailureHint`, so on an ordinary matching-arch
- * host "the refusal does not mention the architecture" is true no matter what the refusal does —
- * the note is null either way. This makes the note non-null, so the assertion has something to
- * catch. `spawnHelperArchMismatch` is module-private; `./macho-arch` is the seam underneath it.
- */
-vi.mock('./macho-arch', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./macho-arch')>()),
-  machOArch: () => 'x64' as const,
-  archMismatch: () => true
-}))
-
 const ALICE = 1
 
 describe('pty create: pre-flight device check', () => {
@@ -115,38 +100,6 @@ describe('pty create: pre-flight device check', () => {
     // The same sentence the post-failure diagnosis produces — one wording, one code path.
     await expect(create()).rejects.toThrow(/out of pty devices \(515 of 511/)
     await expect(create()).rejects.toThrow(/kern\.tty\.ptmx_max/)
-  })
-
-  // Both of these need `spawnHelperArchMismatch` to actually produce a note, which it only does on
-  // darwin (it is a macOS-only diagnostic and returns null everywhere else). Skipped together, so
-  // a non-darwin run cannot pass the suppression test vacuously while silently losing its guard.
-  const onDarwin = os.platform() === 'darwin'
-
-  it.skipIf(!onDarwin)(
-    'proves the arch mock is live: a spawn that DID fail still gets the arch note',
-    async () => {
-      // The control for the test below. Without it, "the refusal omits the arch note" could pass
-      // simply because the mock never took effect and there was no note to omit.
-      nodePty.throws = true
-      devices.current = { ceiling: 511, inUse: 62 } // healthy: the spawn is attempted, and fails
-
-      await expect(create()).rejects.toThrow(/npm run rebuild/)
-      expect(spawned).toHaveLength(1)
-    }
-  )
-
-  it.skipIf(!onDarwin)('never blames the architecture for a refusal it decided itself', async () => {
-    nodePty.throws = true // would fail if it were reached — it must not be
-    devices.current = { ceiling: 511, inUse: 515 }
-
-    // Same mismatched helper as the control above, but this spawn is refused before node-pty. The
-    // arch note outranks the device note in `spawnFailureHint`, so consulting it here would tell a
-    // merely-full machine to rebuild node-pty — advice that cannot help, about a helper this path
-    // never exec'd.
-    await expect(create()).rejects.toThrow(/out of pty devices/)
-    await expect(create()).rejects.not.toThrow(/npm run rebuild/)
-    await expect(create()).rejects.not.toThrow(/architecture/)
-    expect(spawned).toHaveLength(0)
   })
 
   it('spawns normally on a machine with devices to spare', async () => {
