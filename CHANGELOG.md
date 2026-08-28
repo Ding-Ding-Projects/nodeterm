@@ -27,6 +27,8 @@ Code name: [Classic Har Gow · 蝦餃](https://github.com/Ding-Ding-Projects/dim
   creating duplicate releases.
 - Routed warning-level remote service notices through the application's internal non-blocking
   notification path. Informational and success feed items now remain silent.
+- Corrected the Server Edition container context so its required relay build script is available
+  during a clean image build.
 
 ### Removed
 

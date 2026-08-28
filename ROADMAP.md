@@ -16,6 +16,7 @@
 - [x] Verify the 7-frame ICO and associated icons from the packaged app and setup executable.
 - [x] Add and test a reproducible release line counter based on surviving `git blame` lines.
 - [x] Remove automatic promotional startup surfaces and route functional remote warnings through the internal notification path.
+- [x] Repair the clean Server Edition container context so every declared build step receives its required script.
 
 ## Release automation and documentation
 
