@@ -194,8 +194,7 @@ export const MAX_DETACHED_CEILING = 48
  * stops being a constant, because a constant is wrong in the other direction too — 48 detached
  * agent sessions is ~23 GB of nominal RSS, which is most of a 32 GB laptop and all of a 16 GB one.
  * Derived instead as `HOST_SHARE` of host RAM divided by `NOMINAL_SESSION_MB`, clamped to
- * [8, 48]. On the 62.7 GB host that is 32 (down from 48); on a 24 GB Mac it would be 12, which is
- * exactly why it is NOT derived when there is no host reading — see the `mem === null` case below.
+ * [8, 48]. On a 62.7 GB host that is 32, down from 48.
  *
  * Seven instances at 25% each over-subscribe the machine, and that is deliberate rather than
  * overlooked: an instance cannot know how many peers it has, and a share small enough to be safe
@@ -203,11 +202,8 @@ export const MAX_DETACHED_CEILING = 48
  * safe here precisely BECAUSE the memory term is host-wide — the backstop may be loose, because it
  * is not the thing standing between this host and a swap-thrash lockup.
  *
- * `mem === null` (darwin, or an unreadable /proc) keeps the historical 48. The count cap needs no
- * memory reading to work, so deriving it from `os.totalmem()` would quietly change reaping
- * behaviour on macOS — a cap of 12 on a 24 GB Mac — off a host figure whose meaning there this
- * module has already been burned by twice (see `hostMemReader`). A platform gets a new default
- * when it has been measured, not when a number happens to be available.
+ * `mem === null` keeps the historical ceiling. A platform gets a derived default only from a
+ * successful host reading.
  */
 export function sessionBudgetConfig(
   env: NodeJS.ProcessEnv,
@@ -240,7 +236,7 @@ export function sessionBudgetConfig(
 /**
  * Is the HOST under memory pressure? Three OR'd terms, each of which independently means "there is
  * no headroom left". A term whose inputs are absent contributes NOTHING — absence of evidence is
- * never pressure, which is this module's standing rule and the reason darwin stays quiet.
+ * never pressure, which is this module's standing fail-open rule.
  *
  *  1. **Available memory below the watermark.** The original term, unchanged.
  *
@@ -374,34 +370,8 @@ export function parseSessionList(stdout: string): SessionInfo[] {
   return [...bySession.values()]
 }
 
-/**
- * The DEFAULT host-memory reader — still silent on **darwin**, but no longer for the reason this
- * comment used to give.
- *
- * The original reason was that `readMemInfo` fell back to `os.freemem()` off Linux, which on darwin
- * counts only genuinely free pages — excluding inactive, purgeable and compressor pages, all of
- * which macOS hands back on demand. A healthy Mac idles at a few hundred MB "free", under BOTH
- * watermarks, so this monitor would have sat permanently CRITICAL on the primary desktop platform.
- * (The same reading had the session reaper culling idle detached sessions on every sweep — a
- * confirmed field symptom, reported as "my sessions keep disappearing".)
- *
- * That instrument is fixed: `readMemInfo` now reads `vm_stat` on darwin, VERIFIED on a real 24 GB
- * Mac (2026-08-12) — Activity Monitor's App 7.67 + Wired 2.95 + Compressed 8.38 = 19.00 GB against
- * our 19.1 GB, where the same machine read 23.9/24.0 before. So the REAPER's watermark is honest
- * there now, which is what closed the bug.
- *
- * **This leg stays silent anyway, and the verification is what sharpened the reason.** Available
- * BYTES is not macOS's pressure signal. That same capture had the machine at 82% used with 8.38 GB
- * compressed and 1.77 GB of swap in use — and macOS's own Memory Pressure graph was GREEN. A
- * watermark at 10%/5% available therefore fires in states the OS itself calls healthy, and the
- * critical one sweeps the reaper: we would cull sessions on a machine macOS says is fine. That is
- * the same class of mistake as the bug this started with, reached from the other direction.
- *
- * Follow-up (unchanged in shape, sharper in target): give this leg macOS's REAL pressure signal —
- * `kern.memorystatus_vm_pressure_level`, or the `memory_pressure` tool — rather than a byte count.
- */
-export function hostMemReader(platform: NodeJS.Platform = process.platform): () => MemInfo | null {
-  void platform
+/** The default host-memory reader shared by the reaper and pressure monitor. */
+export function hostMemReader(): () => MemInfo | null {
   return readMemInfo
 }
 
@@ -468,14 +438,12 @@ export function createSessionReaper(opts: SessionReaperOpts): SessionReaper {
       const { stdout } = await runAsync(bin, args, { timeout: 15_000 })
       return stdout
     })
-  // Platform-aware BY DEFAULT — not injected by the shells. A wiring line can be deleted with
-  // the suite green (measured); a default cannot. See hostMemReader for why darwin is silent.
+  // Shared by default rather than injected independently by each shell.
   const readMem = opts.readMem ?? hostMemReader()
   const env = opts.env ?? process.env
   const nowSec = opts.nowSec ?? ((): number => Math.floor(Date.now() / 1000))
   const log = opts.log ?? ((m: string): void => console.log(m))
-  // `mem`, not `mem.totalMb`: the detached cap is derived only where there is a real host reading,
-  // so the null case (darwin) has to reach sessionBudgetConfig as null rather than as a number.
+  // `mem`, not `mem.totalMb`: a failed read must reach sessionBudgetConfig as null.
   const cfg = sessionBudgetConfig(env, readMem(), Math.round(os.totalmem() / 1048576))
 
   // `list-windows -a`, not `list-sessions`: `#{window_activity}` is the only stamp that tracks

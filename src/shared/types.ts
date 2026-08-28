@@ -1996,8 +1996,8 @@ export interface MemInfo {
   availableMb: number
   totalMb: number
   /**
-   * Swap, and the kernel's own stall accounting. **Optional on purpose, and their absence is the
-   * darwin contract.**
+   * Swap and the kernel's own stall accounting. These fields are optional on hosts that do not
+   * expose the Linux measurements.
    *
    * `availableMb` alone cannot see a host that has already spent its overflow reserve: a machine
    * with 10.5 GB "available" and 84% of its swap consumed reads as healthy under a 10%-of-RAM
@@ -2005,10 +2005,7 @@ export interface MemInfo {
    * carry the two host-wide facts that DO see it.
    *
    * Only the Linux reader populates them (`/proc/meminfo` for swap, `/proc/pressure/memory` for
-   * PSI — both world-readable, measured on a `hidepid=invisible` host where a non-root uid can read
-   * neither another user's processes nor their tmux socket). `parseVmStat` leaves every one of them
-   * undefined, so no macOS reading can ever satisfy a swap or PSI term: darwin cannot start firing
-   * on a signal that was never measured there.
+   * PSI, both world-readable on the supported Linux hosts). Other readers leave them undefined.
    *
    * A consumer must treat `undefined` as NO SIGNAL, never as zero — a zero here reads as
    * "swap totally exhausted" / "no stall", and both are claims the reader has not earned.

@@ -51,9 +51,7 @@ describe('memory pressure monitor', () => {
     vi.useRealTimers()
   })
   it('the default host reader is the shared real reader on supported hosts', () => {
-    expect(hostMemReader('linux')).toBe(readMemInfo)
-    expect(hostMemReader('win32')).toBe(readMemInfo)
-    expect(hostMemReader('darwin')).toBe(readMemInfo)
+    expect(hostMemReader()).toBe(readMemInfo)
   })
   it('a throwing consumer does not break the monitor', () => {
     vi.useFakeTimers()

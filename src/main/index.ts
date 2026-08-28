@@ -2266,7 +2266,7 @@ app.whenReady().then(async () => {
   // unread flag WITHOUT re-acking (external clear — the ack already happened phone-side; a re-ack
   // would loop). ONE 15s cadence drives BOTH: the LOCAL fs sweep (cheap dir-mtime gate) for
   // local-project nodes, and a REMOTE sweep of each connected SSH project's host over its
-  // ControlMaster (a Mac→SSH node's acks land on the REMOTE fs, invisible to the local sweep).
+  // ControlMaster (an SSH node's acknowledgements land on the remote filesystem).
   // sshProjectManager is created below; the tick resolves it lazily.
   // Session budget: reap long-idle DETACHED nt- tmux sessions on THIS machine under memory
   // pressure or past a count cap (core/session-budget.ts — the tmux counterpart of the WebGL
@@ -2276,17 +2276,7 @@ app.whenReady().then(async () => {
   // `shadowed` subtracts our own control-mode shadows from tmux's attached flag: a shadow is a real
   // tmux client but NOT a watcher, so a shadowed session must stay exactly as cullable as an idle
   // detached one (see PtyManager.shadowedTmuxSessions).
-  // `readMem: hostMemReader()` — the SAME platform-aware reader the memory-pressure monitor uses,
-  // and for the same reason. On darwin it returns null, so `planReap` sees no pressure signal and
-  // only the detached-count cap can trigger a cull.
-  //
-  // Available BYTES is not macOS's pressure signal. Measured on a 24 GB Mac (2026-08-12): 82% used,
-  // 8.38 GB compressed, 1.77 GB swap in use — and macOS's own Memory Pressure graph GREEN. A
-  // 10%-available watermark fires in states the OS itself calls healthy, so a byte trigger there
-  // culls sessions on a machine macOS says is fine. Fixing readMemInfo made the bytes HONEST; it
-  // did not make them the right instrument.
-  //
-  // The detached-session cap and session-memory panel remain the two reaper inputs.
+  // The reaper and pressure monitor share the same host-memory reader.
   const sessionReaper = createSessionReaper({
     tmuxBin: () => ptyManager.getTmuxBin(),
     shadowed: (socket) => ptyManager.shadowedTmuxSessions(socket)
@@ -2297,8 +2287,7 @@ app.whenReady().then(async () => {
   // (hidden WebGL contexts, parked terminals) and a CRITICAL reading also sweeps the reaper NOW
   // rather than waiting out its timer. Both levers are idempotent and the monitor re-fires at most
   // once a minute. The send goes through `sendToMain`, which resolves the window AT SEND TIME and
-  // no-ops while it is closed (macOS keeps the app alive without one) — the monitor's own
-  // try/catch is the backstop, not the primary.
+  // no-ops when no live window exists; the monitor's own try/catch is the backstop.
   createMemoryPressureMonitor({
     onPressure: (severity) => {
       sendToMain(IPC.appMemoryPressure, severity)
