@@ -8,7 +8,7 @@
 - [x] Remove active macOS desktop packaging, entitlement, installer, launcher, and local toolchain paths.
 - [x] Convert desktop window chrome, notifications, shortcuts, clipboard file transfer, SSH discovery, and native rebuild handling to Windows behavior.
 - [x] Route POSIX-only verification fixtures away from the Windows suite when they require unavailable shells, Unix sockets, or POSIX permission bits.
-- [x] Verify the retained Windows suite at commit `6ec87ac2520021f8d96ae85db12de575ce329b44` with 591 passing files, 7,739 passing tests, 2 skipped files, and 52 skipped tests.
+- [x] Verify the retained Windows suite at commit `a1eef940` with 591 passing files, 7,738 passing tests, 2 skipped files, and 52 skipped tests.
 - [x] Verify a fresh ZIP checkout with no `node_modules` through `build.bat /s` at commit `6ec87ac2520021f8d96ae85db12de575ce329b44`.
 - [x] Verify a fresh ZIP checkout with no `node_modules` through `build-installer.bat /s` at commit `b072daf67d3d6b86339a51d3a0bd144a2b013e7a`, producing `Setup.exe`, `RELEASES`, and the full `.nupkg`.
 - [ ] Rerun the full retained Windows suite against the latest commit after the final production-path cleanup.
