@@ -72,11 +72,6 @@ export function licenseSentence(detail: LicenseDetail | null): string {
   }
 
   // --- A clean read. What can be said depends entirely on the source the SERVER stated. ---------
-  if (detail.source === 'apple') {
-    // No keygen call was made for this license, so `used`/`seats` are zeros meaning "not
-    // applicable". Printing them would read as a cap that is somehow both empty and full.
-    return 'Pro on this Mac comes from the App Store subscription on your paired phone, so there is no license key or device count to show here.'
-  }
   if (detail.source === 'free') {
     // A defensive value. Say only what is certain — where it came from is not.
     return 'Pro on this device is not backed by a license key.'
@@ -105,7 +100,7 @@ export function licenseSentence(detail: LicenseDetail | null): string {
 /**
  * Whether to offer "Release other devices".
  *
- * Gated on a STATED `'keygen'` — never on `!== 'apple'`. A null source is what every error reply
+ * Gated on a stated `'keygen'` source. A null source is what every error reply
  * and the release route's own 200 carry, and a source word added later would inherit the button by
  * default; both would offer an action the server can only refuse. A refused release (`too_soon`)
  * still returns true: the action exists, it is merely throttled, and the sentence beside it says so.

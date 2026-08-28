@@ -59,19 +59,6 @@ describe('licenseSentence — a keygen license that read cleanly', () => {
 })
 
 describe('licenseSentence — sources that have no key and no device count', () => {
-  it('says an App Store subscription bridged Pro here, and prints no counts', () => {
-    const s = licenseSentence({ key: null, used: 0, seats: 0, source: 'apple', error: null })
-    expect(s).toBe(
-      'Pro on this Mac comes from the App Store subscription on your paired phone, so there is no license key or device count to show here.'
-    )
-    // The zeros are "not applicable", not a measurement. Rendering them here is the exact
-    // misdirection this branch exists to prevent.
-    expect(s).not.toContain('0')
-    // …and it must not borrow the keygen "no key on file" line, which would send an App Store
-    // subscriber to support asking for a key that will never exist.
-    expect(s).not.toContain('get in touch')
-  })
-
   it('says plainly that a `free` source is not backed by a key, inventing no origin story', () => {
     const s = licenseSentence({ key: null, used: 0, seats: 0, source: 'free', error: null })
     expect(s).toBe('Pro on this device is not backed by a license key.')
@@ -172,7 +159,7 @@ describe('licenseSentence — a release that was REFUSED', () => {
     // Unreachable through the UI (the release action is shown only for a STATED 'keygen' source,
     // and that is the one source the route never answers 400 for), but a route contract is not a
     // render-time guarantee — so it gets a sentence rather than the failed-read one.
-    const s = licenseSentence({ key: null, used: 0, seats: 0, source: 'apple', error: 'not_applicable' })
+    const s = licenseSentence({ key: null, used: 0, seats: 0, source: 'free', error: 'not_applicable' })
     expect(s).toBe('Releasing devices does not apply to this license.')
     expect(s).not.toContain('Could not read')
   })
@@ -190,18 +177,14 @@ describe('canReleaseDevices', () => {
   })
 
   it('is false for every other stated source', () => {
-    expect(canReleaseDevices({ key: null, used: 0, seats: 0, source: 'apple', error: null })).toBe(
-      false
-    )
     expect(canReleaseDevices({ key: null, used: 0, seats: 0, source: 'free', error: null })).toBe(
       false
     )
   })
 
   it('is false when no source was stated — an unknown source HIDES the action', () => {
-    // The gate must be `=== 'keygen'`, never `!== 'apple'`: a null source (every error reply, and
-    // the release route's own 200) would then SHOW a release the server can only refuse, and a
-    // future source word would inherit the button by default. Both of these pass a `!== 'apple'`.
+    // The gate must be `=== 'keygen'`: a null source would otherwise show a release action the
+    // server can only refuse, and a future source word would inherit the button by default.
     expect(canReleaseDevices({ key: null, used: 0, seats: 0, source: null, error: 'offline' })).toBe(
       false
     )

@@ -123,8 +123,8 @@ export function LicenseSection({ isActive }: { isActive: boolean }): React.JSX.E
             </p>
             {detail ? (
               <>
-                {/* No key ⇒ no field. A row reading "not available" beside a sentence saying there
-                    IS no key (an App Store subscription, a failed read) contradicts itself on the
+                {/* No key means no field. A row reading "not available" beside a sentence saying there
+                    is no key or the read failed contradicts itself on the
                     first screen those users ever see — "not available" means "exists, could not be
                     fetched". The sentence below is the whole story in every keyless case. */}
                 {keyOnFile ? (
