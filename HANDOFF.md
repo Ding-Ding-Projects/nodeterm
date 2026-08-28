@@ -8,7 +8,7 @@ The work is being prepared in PR #494, targeting `eneskirca/nodeterm:main` from
 The latest source commit is:
 
 ```text
-d752e268
+5667f07b
 ```
 
 The source checkout is clean and the source ref has been verified with `git ls-remote`.
@@ -42,6 +42,8 @@ The final source commit `d752e268` has a green full retained Windows suite with 
 7,737 passing tests, 2 skipped files, and 52 skipped tests. It also has green typecheck, focused
 session-budget, SSH-project, memory-pressure, and bug-report Chuts. The source scan at that commit
 reports no executable Darwin or Apple-only branches in the shipped source paths covered by the scan.
+The later font-stack cleanup commit `5667f07b` has a green production build for the renderer,
+session-host, and relay outputs, plus 30 focused renderer tests and a green typecheck.
 
 ### Fresh ZIP build
 
@@ -76,7 +78,7 @@ produce an unknown-publisher warning.
 
 ## Remaining work
 
-- Rerun the full retained Windows suite at `6b3b5f3c`.
+- The full retained Windows suite is verified at `d752e268`; the final font-stack cleanup is covered by its focused Chuts and production build.
 - Complete hidden-desktop verification of the packaged application.
 - Inspect the final production source for any remaining active Apple-only runtime path.
 - Add the final evidence to PR #494 and keep it draft until the evidence is complete.
