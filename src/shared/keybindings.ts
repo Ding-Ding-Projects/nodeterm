@@ -25,9 +25,8 @@ export interface CommandDefinition {
   title: string
   group: CommandGroup
   scope: CommandScope
-  /** Canonical shortcut.ts strings. `other` covers linux + win32 — widen to three buckets
-   *  only when a real default needs to differ between them. Empty array = unassigned. */
-  defaultBindings: { darwin: readonly string[]; other: readonly string[] }
+  /** Explicit Windows shortcut.ts strings. Empty array = unassigned. */
+  defaultBindings: readonly string[]
   /** May fire while a real input/textarea/contentEditable is focused (xterm excluded). */
   allowWhileTyping?: boolean
   /** May fire while an xterm has focus. Scope 'terminal' implies it. */
@@ -88,11 +87,9 @@ export type CommandId =
   | 'scm.commit'
   | 'speech.dictation'
 
-/** Same defaults on every platform. */
-const both = (...bindings: string[]): { darwin: string[]; other: string[] } => ({
-  darwin: bindings,
-  other: [...bindings]
-})
+/** Convert the historical primary-modifier spelling into explicit Windows bindings. */
+const both = (...bindings: string[]): readonly string[] =>
+  bindings.map((binding) => binding.replaceAll('Cmd', 'Ctrl'))
 
 export const COMMAND_DEFINITIONS: readonly CommandDefinition[] = [
   // General — the Canvas.tsx:4491 block today; fires while an xterm has focus, and (bug,
@@ -124,7 +121,7 @@ export const COMMAND_DEFINITIONS: readonly CommandDefinition[] = [
   { id: 'canvas.undo', title: 'Undo', group: 'Canvas', scope: 'canvas',
     defaultBindings: both('Cmd+Z') },
   { id: 'canvas.redo', title: 'Redo', group: 'Canvas', scope: 'canvas',
-    defaultBindings: { darwin: ['Cmd+Shift+Z'], other: ['Cmd+Shift+Z', 'Cmd+Y'] } },
+    defaultBindings: ['Ctrl+Shift+Z', 'Ctrl+Y'] },
   // Camera history (breadcrumb trail), not node-array history: `[` / `]` are the literal keys
   // `e.key` reports, which is what the resolver compares against — `BracketLeft`/`BracketRight`
   // are `KeyboardEvent.code` values and would never match (shortcut.ts's KEY_ALIASES covers only
@@ -193,16 +190,16 @@ export const COMMAND_DEFINITIONS: readonly CommandDefinition[] = [
   // the hold listener would start recording on the way to an arrow. Ctrl+Shift+Arrow is what is
   // left that no shell and no other command already owns.
   { id: 'node.focusLeft', title: 'Focus node to the left', group: 'Nodes', scope: 'canvas',
-    defaultBindings: { darwin: ['Cmd+ArrowLeft'], other: ['Ctrl+Shift+ArrowLeft'] },
+    defaultBindings: ['Ctrl+Shift+ArrowLeft'],
     allowInTerminal: true },
   { id: 'node.focusRight', title: 'Focus node to the right', group: 'Nodes', scope: 'canvas',
-    defaultBindings: { darwin: ['Cmd+ArrowRight'], other: ['Ctrl+Shift+ArrowRight'] },
+    defaultBindings: ['Ctrl+Shift+ArrowRight'],
     allowInTerminal: true },
   { id: 'node.focusUp', title: 'Focus node above', group: 'Nodes', scope: 'canvas',
-    defaultBindings: { darwin: ['Cmd+ArrowUp'], other: ['Ctrl+Shift+ArrowUp'] },
+    defaultBindings: ['Ctrl+Shift+ArrowUp'],
     allowInTerminal: true },
   { id: 'node.focusDown', title: 'Focus node below', group: 'Nodes', scope: 'canvas',
-    defaultBindings: { darwin: ['Cmd+ArrowDown'], other: ['Ctrl+Shift+ArrowDown'] },
+    defaultBindings: ['Ctrl+Shift+ArrowDown'],
     allowInTerminal: true },
   // The header maximize toggle's chord (issue #399): fill the viewport with the node under the
   // keyboard (else the single selected node), or restore it. allowInTerminal for focus-mode's
@@ -218,13 +215,13 @@ export const COMMAND_DEFINITIONS: readonly CommandDefinition[] = [
   // exact trap the node.focus* comment documents), and Ctrl+Shift+Arrow is those focus commands.
   // Quarters and thirds have no commands — the node context menu's "Snap to zone" carries them.
   { id: 'node.zoneLeft', title: 'Snap node to left half', group: 'Nodes', scope: 'canvas',
-    defaultBindings: { darwin: ['Ctrl+Alt+ArrowLeft'], other: [] }, allowInTerminal: true },
+    defaultBindings: [], allowInTerminal: true },
   { id: 'node.zoneRight', title: 'Snap node to right half', group: 'Nodes', scope: 'canvas',
-    defaultBindings: { darwin: ['Ctrl+Alt+ArrowRight'], other: [] }, allowInTerminal: true },
+    defaultBindings: [], allowInTerminal: true },
   { id: 'node.zoneUp', title: 'Snap node to top half', group: 'Nodes', scope: 'canvas',
-    defaultBindings: { darwin: ['Ctrl+Alt+ArrowUp'], other: [] }, allowInTerminal: true },
+    defaultBindings: [], allowInTerminal: true },
   { id: 'node.zoneDown', title: 'Snap node to bottom half', group: 'Nodes', scope: 'canvas',
-    defaultBindings: { darwin: ['Ctrl+Alt+ArrowDown'], other: [] }, allowInTerminal: true },
+    defaultBindings: [], allowInTerminal: true },
   // Main-process intercepted today (unconditional): keep firing everywhere.
   { id: 'node.close', title: 'Close node / window', group: 'Nodes', scope: 'app',
     defaultBindings: both('Cmd+W'), allowInTerminal: true, allowWhileTyping: true },
@@ -237,7 +234,7 @@ export const COMMAND_DEFINITIONS: readonly CommandDefinition[] = [
   { id: 'terminal.copySelection', title: 'Copy terminal selection', group: 'Terminal',
     scope: 'terminal',
     // Plain Ctrl+C stays SIGINT off-mac; Cmd+Shift+C resolves to Ctrl+Shift+C there.
-    defaultBindings: { darwin: ['Cmd+C'], other: ['Cmd+Shift+C', 'Ctrl+Insert'] } },
+    defaultBindings: ['Ctrl+C', 'Ctrl+Shift+C', 'Ctrl+Insert'] },
 
   // Source control (local handler; registry supplies label + remap)
   { id: 'scm.commit', title: 'Commit', group: 'Source Control', scope: 'scm',
@@ -276,9 +273,9 @@ export function normalizeBindingForCommand(
 ): NormalizedBinding {
   const p = parseShortcut(raw)
   const hasAnyToken = p.cmd || p.ctrl || p.alt || p.shift || p.key !== null
-  if (!hasAnyToken) return { ok: false, error: 'Use a shortcut like Cmd+K or Cmd+Shift+P.' }
-  if (!isMac && p.cmd && p.ctrl) {
-    return { ok: false, error: 'Cmd already means Ctrl on this platform; use one of them.' }
+  if (!hasAnyToken) return { ok: false, error: 'Use a shortcut like Ctrl+K or Ctrl+Shift+P.' }
+  if (p.cmd && p.ctrl) {
+    return { ok: false, error: 'Use Ctrl instead of combining legacy primary and Control modifiers.' }
   }
   if (p.key === null) {
     if (!def.allowHoldChord) {
@@ -312,7 +309,7 @@ export function getEffectiveBindings(
   if (override !== undefined) return override
   const def = COMMANDS_BY_ID.get(id)
   if (!def) return []
-  return isMac ? def.defaultBindings.darwin : def.defaultBindings.other
+  return def.defaultBindings
 }
 
 /** Platform-resolved identity: two spellings that press the same physical modifiers + key get
@@ -322,7 +319,7 @@ export function getEffectiveBindings(
  *  invisibly on top of the `Cmd+Enter` default. */
 export function bindingIdentity(binding: string, isMac: boolean): string {
   const p = parseShortcut(binding)
-  const m = resolvedModifiers(p, isMac)
+  const m = resolvedModifiers(p, false)
   return [
     m.meta ? 'M' : '',
     m.ctrl ? 'C' : '',
@@ -569,7 +566,7 @@ export function resolveCommandForKeyEvent(
       // chord today (`parsed.key !== null`), so removing this line changes nothing — until the
       // day it does.
       if (isHoldChord(binding)) continue
-      if (matchesShortcut(e, binding, isMac)) return def.id
+      if (matchesShortcut(e, binding, false)) return def.id
     }
   }
   return null

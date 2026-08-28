@@ -18,7 +18,7 @@ Object.defineProperty(window.navigator, 'platform', { value: 'MacIntel', configu
  *  registry is a growing POOL: every unbound command added later would otherwise red these
  *  counts with a number that says nothing about the behavior under test. Overrides are absent in
  *  the cases below (or sanitized away), so the effective binding IS the mac default. */
-const UNASSIGNED = COMMAND_DEFINITIONS.filter((d) => d.defaultBindings.darwin.length === 0).length
+const UNASSIGNED = COMMAND_DEFINITIONS.filter((d) => d.defaultBindings.length === 0).length
 
 const setKb = (kb: unknown): void =>
   useSettings.setState({ settings: { ...DEFAULT_SETTINGS, keybindings: kb as never } })
@@ -118,7 +118,7 @@ describe('ShortcutsSection rows', () => {
     expect(ids()).toEqual(COMMAND_DEFINITIONS.map((d) => d.id))
     const palette = row('app.commandPalette')
     expect(palette.textContent).toContain('Command palette')
-    expect([...palette.querySelectorAll('kbd')].map((k) => k.textContent)).toEqual(['⌘', 'K'])
+    expect([...palette.querySelectorAll('kbd')].map((k) => k.textContent)).toEqual(['Ctrl', 'K'])
   })
 
   it('shows an em-dash placeholder and a record button for an unbound command', () => {
@@ -148,7 +148,7 @@ describe('ShortcutsSection rows', () => {
     click(button('canvas.undo', 'Reset Undo')!)
     expect('canvas.undo' in kb()).toBe(false)
     expect([...row('canvas.undo').querySelectorAll('kbd')].map((k) => k.textContent)).toEqual([
-      '⌘',
+      'Ctrl',
       'Z'
     ])
   })
@@ -198,7 +198,7 @@ describe('ShortcutsSection rows', () => {
     expect(() => render()).not.toThrow()
     // The sanitized read path already discarded both, so the rows show their defaults…
     expect([...row('canvas.undo').querySelectorAll('kbd')].map((k) => k.textContent)).toEqual([
-      '⌘',
+      'Ctrl',
       'Z'
     ])
     // …and nothing claims they are overridden: no Modified badge, no Reset, and they are not
@@ -297,8 +297,8 @@ describe('ShortcutsSection rows', () => {
     expect(button('speech.dictation', 'Add a shortcut to Dictate')).toBeNull()
     // …and the chips show only the chord that is actually live.
     expect([...row('speech.dictation').querySelectorAll('kbd')].map((k) => k.textContent)).toEqual([
-      '⌘',
-      '⌥'
+      'Ctrl',
+      'Alt'
     ])
   })
 
@@ -417,7 +417,7 @@ describe('the filter rail', () => {
   // the global settings search has no idea what a command is bound to.
   it('finds a row by the chord shown on its chip', () => {
     render()
-    typeFilter('⌘K')
+    typeFilter('Ctrl+K')
     expect(ids()).toEqual(['app.commandPalette'])
   })
 
@@ -432,13 +432,13 @@ describe('the filter rail', () => {
 
 describe('per-chip removal', () => {
   it('drops exactly the chord whose × was clicked', () => {
-    setKb({ 'canvas.undo': ['Cmd+Z', 'Cmd+Alt+Z'] })
+    setKb({ 'canvas.undo': ['Ctrl+Z', 'Ctrl+Alt+Z'] })
     render()
-    click(button('canvas.undo', 'Remove ⌘⌥Z from Undo')!)
-    expect(kb()['canvas.undo']).toEqual(['Cmd+Z'])
+    click(button('canvas.undo', 'Remove Ctrl+Alt+Z from Undo')!)
+    expect(kb()['canvas.undo']).toEqual(['Ctrl+Z'])
     // …and with one chord left there is nothing to remove: the last × would be a Disable in
     // disguise, and Disable has its own control.
-    expect(button('canvas.undo', 'Remove ⌘Z from Undo')).toBeNull()
+    expect(button('canvas.undo', 'Remove Ctrl+Z from Undo')).toBeNull()
   })
 
   it('offers no × on a single-binding row', () => {
