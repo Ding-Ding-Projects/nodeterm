@@ -47,7 +47,7 @@ describe('worktree ops on a LOCAL repo (no remote claims it)', () => {
   it('still reach real git — the remote guard does not swallow the local path', async () => {
     const listed = await svc.worktreeList(repo)
     expect(listed.ok).toBe(true)
-    expect(listed.entries.map((e) => e.path)).toEqual([repo])
+    expect(listed.entries.map((e) => path.normalize(e.path))).toEqual([path.normalize(repo)])
     // The main checkout is on disk, so the `pathExists` fallback must NOT call it prunable.
     expect(listed.entries[0].prunable).toBeFalsy()
   })
@@ -104,7 +104,7 @@ describe('worktree ops on a REMOTE repo', () => {
     // …and the repo is untouched: still exactly one (local) worktree once the claim is dropped.
     setGitRemoteResolver(null)
     const listed = await svc.worktreeList(repo)
-    expect(listed.entries.map((e) => e.path)).toEqual([repo])
+    expect(listed.entries.map((e) => path.normalize(e.path))).toEqual([path.normalize(repo)])
   })
 })
 
