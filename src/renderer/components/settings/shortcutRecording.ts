@@ -79,9 +79,8 @@ export interface RecordingOptions {
 /** Non-mac Meta (Super/Win): unspellable in this grammar, in both the keyed and hold paths. */
 const SUPER_UNSUPPORTED = 'The Super key is not supported.'
 
-const holdPrimaryHint = (isMac: boolean): string => (isMac ? 'Hold ⌘…' : 'Hold Ctrl…')
-const keyedPrimaryHint = (isMac: boolean): string =>
-  isMac ? 'Hold ⌘ and press a key' : 'Hold Ctrl and press a key'
+const holdPrimaryHint = (_isMac: boolean): string => 'Hold Ctrl…'
+const keyedPrimaryHint = (_isMac: boolean): string => 'Hold Ctrl and press a key'
 
 /** Decide what a keydown during recording means. `state` is the recorder's current state; the
  *  returned `pending` state replaces it (a `commit`/`cancel`/`ignored` leaves it to the caller,
@@ -98,8 +97,8 @@ export function recordingKeydown(
     // Only modifier keys are down so far. When the command permits a hold chord this is a
     // candidate commit-on-release; otherwise it is purely a preview of what is still missing.
     if (!allowHold) return { kind: 'pending', state: { mods: null }, hint: keyedPrimaryHint(isMac) }
-    if (!isMac && e.metaKey) return { kind: 'pending', state: { mods: null }, hint: SUPER_UNSUPPORTED }
-    const primaryPressed = isMac ? e.metaKey : e.ctrlKey
+    if (e.metaKey) return { kind: 'pending', state: { mods: null }, hint: SUPER_UNSUPPORTED }
+    const primaryPressed = e.ctrlKey
     if (!primaryPressed) {
       return { kind: 'pending', state: { mods: null }, hint: holdPrimaryHint(isMac) }
     }
@@ -107,7 +106,7 @@ export function recordingKeydown(
     // ctrlKey, so recording both would be the chord keybindings.ts validation forbids.
     const mods: ChordModifiers = {
       cmd: true,
-      ctrl: isMac && e.ctrlKey,
+      ctrl: false,
       alt: e.altKey,
       shift: e.shiftKey
     }
@@ -126,7 +125,7 @@ export function recordingKeydown(
   return {
     kind: 'pending',
     state,
-    hint: !isMac && e.metaKey ? SUPER_UNSUPPORTED : keyedPrimaryHint(isMac)
+    hint: e.metaKey ? SUPER_UNSUPPORTED : keyedPrimaryHint(isMac)
   }
 }
 
