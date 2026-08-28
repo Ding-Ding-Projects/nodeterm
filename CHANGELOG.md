@@ -44,4 +44,8 @@ Code name: [Classic Har Gow · 蝦餃](https://github.com/Ding-Ding-Projects/dim
 - Removed the automatic App Store banner, the startup promotional modal, and the promotional action
   from first-run onboarding.
 
-Implementation: [`3c1826ed`](https://github.com/Ding-Ding-Projects/nodeterm/commit/3c1826edb571ffa6e30fe435433d127d4c753fef)
+Implementation milestones:
+[`3c1826ed`](https://github.com/Ding-Ding-Projects/nodeterm/commit/3c1826edb571ffa6e30fe435433d127d4c753fef),
+[`aed73896`](https://github.com/Ding-Ding-Projects/nodeterm/commit/aed738964d4afc0290466fb030747fed45dec388),
+[`ed7ed9cf`](https://github.com/Ding-Ding-Projects/nodeterm/commit/ed7ed9cf0332560790a07912e8dbe198d44c6aec), and
+[`6a400e08`](https://github.com/Ding-Ding-Projects/nodeterm/commit/6a400e08cc586977227791d422e6d3e1100810bb).

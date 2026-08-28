@@ -2,57 +2,84 @@
 
 ## Current state
 
-The Windows platform conversion is implemented on `feat/windows-complete-conversion`.
+The Windows-only desktop conversion is implemented on `feat/windows-complete-conversion`.
 
 Key commits:
 
 ```text
 3c1826edb571ffa6e30fe435433d127d4c753fef  native Windows conversion
-b2885e2                                  reproducible line counter
+b2885e20                                  reproducible line counter
+3dd1ca024f89afdb54e6d97dc8ce13004e8eeac8  tracked icon and unsigned resource hook
+c98ae07c6d7d224cd7ba20ab9fc44e0e9c0e5df7  immutable installer icon
+aed738964d4afc0290466fb030747fed45dec388  remove promotional startup surfaces
+0255f0ba1b8f3126ae4ef090203e408ddb53b61c  repair clean container build context
+1e34b3746b22dc0fe2cd7f5053df79d619879b34  remove remaining onboarding promotion
+ed7ed9cf0332560790a07912e8dbe198d44c6aec  honest Server Edition browser-control boundary
+6a400e08cc586977227791d422e6d3e1100810bb  complete current capture inventory
 ```
 
-Release candidate metadata is prepared for version `0.3.4`, code name
-`Classic Har Gow · 蝦餃`. At the point this handoff was written, the candidate had not been pushed,
-integrated into `main`, published, or verified by GitHub Actions.
+Release candidate metadata remains version `0.3.4`, code name
+`Classic Har Gow · 蝦餃`. The product owner explicitly requested integration into `main` after
+the final local checks. That integration is separate from release readiness and does not claim that
+the product-wide completeness audit is green.
 
 ## User-facing headline
 
-The highlighted first-run experience is a ZIP-only Windows workflow:
+The primary build experience is deliberately simple:
 
-1. Download the source ZIP.
-2. Extract it.
+1. Download the source repository as a ZIP.
+2. Extract it anywhere writable.
 3. Double-click `build.bat`.
 
-No build dependency needs to be installed by hand. The batch file requests administrator approval
-before toolchain work, downloads and SHA-256-verifies the pinned Node.js, Python, and Visual Studio
-bootstrap files, restores project packages, builds the real application, verifies required outputs,
-and asks whether to launch only after success.
+The user installs no build dependency by hand. The batch file checks administrator state before
+toolchain work, requests approval up front for an interactive run, downloads and SHA-256-verifies
+the pinned Node.js, Python, and Visual Studio C++ bootstrap files, restores project packages, builds
+the real runnable application, verifies required outputs, and offers to launch only after success.
 
 `build-installer.bat` uses the same bootstrap and produces the unsigned x64 Squirrel.Windows
-package set. Silent mode is available through `/s`, `--silent`, or `SILENT=1`; it never opens UAC.
+package set. Silent mode is available through `/s`, `--silent`, or `SILENT=1`. Silent mode never
+opens an administrator prompt and exits nonzero on the first real failure.
 
-## Local verification
+## Final local verification
 
-### Type and complete suite
+### Type checking and retained suite
 
 - `npm run typecheck`: passed.
-- `npm test`: 592 files passed, 2 skipped.
-- Test cases: 7,714 passed, 49 skipped.
-- `npx vitest run scripts/count-lines.test.mjs`: 6 passed.
-- Native managed-hook wrapper, loopback payload, header, and permission-answer coverage: passed.
+- `npm test`: 594 files passed and 2 skipped.
+- Test cases: 7,719 passed and 49 skipped.
+- Complete-suite duration: 240.02 seconds.
+- Focused notification and Server Edition capability tests: 3 files and 11 tests passed.
+- The notification negative regression rejected informational startup promotions.
+- The Server Edition capability test went red on the misleading idle-browser state and green after
+  the permanent capability boundary was rendered.
+
+### Capture verification
+
+- `npm run verify:captures`: 21 current media files passed.
+- The hand-written inventory covers every checked-in product UI still, animated WebP, and MP4.
+- Every file is decoded or structurally validated, byte-counted, dimension-checked, and SHA-256
+  checked against `docs/assets/capture-manifest.json`.
+- The documentation and site hero PNG files are byte-identical.
+- Animated WebP frames remain visible for 3,000 to 4,500 milliseconds each.
+- The 10-frame hero animation lasts 30 seconds.
+- The media verifier went red when the hero duration was deliberately changed by one millisecond,
+  then returned green after restoration.
+- `README.md` and `docs/SERVER.md` both embed all six current Server Edition captures.
 
 ### Source and documentation scans
 
 - No tracked retired desktop platform names, toolchains, credential stores, file managers,
-  shortcut glyphs, package formats, or platform paths remain outside generated lock metadata.
-- The only retained Apple text is exact non-desktop technical data: the iOS App Store URL,
-  `AppleWebKit` in real user-agent fixtures, and cryptographic `MAC` terminology.
-- No private conversational vocabulary appears in the public source tree.
+  shortcut glyphs, package formats, or platform paths remain outside generated package-lock
+  metadata.
+- The retained package-lock entries are transitive multi-platform package metadata generated by
+  npm, not desktop support code.
+- No private conversational vocabulary appears in the public diff.
+- No added prose contains an em dash.
 - `git diff --check`: passed.
 
-### One-click build
+## One-click Windows build
 
-`build.bat /s` passed and produced:
+`build.bat /s` passed from commit `6a400e08cc586977227791d422e6d3e1100810bb` and produced:
 
 - `out/main/index.js`
 - `out/preload/index.js`
@@ -60,56 +87,90 @@ package set. Silent mode is available through `/s`, `--silent`, or `SILENT=1`; i
 - `out/session-host/host.cjs`
 - `out/main/codex-relay.js`
 
-The final dependency recovery run rebuilt native modules after four stale test session-host
-processes were identified and stopped. The batch callers now reject every nonzero bootstrap exit,
-including negative native error codes, so a partial package tree cannot fall through into a build.
+The dependency bootstrap reused already verified pinned tools during this warm proof. The script
+itself retains the cold-install paths for a fresh Windows installation and does not ask the user to
+prepare Node.js, Python, npm, or Visual Studio Build Tools manually.
 
-### Unsigned Squirrel.Windows package
+## Unsigned Squirrel.Windows package
 
-`build-installer.bat /s` passed for version `0.3.4` and produced:
+The final logged `build-installer.bat /s` pass produced and independently verified:
 
 | File | Bytes | SHA-256 |
 | --- | ---: | --- |
-| `nodeterm-Setup-0.3.4.exe` | 195,746,816 | `8ce38652802fb13cca5f83daf7666f161da2e278862faa2972fec1e78c13f91b` |
-| `node-terminal-0.3.4-full.nupkg` | 195,524,645 | `61e1852ec6bf6dd80108c6d50ca5f944016a59d500904569c9e43f1b9ce6806a` |
-| `RELEASES` | 84 | `5947c2848412c98033d3c5dda5e6fd704dc4fd53761df08d2cadab4d8d4df612` |
+| `nodeterm-Setup-0.3.4.exe` | 195,747,328 | `fc9c11b5bcf0848a0ec5e05d67f14fb0845ed997c80c3e9a0a64a9235189b745` |
+| `node-terminal-0.3.4-full.nupkg` | 195,522,912 | `74ef5368d9416a8e3e974b235805886d9d5274acc3672baab1a6139492d6fd59` |
+| `RELEASES` | 84 | `e7f5cb0c6eab84286cc297c265c33b608e14a621f1f06f7e1c87672c7a38195c` |
 
-Signing was skipped for the app executable, execution stub, Squirrel helper, and setup executable.
-The independent certificate check returned `NotSigned`. The installer path clears supported
-signing credential variables, disables certificate identity discovery, and keeps all three
-electron-builder signing controls explicitly false before packaging begins.
+The version-1 package receipt validates commit
+`6a400e08cc586977227791d422e6d3e1100810bb`, package id `node-terminal`, version `0.3.4`,
+architecture `x64`, exactly one full package, no required delta for this candidate, exact
+`RELEASES` size and SHA-1 rows, and required `nodeterm.exe`, `resources/app.asar`, and
+`resources/icon.png` entries.
 
-### Icon proof
+The setup Authenticode status is `NotSigned`. Signing inputs were cleared, certificate
+auto-discovery was disabled, all three packaging signer controls remained false, and a 25 ms
+process-name audit observed zero signer invocations. Build-log SHA-256:
+`f1090286d8ab60e23288d4c5de14321e4eb910c798b0457affb580fb2b925cd9`.
 
-- `build/icon.ico` is a valid ICO with 7 frames at 16, 24, 32, 48, 64, 128, and 256 pixels.
-- `dist/win-unpacked/nodeterm.exe` exposes a 32 by 32 associated icon.
-- `nodeterm-Setup-0.3.4.exe` exposes a 32 by 32 associated icon.
+The package was not installed over the existing user installation. Runtime install and updater
+verification remain separate and unclaimed because this host does not provide the required
+disposable operating-system user or virtual-machine boundary.
+
+## Built application evidence
+
+### Windows desktop
+
+The packaged application from commit `1e34b3746b22dc0fe2cd7f5053df79d619879b34` was launched on a
+named off-screen Windows desktop through the cheap Lowlevel route with an isolated profile. The
+captured executable SHA-256 is
+`6a15311ed1b4e2a564e7b3abad0ec549abffd51f1dc6b1e2685b6d4ea9d9182c`.
+
+The complete promoted desktop sequence includes onboarding, optional companion messaging, main
+empty state, native folder selection, project canvas, context menus, a real terminal node, settings,
+notifications, kanban board, card modal, member picker, and the worktree dialog. The visible desktop,
+cursor, and keyboard focus were never touched.
+
+### Server Edition container
+
+The Server Edition was built from commit
+`ed7ed9cf0332560790a07912e8dbe198d44c6aec` and captured from image manifest
+`sha256:d0ff1b7bab2246b390af77aeb4f340d3b40f39f1ed222b0bc8ab93a95653472c`.
+
+Six promoted captures cover:
+
+- the main empty canvas,
+- Agents settings,
+- notification settings,
+- Remote access,
+- Browser control with its honest permanent capability boundary, and
+- Canvas control with the node-identity enforcement state.
+
+The browser capture used one isolated target with the exact expected URL. No unrelated browser
+target, extension page, restored tab, or visible desktop surface was inspected or captured.
 
 ## Release automation
 
-- `.github/workflows/ci.yml` runs the one-click build on every push and manual dispatch.
-- `.github/workflows/release.yml` publishes only from `main`, preventing task-branch preservation
-  from creating duplicate releases.
-- Release automation checks out full history, builds through `build-installer.bat /s`, verifies
-  unsigned outputs, runs the committed line counter, publishes one version tag, records start,
-  completion, and duration, then downloads the setup and full package to compare hashes.
-- `actionlint -shellcheck=` passed for all retained workflows.
-- Every embedded PowerShell block in the release workflow passed the PowerShell parser after
-  replacing GitHub expression placeholders with inert test values.
+- `.github/workflows/ci.yml` calls the one-click build on every push and manual dispatch.
+- `.github/workflows/release.yml` publishes only from `main`.
+- Release automation builds through `build-installer.bat /s`, counts surviving lines, publishes
+  timing and hashes, and downloads release files for verification.
+- The workflows contain no test, lint, type-check, static-analysis, accessibility, or capture jobs.
+  Those checks run locally before integration instead.
+- Retained workflow structure passed `actionlint -shellcheck=`, and embedded PowerShell blocks
+  passed parser checks during the conversion work.
 
-## Release readiness blocker
+## Release readiness boundary
 
-The Windows conversion is locally verified and may be reviewed or integrated as its own change.
-The full product release is not ready under the fail-closed inventory in
+The Windows conversion and its requested evidence are locally verified and ready for the requested
+`main` integration. The full product release is still blocked by the fail-closed inventory in
 `docs/release/completeness-audit.md`.
 
-The upstream product lacks complete implementations and built interaction proof for the local
-personal-vocabulary upload, app-logo customization, categorized file converter, local Ollama
-manager, complete regex workbench, language and funny-level controls, shared School mode, narrator
-voice selection, ADHD modes, full per-element appearance editing, toy locks and authenticator,
-Git-backed local history for every record, browser-extension download dialogs, and a complete
-per-click capture ledger.
+The remaining product-wide work includes complete implementations and built interaction proof for
+the local personal-vocabulary upload, app-logo customization, categorized file converter, local
+Ollama manager, complete regex workbench, language and funny-level controls, shared School mode,
+narrator voice selection, ADHD modes, full per-element appearance editing, toy locks and
+authenticator, Git-backed local history for every record, browser-extension download dialogs, and
+the complete per-click interaction ledger.
 
-No release, `main` merge, task-branch deletion, or cleanup claim should occur while that audit is
-blocked. Preserve the task branch and package evidence until the product owner either supplies a
-new explicit scope decision or the missing rows are fully implemented and verified.
+Integrating this completed Windows conversion into `main` does not waive those rows. No release is
+published or claimed by this handoff.
