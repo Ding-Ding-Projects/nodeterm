@@ -12,7 +12,7 @@
 - [x] Verify a fresh ZIP checkout with no `node_modules` through `build.bat /s` at commit `6ec87ac2520021f8d96ae85db12de575ce329b44`.
 - [x] Verify a fresh ZIP checkout with no `node_modules` through `build-installer.bat /s` at commit `b072daf67d3d6b86339a51d3a0bd144a2b013e7a`, producing `Setup.exe`, `RELEASES`, and the full `.nupkg`.
 - [x] Rerun the full retained Windows suite after the production-path cleanup at `a1eef940`.
-- [ ] Rerun the full retained Windows suite once more after the final low-risk SSH and memory-reader cleanup at `2b9761c8`.
+- [x] Rerun the full retained Windows suite after the final low-risk SSH and memory-reader cleanup at `d752e268`, with 591 files and 7,737 tests passing.
 - [ ] Complete hidden-desktop verification of the packaged application and retain the required evidence.
 - [ ] Refresh all upstream-facing handoff and PR evidence after the final verification commit.
 - [ ] Merge the completed work into the upstream default branch after review approval.

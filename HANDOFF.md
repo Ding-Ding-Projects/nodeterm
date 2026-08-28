@@ -8,7 +8,7 @@ The work is being prepared in PR #494, targeting `eneskirca/nodeterm:main` from
 The latest source commit is:
 
 ```text
-2b9761c8
+d752e268
 ```
 
 The source checkout is clean and the source ref has been verified with `git ls-remote`.
@@ -38,11 +38,10 @@ Verified at commit `6ec87ac2520021f8d96ae85db12de575ce329b44`:
 - 0 failures
 - 0 uncaught errors
 
-The runtime cleanup commit `a1eef940` has a green full retained Windows suite with 591 passing
-files, 7,738 passing tests, 2 skipped files, and 52 skipped tests. The later production cleanup
-commit `2b9761c8` has green typecheck and focused session-budget and SSH-project Chuts. The source
-scan at that commit reports no executable Darwin or Apple-only branches in the shipped source paths
-covered by the scan.
+The final source commit `d752e268` has a green full retained Windows suite with 591 passing files,
+7,737 passing tests, 2 skipped files, and 52 skipped tests. It also has green typecheck, focused
+session-budget, SSH-project, memory-pressure, and bug-report Chuts. The source scan at that commit
+reports no executable Darwin or Apple-only branches in the shipped source paths covered by the scan.
 
 ### Fresh ZIP build
 
