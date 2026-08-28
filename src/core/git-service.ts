@@ -32,7 +32,11 @@ function findBin(names: string[]): string | null {
   return null
 }
 
-const GH_PATH = findBin(['/opt/homebrew/bin/gh', '/usr/local/bin/gh', '/usr/bin/gh'])
+const GH_PATH = findBin(
+  process.platform === 'win32'
+    ? ['C:\\Program Files\\GitHub CLI\\gh.exe', 'C:\\Program Files (x86)\\GitHub CLI\\gh.exe']
+    : ['/usr/bin/gh']
+)
 
 // GUI apps on macOS don't inherit the shell PATH, so a git credential helper installed by
 // Homebrew (e.g. `gh auth git-credential`, or osxkeychain shims) wouldn't be found by our
@@ -41,7 +45,12 @@ const GH_PATH = findBin(['/opt/homebrew/bin/gh', '/usr/local/bin/gh', '/usr/bin/
 // username prompt (there's no TTY here).
 const GIT_ENV: NodeJS.ProcessEnv = {
   ...process.env,
-  PATH: `/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin${process.env.PATH ? `:${process.env.PATH}` : ''}`,
+  PATH: [
+    ...(process.platform === 'win32' ? ['C:\\Program Files\\GitHub CLI'] : ['/usr/bin', '/bin']),
+    process.env.PATH
+  ]
+    .filter(Boolean)
+    .join(path.delimiter),
   GIT_TERMINAL_PROMPT: '0'
 }
 

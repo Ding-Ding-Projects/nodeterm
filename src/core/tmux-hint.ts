@@ -22,15 +22,6 @@ export function tmuxInstall(
   platform: NodeJS.Platform | string,
   hasCommand: (cmd: string) => boolean
 ): TmuxInstallHint | null {
-  if (platform === 'darwin') {
-    if (hasCommand('brew')) return { command: 'brew install tmux', label: 'Install tmux' }
-    return {
-      command:
-        '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' +
-        ' && { b=/opt/homebrew/bin/brew; [ -x "$b" ] || b=/usr/local/bin/brew; "$b" install tmux; }',
-      label: 'Install Homebrew + tmux'
-    }
-  }
   if (platform === 'linux') {
     const command = hasCommand('apt-get')
       ? 'sudo apt-get update && sudo apt-get install -y tmux'
@@ -72,15 +63,7 @@ const COMMON_BIN_DIRS = ['/opt/homebrew/bin', '/usr/local/bin', '/opt/local/bin'
  * `os.userInfo().username`); an unknown home simply omits the paths derived from it.
  */
 export function tmuxCandidatePaths(home?: string | null, user?: string | null): string[] {
-  const paths = [
-    '/opt/homebrew/bin/tmux',
-    '/usr/local/bin/tmux',
-    '/usr/bin/tmux',
-    '/bin/tmux',
-    '/opt/local/bin/tmux',
-    '/run/current-system/sw/bin/tmux',
-    '/home/linuxbrew/.linuxbrew/bin/tmux'
-  ]
+  const paths = ['/usr/bin/tmux', '/bin/tmux']
   if (home) paths.push(`${home}/.nix-profile/bin/tmux`)
   // The per-user nix profile is keyed by USER NAME, not by home path; the home basename is the
   // fallback because that is what it is on every platform this list targets.
