@@ -106,6 +106,11 @@ produce an unknown-publisher warning.
 - Merge only after upstream review approval.
 - The hosted release workflow has not yet produced a GitHub run for this PR head; its local YAML
   structure and Windows package path are verified, but remote workflow evidence is pending.
+- The Windows-only `release.yml` is present on the PR source jer, but GitHub registers workflows
+  from the source repository's default branch. Because this is a new feature jer in a fork, the
+  workflow is not dispatchable from the source repository until that jer is merged or otherwise
+  installed on its default branch. `gh pr checks 494 -R eneskirca/nodeterm` reports no checks, and
+  the target repository has existing `action_required` CI and Security runs.
 
 ## Known historical note
 
