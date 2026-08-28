@@ -76,6 +76,14 @@ export default defineConfig({
       'src/main/remote/host-identity.test.ts',
       'src/main/remote/peer-identity.test.ts',
       'src/core/usage/minimax-usage.test.ts',
+      // These cross-surface fixtures exercise Unix socket creation, POSIX shell validity, or
+      // platform credential-store primitives rather than the Windows implementation boundary.
+      'src/core/agents/codex-thread-id-route.test.ts',
+      'test/server/hook-install-guard.test.ts',
+      'src/main/codex-accounts-e2e.test.ts',
+      'src/core/context-link-core.test.ts',
+      'src/core/remote-ssh/control-master.test.ts',
+      'src/core/agents/hook-sock-path.test.ts',
           'src/core/session-memory-remote.test.ts',
           'src/core/tmux-*.test.ts',
           'src/main/canvas-control-shim.test.ts',

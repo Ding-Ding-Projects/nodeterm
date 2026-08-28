@@ -138,8 +138,8 @@ describe('BrandPulse', () => {
 describe('the pulse classes exist in both stylesheets', () => {
   // The class names are strings on one side and selectors on the other, so a rename can only be
   // half-done. Nothing else would notice: a missing selector loses the animation silently.
-  const CANVAS_CSS = readFileSync(join(__dirname, '..', 'styles.css'), 'utf8')
-  const HUD_CSS = readFileSync(join(__dirname, '..', 'hud', 'hud.css'), 'utf8')
+  const CANVAS_CSS = readFileSync(join(__dirname, '..', 'styles.css'), 'utf8').replace(/\r\n/g, '\n')
+  const HUD_CSS = readFileSync(join(__dirname, '..', 'hud', 'hud.css'), 'utf8').replace(/\r\n/g, '\n')
 
   it('the canvas badge class is styled and animated', () => {
     expect(CANVAS_CSS).toContain(`.${BRAND_PULSE_CLASS} {`)

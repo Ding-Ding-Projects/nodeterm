@@ -11,7 +11,7 @@ import { join } from 'node:path'
  * is the entire canvas and appeared exactly once. A test doesn't get bored at entry 26.
  */
 
-const CSS = readFileSync(join(__dirname, 'styles.css'), 'utf8')
+const CSS = readFileSync(join(__dirname, 'styles.css'), 'utf8').replace(/\r\n/g, '\n')
 
 /**
  * Where the light block actually starts. This MUST be anchored to the selector at the start of a
