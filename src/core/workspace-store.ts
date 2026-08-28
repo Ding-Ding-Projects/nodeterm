@@ -958,6 +958,8 @@ export class WorkspaceStore {
    */
   async projectFileState(cwd: string): Promise<'present' | 'absent' | 'unreadable'> {
     try {
+      const projectDir = await fs.stat(path.join(cwd, PROJECT_DIR))
+      if (!projectDir.isDirectory()) return 'unreadable'
       await fs.stat(projectFilePath(cwd))
       return 'present'
     } catch (err) {
