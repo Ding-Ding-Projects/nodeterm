@@ -183,16 +183,9 @@ function keyLabel(key: string): string {
 export function shortcutKeyParts(s: string, isMac: boolean): string[] {
   const { cmd, ctrl, shift, alt, key } = parseShortcut(s)
   const parts: string[] = []
-  if (isMac) {
-    if (cmd) parts.push('⌘')
-    if (ctrl) parts.push('⌃')
-    if (alt) parts.push('⌥')
-    if (shift) parts.push('⇧')
-  } else {
-    if (cmd || ctrl) parts.push('Ctrl')
-    if (alt) parts.push('Alt')
-    if (shift) parts.push('Shift')
-  }
+  if (cmd || ctrl) parts.push('Ctrl')
+  if (alt) parts.push('Alt')
+  if (shift) parts.push('Shift')
   if (key !== null) parts.push(keyLabel(key))
   return parts
 }
@@ -201,7 +194,7 @@ export function shortcutKeyParts(s: string, isMac: boolean): string[] {
  *  (`"Cmd+Alt"`) -> `"⌘⌥"` / `"Ctrl+Alt"`. */
 export function formatShortcut(s: string, isMac: boolean): string {
   const parts = shortcutKeyParts(s, isMac)
-  return isMac ? parts.join('') : parts.join('+')
+  return parts.join('+')
 }
 
 /** Minimal shape of a KeyboardEvent this module needs — kept structural so callers don't have
@@ -221,8 +214,8 @@ export function resolvedModifiers(
   isMac: boolean
 ): { meta: boolean; ctrl: boolean; alt: boolean; shift: boolean } {
   return {
-    meta: isMac && p.cmd,
-    ctrl: p.ctrl || (!isMac && p.cmd),
+    meta: false,
+    ctrl: p.ctrl || p.cmd,
     alt: p.alt,
     shift: p.shift
   }
@@ -274,13 +267,12 @@ export function chordHeld(e: ShortcutKeyEvent, s: string, isMac: boolean): boole
  * would save a binding the same gesture can never fire again.
  */
 export function captureToShortcut(e: ShortcutKeyEvent, isMac: boolean): string | null {
-  const primaryPressed = isMac ? e.metaKey : e.ctrlKey
+  const primaryPressed = e.ctrlKey
   if (!primaryPressed) return null
-  if (!isMac && e.metaKey) return null
+  if (e.metaKey) return null
   const key = normalizeKey(e.key)
   if (MODIFIER_KEYS.has(key)) return null
-  const parts = ['Cmd']
-  if (isMac && e.ctrlKey) parts.push('Ctrl')
+  const parts = ['Ctrl']
   if (e.altKey) parts.push('Alt')
   if (e.shiftKey) parts.push('Shift')
   parts.push(key)
