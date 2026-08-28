@@ -39,6 +39,7 @@ import { Input } from '@renderer/ui/Input'
 import { Select } from '@renderer/ui/Select'
 import { Switch } from '@renderer/ui/Switch'
 import { NumberField } from '@renderer/ui/NumberField'
+import { isBrowserRuntime } from '@renderer/bridge/runtime'
 import { SettingsSection } from '../SettingsSection'
 import { SearchableRow } from '../SearchableRow'
 import { FieldRow } from '../FieldRow'
@@ -210,6 +211,7 @@ function identityValue(choice: IdentityChoice): boolean | undefined {
 }
 
 export function AgentsSection({ isActive }: { isActive: boolean }): React.JSX.Element {
+  const browserRuntime = isBrowserRuntime()
   const settings = useSettings((s) => s.settings)
   const update = useSettings((s) => s.update)
   // Per-project capability rows act on the ACTIVE project. Subscribed (not getState()) so an
@@ -419,19 +421,29 @@ export function AgentsSection({ isActive }: { isActive: boolean }): React.JSX.El
       <SearchableRow {...ROWS.browserControl}>
         <FieldRow
           label="Browser control"
-          description="Browser nodes an agent is driving right now, across every open project. Stop ends it immediately — the debugger is detached and the agent is told you stopped it, so it reports that instead of retrying. One place to stop it, so you never have to hunt from node to node."
+          description={
+            browserRuntime
+              ? "Browser control is not available in Server Edition. Browser nodes render inside the viewer's own browser, so this host has no embedded debugger to drive. Use the Windows desktop application for browser driving."
+              : 'Browser nodes an agent is driving right now, across every open project. Stop ends it immediately. The debugger is detached and the agent is told you stopped it, so it reports that instead of retrying. One place to stop it means you never have to hunt from node to node.'
+          }
           control={
-            <Button
-              variant="default"
-              disabled={drivenRows.length === 0}
-              onClick={() => window.nodeTerminal.browser.stopAll()}
-            >
-              Stop all
-            </Button>
+            browserRuntime ? null : (
+              <Button
+                variant="default"
+                disabled={drivenRows.length === 0}
+                onClick={() => window.nodeTerminal.browser.stopAll()}
+              >
+                Stop all
+              </Button>
+            )
           }
         />
         <div className="space-y-2">
-          {drivenRows.length === 0 ? (
+          {browserRuntime ? (
+            <span className="text-[13px] text-muted">
+              This is a permanent capability boundary for Server Edition, not a temporary outage.
+            </span>
+          ) : drivenRows.length === 0 ? (
             <span className="text-[13px] text-muted">No agent is driving a browser node right now.</span>
           ) : (
             drivenRows.map((r) => (
@@ -452,7 +464,9 @@ export function AgentsSection({ isActive }: { isActive: boolean }): React.JSX.El
           <FieldRow
             label={title}
             note={
-              activeProject
+              browserRuntime && cap === 'agentBrowserControl'
+                ? 'Unavailable in Server Edition. Use the Windows desktop application for browser driving.'
+                : activeProject
                 ? `Applies to the active project: ${activeProject.name}.`
                 : 'Open a project to change this — the switch belongs to a project, not to the app.'
             }
@@ -467,7 +481,7 @@ export function AgentsSection({ isActive }: { isActive: boolean }): React.JSX.El
                 // grants require the machine-local 'kept' too (projectCapabilityGrantedFor).
                 checked={projectCapabilityFlagInFile(activeProject, cap)}
                 ariaLabel={title}
-                disabled={!activeProject}
+                disabled={!activeProject || (browserRuntime && cap === 'agentBrowserControl')}
                 onChange={(on) => {
                   // The ONE strict setter: literal `true` on, field deleted on off. Writing the
                   // value any other way (a string, a stored false) is the bug the validators
