@@ -10,26 +10,25 @@ const WIDTH_MAX = 320
 
 const ROWS = {
   enabled: {
-    title: 'Notch HUD',
-    keywords: ['notch', 'hud', 'mascot', 'menu bar', 'overlay', 'agent', 'status', 'macos', 'capsule', 'dynamic island']
+    title: 'Agent HUD',
+    keywords: ['agent', 'hud', 'mascot', 'taskbar', 'overlay', 'status', 'work area', 'floating panel']
   },
   width: {
-    title: 'Notch width',
-    keywords: ['notch', 'width', 'flush', 'align', 'capsule', 'position', 'offset', 'tune']
+    title: 'HUD width',
+    keywords: ['hud', 'width', 'align', 'panel', 'position', 'offset', 'tune']
   },
   hover: {
     title: 'Expand on hover',
-    keywords: ['notch', 'hover', 'expand', 'panel', 'click', 'open', 'sessions']
+    keywords: ['hud', 'hover', 'expand', 'panel', 'click', 'open', 'sessions']
   }
 }
 const ENTRIES = Object.values(ROWS)
 
 /**
- * Settings → Interface → Notch (macOS only; the page only renders it on darwin).
+ * Settings → Interface → Agent HUD, the Windows work-area activity surface.
  *
- * Everything the notch capsule exposes lives here rather than in Appearance: the enable toggle, the
- * notch-width knob (macOS exposes no API for the real notch width, so the capsule has to assume one
- * — this is how you make it sit flush on YOUR Mac), and hover-vs-click expansion. All three apply
+ * Everything the Agent HUD exposes lives here rather than in Appearance: the enable toggle, the
+ * width control, and hover-vs-click expansion. All three apply
  * live: dragging the width slider moves the capsule as you drag.
  */
 export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Element {
@@ -40,19 +39,19 @@ export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Ele
   return (
     <SettingsSection
       id="notch"
-      title="Notch"
-      description="Walking agent mascots inside the MacBook notch, and a mini session panel when you need it."
+      title="Agent HUD"
+      description="A Windows work-area activity surface with agent indicators and a compact session panel."
       isActive={isActive}
       searchEntries={ENTRIES}
     >
       <SearchableRow {...ROWS.enabled}>
         <FieldRow
-          label="Show the notch HUD"
+          label="Show the Agent HUD"
           description="Extends the notch into a black capsule while agents work: a walking mascot per busy agent, a red dot when one needs you, a green blob when one has finished and you haven't looked yet."
           control={
             <Switch
               checked={notchHud}
-              ariaLabel="macOS Notch HUD"
+              ariaLabel="Agent HUD"
               onChange={(on) => update({ notchHud: on })}
             />
           }
@@ -68,8 +67,8 @@ export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Ele
       >
         <SearchableRow {...ROWS.width}>
           <FieldRow
-            label="Notch width"
-            description="macOS doesn't tell apps how wide the notch is, so the capsule assumes it. Nudge this until the capsule sits flush against the notch — larger moves it left, smaller moves it right."
+            label="HUD width"
+            description="Set the width of the compact Windows activity surface."
             control={
               <div className="flex items-center gap-3">
                 <input
@@ -97,7 +96,7 @@ export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Ele
             control={
               <Switch
                 checked={hoverExpand}
-                ariaLabel="Expand the notch panel on hover"
+                ariaLabel="Expand the Agent HUD on hover"
                 onChange={(on) => update({ notchHoverExpand: on })}
               />
             }

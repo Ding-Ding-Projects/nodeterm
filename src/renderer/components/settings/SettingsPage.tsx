@@ -34,8 +34,6 @@ import { DebugSection } from './sections/DebugSection'
 import { GitHubIssuesSection } from './sections/GitHubIssuesSection'
 import { ModelGatewaySection } from './sections/ModelGatewaySection'
 
-const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
-
 export function SettingsPage({
   onClose,
   initialSection,
@@ -103,7 +101,7 @@ export function SettingsPage({
             <ShellSection isActive={active === 'shell'} />
             <BehaviorSection isActive={active === 'behavior'} />
             <AppearanceSection isActive={active === 'appearance'} />
-            {isMac && <NotchSection isActive={active === 'notch'} />}
+            <NotchSection isActive={active === 'notch'} />
             <PhoneSection isActive={active === 'phone'} />
             <SpeechSection isActive={active === 'speech'} onNavigate={setActive} />
             <ShortcutsSection isActive={active === 'shortcuts'} />

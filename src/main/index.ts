@@ -5,7 +5,7 @@ import { readFile, realpath as fsRealpath, lstat as fsLstat, writeFile as fsWrit
 import { existsSync, statSync, openSync, fstatSync, readFileSync, closeSync } from 'fs'
 import { homedir, hostname } from 'os'
 import { randomUUID } from 'crypto'
-import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, Notification, powerMonitor, safeStorage, shell, systemPreferences, webContents } from 'electron'
+import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, Notification, nativeImage, powerMonitor, safeStorage, shell, webContents } from 'electron'
 import { IPC } from '../shared/ipc'
 
 // Debug log ring (issue #78): capture the process console from the first line — a packaged app
@@ -135,8 +135,7 @@ import {
   type NotchHudTunables,
   destroyNotchHud,
   notchHudOnAgentEvent,
-  notchHudOnContextUpdate,
-  assertRegularDockPresence
+  notchHudOnContextUpdate
 } from './notch-hud'
 import {
   initAgentStatusMirror,
@@ -171,7 +170,6 @@ import type { KeepAwakeTracker } from '../core/keep-awake'
 import { startSessionMemoryService, sshScopePredicate } from '../core/session-memory-service'
 import { createMemoryPressureMonitor } from '../core/memory-pressure'
 import { createPtyPressureMonitor } from '../core/pty-pressure'
-import { registerPtmxLimitHandler } from './ptmx-limit'
 import { getDeviceId } from '../core/device-id'
 import { initRemoteStatusPush } from './remote-ssh/remote-status-push'
 import { initCanvasSync } from '../core/canvas-sync'
@@ -296,7 +294,6 @@ app.commandLine.appendSwitch('max-active-webgl-contexts', String(WEBGL_CONTEXT_C
 // nothing in the OS; the only consumer is the relay identity keypair, which already has a
 // documented plaintext fallback. Never set this for a real build: it would silently downgrade
 // at-rest encryption of that key.
-if (NT_MULTI && process.platform === 'darwin') app.commandLine.appendSwitch('use-mock-keychain')
 
 // First thing in bootstrap: install the Electron CorePlatform so anything in src/core
 // (wired in later tasks) can resolve platform() at boot. Placed after the NT_MULTI
@@ -325,7 +322,7 @@ const settingsStore = new SettingsStore()
 // `settingsStore.init()` in `whenReady`) rather than at module load, where `get()` would still be
 // DEFAULT_SETTINGS and every override would be missed until the next save; recomputed on
 // `onChange`, which fires after a successful save. Never per keystroke — sanitize is real work.
-const interceptIsMac = process.platform === 'darwin'
+const interceptIsMac = false
 let interceptBindings: KeydownInterceptBindings | null = null
 const currentInterceptBindings = (): KeydownInterceptBindings =>
   (interceptBindings ??= resolveInterceptBindings(settingsStore.get().keybindings, interceptIsMac))
@@ -683,7 +680,6 @@ if (process.platform !== 'win32' && typeof process.setFdLimit === 'function') {
  * writer, so a change persists through `settingsStore` and fires this rebuild. No reverse IPC.
  */
 function buildAppMenu(win: BrowserWindow): void {
-  const isMac = process.platform === 'darwin'
   const s = settingsStore.get()
   const send = (channel: string): void => {
     if (!win.isDestroyed()) win.webContents.send(channel)
@@ -695,7 +691,7 @@ function buildAppMenu(win: BrowserWindow): void {
   // stand-down is the only way it can reach a focused terminal.
   const settingsItem: Electron.MenuItemConstructorOptions = {
     id: MENU_ITEM_ID_SETTINGS,
-    label: isMac ? 'Settings…' : 'Settings',
+    label: 'Settings',
     accelerator: 'CmdOrCtrl+,',
     click: () => send(IPC.appOpenSettings)
   }
@@ -746,82 +742,31 @@ function buildAppMenu(win: BrowserWindow): void {
     // Also restored from the default menu: Enter Full Screen (Ctrl+⌘F on mac, F11 on Linux).
     { role: 'togglefullscreen' }
   ]
-  const template: Electron.MenuItemConstructorOptions[] = isMac
-    ? [
-        {
-          label: app.name,
-          submenu: [
-            { role: 'about' },
-            { type: 'separator' },
-            settingsItem,
-            { type: 'separator' },
-            { role: 'services' },
-            { type: 'separator' },
-            { role: 'hide' },
-            { role: 'hideOthers' },
-            { role: 'unhide' },
-            { type: 'separator' },
-            { role: 'quit' }
-          ]
-        },
-        {
-          label: 'Edit',
-          submenu: [
-            { role: 'undo' },
-            { role: 'redo' },
-            { type: 'separator' },
-            { role: 'cut' },
-            { role: 'copy' },
-            { role: 'paste' },
-            { role: 'pasteAndMatchStyle' },
-            { role: 'delete' },
-            { role: 'selectAll' }
-          ]
-        },
-        { label: 'View', submenu: viewSubmenu },
-        {
-          label: 'Window',
-          // `id` on minimize: `syncMenuForStandDown` disables it while EITHER stand-down is in
-          // effect — a terminal focused under terminal-first, or an armed shortcut recorder — so
-          // ⌘M falls through to the terminal, or to the recorder, instead of minimizing the
-          // window. mac has no `{role:'close'}` here at all — which is why the intercept is ⌘W's
-          // only handler on mac.
-          submenu: [
-            { role: 'minimize', id: MENU_ITEM_ID_MINIMIZE },
-            { role: 'zoom' },
-            { type: 'separator' },
-            { role: 'front' }
-          ]
-        }
+  const template: Electron.MenuItemConstructorOptions[] = [
+    { label: 'File', submenu: [{ role: 'quit' }] },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'delete' },
+        { role: 'selectAll' }
       ]
-    : [
-        { label: 'File', submenu: [{ role: 'quit' }] },
-        {
-          label: 'Edit',
-          submenu: [
-            { role: 'undo' },
-            { role: 'redo' },
-            { type: 'separator' },
-            { role: 'cut' },
-            { role: 'copy' },
-            { role: 'paste' },
-            { role: 'delete' },
-            { role: 'selectAll' }
-          ]
-        },
-        { label: 'View', submenu: viewSubmenu },
-        { label: 'Settings', submenu: [settingsItem] },
-        // Both ids matter off-mac: `{role:'close'}` owns Ctrl+W here, which is readline's kill-word
-        // in a terminal — a stand-down that left it enabled would CLOSE the window on a keystroke
-        // a terminal-first user meant for their shell.
-        {
-          label: 'Window',
-          submenu: [
-            { role: 'minimize', id: MENU_ITEM_ID_MINIMIZE },
-            { role: 'close', id: MENU_ITEM_ID_CLOSE }
-          ]
-        }
+    },
+    { label: 'View', submenu: viewSubmenu },
+    { label: 'Settings', submenu: [settingsItem] },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize', id: MENU_ITEM_ID_MINIMIZE },
+        { role: 'close', id: MENU_ITEM_ID_CLOSE }
       ]
+    }
+  ]
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
   // A REBUILD resets every item to `enabled: true`, and this function runs on every settings
   // change — so without this line, a terminal-first user with a terminal focused would have ⌘M
@@ -907,27 +852,17 @@ function syncMenuForStandDown(): void {
 }
 
 function createWindow(): BrowserWindow {
-  // On Linux the window/taskbar icon is not supplied by an app bundle (unlike macOS),
-  // so set it explicitly from the bundled png (extraResources). mac/win are untouched —
-  // an icon there would do nothing useful and could clobber the bundled .icns.
-  const linuxIcon =
-    process.platform === 'linux'
-      ? app.isPackaged
-        ? join(process.resourcesPath, 'icon.png')
-        : join(__dirname, '../../build/icon.png')
-      : undefined
   const win = new BrowserWindow({
     width: 1400,
     height: 900,
     show: false,
     backgroundColor: '#1e1e1e',
     // NT_MULTI instances are throwaway dev sandboxes: label the window so a second instance is
-    // never mistaken for the real one (the dock already shows the Electron icon in dev).
+    // never mistaken for the real one.
     title: NT_MULTI ? 'node-terminal (test instance)' : 'node-terminal',
-    icon: linuxIcon,
-    // Integrate the macOS traffic lights into our top bar (modern Mac app look).
-    titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 16, y: 15 },
+    icon: app.isPackaged ? join(process.resourcesPath, 'icon.png') : join(__dirname, '../../build/icon.png'),
+    titleBarStyle: 'hidden',
+    titleBarOverlay: { color: '#1e1e1e', symbolColor: '#ffffff', height: 40 },
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -1004,9 +939,6 @@ function createWindow(): BrowserWindow {
   })
 
   win.on('ready-to-show', () => win.show())
-  // The main window is a regular app window; establishing its Dock presence explicitly means the
-  // later focusable:false Notch HUD panel can never leave the app looking like an accessory.
-  win.on('show', () => assertRegularDockPresence())
 
   // macOS: closing the window hides it instead of destroying it. The app deliberately
   // outlives its window (tmux sessions, hook server, updater); destroying the window
@@ -1196,9 +1128,7 @@ app.whenReady().then(async () => {
   // Electron-only mic consent: not core-bound (systemPreferences is main-process-only), so it's
   // a raw ipcMain handler like the other Electron-only surfaces (dialogs, shell, media) rather
   // than going through registerSpeechIpc/corePlatform.
-  ipcMain.handle(IPC.speechMicConsent, async () =>
-    process.platform === 'darwin' ? systemPreferences.askForMediaAccess('microphone') : true
-  )
+  ipcMain.handle(IPC.speechMicConsent, async () => true)
   registerClaudeCliIpc()
   registerCodexIdentityIpc()
   // Warm the `claude --version` probe now (it spawns a login shell + node, ~sub-second) so the
@@ -1340,9 +1270,6 @@ app.whenReady().then(async () => {
     if (!w) return
     if (w.isMinimized()) w.restore()
     w.show()
-    // On macOS `win.focus()` alone won't pull us in front of the still-active drag-source app —
-    // app-level focus with `steal` is what actually activates us across apps.
-    if (process.platform === 'darwin') app.focus({ steal: true })
     w.focus()
   })
 
@@ -1359,10 +1286,17 @@ app.whenReady().then(async () => {
     })
   )
 
-  // Dock badge: number of Claude nodes with unread output (macOS only). '' clears it.
+  // Windows taskbar overlay: show unread count without stealing focus.
   ipcMain.on(IPC.appSetBadge, (_e, count: number) => {
-    if (process.platform !== 'darwin' || !app.dock) return
-    app.dock.setBadge(count > 0 ? String(count) : '')
+    const w = getMainWindow()
+    if (!w || w.isDestroyed()) return
+    if (count <= 0) {
+      w.setOverlayIcon?.(null, '')
+      return
+    }
+    const label = Math.min(99, Math.max(1, Math.floor(count)))
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><circle cx="32" cy="32" r="30" fill="#b3261e"/><text x="32" y="42" text-anchor="middle" font-family="Segoe UI" font-size="28" font-weight="700" fill="white">${label}</text></svg>`
+    w.setOverlayIcon?.(nativeImage.createFromDataURL(`data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`), `${label} unread items`)
   })
 
   // Show an OS notification — but only when the window is in the background. Clicking it
@@ -1409,13 +1343,10 @@ app.whenReady().then(async () => {
     }
   )
 
-  // Deep-link to the OS notification settings so the user can re-grant a denied
-  // permission (macOS never re-prompts once the app's record exists). The URL is a
-  // main-side constant — deliberately NOT routed through shellOpenExternal's
-  // http(s)-only allowlist, which must stay closed to renderer-supplied strings.
+  // Deep-link to the Windows notification settings. The URL is a main-side constant and is not
+  // routed through the renderer-controlled external URL allowlist.
   ipcMain.handle(IPC.appOpenNotificationSettings, () => {
-    if (process.platform !== 'darwin') return
-    void shell.openExternal('x-apple.systempreferences:com.apple.Notifications-Settings.extension')
+    void shell.openExternal('ms-settings:notifications')
   })
 
   ipcMain.handle(IPC.announcementsFetch, async () => (await fetchCheck()).messages)
@@ -1444,16 +1375,10 @@ app.whenReady().then(async () => {
   )
   ipcMain.handle(IPC.pairingStop, () => pairingService.stop())
   ipcMain.handle(IPC.pairingProbeSsh, () => pairingService.probeSsh())
-  // Same pattern as appOpenNotificationSettings: a main-side constant deep link, NOT routed
-  // through shellOpenExternal's http(s)-only allowlist (which silently drops x-apple.* URLs —
-  // the "Open System Settings" button did nothing when it sent the URL from the renderer).
-  // The `Services_RemoteLogin` query selected the service in the pre-Ventura prefpane and is
-  // harmless on newer macOS, which opens the Sharing pane either way.
+  // Open the Windows optional-features surface where OpenSSH Server can be enabled. This is a
+  // main-side constant and never accepts a renderer-provided URL.
   ipcMain.handle(IPC.pairingOpenRemoteLoginSettings, () => {
-    if (process.platform !== 'darwin') return
-    void shell.openExternal(
-      'x-apple.systempreferences:com.apple.preferences.sharing?Services_RemoteLogin'
-    )
+    void shell.openExternal('ms-settings:optionalfeatures')
   })
   ipcMain.handle(IPC.pairingListDevices, () => pairingService.listDevices())
   ipcMain.handle(IPC.pairingRevokeDevice, (_e, id: string) => pairingService.revokeDevice(id))
@@ -1720,7 +1645,6 @@ app.whenReady().then(async () => {
   // always visible on macOS (the window title is hidden by titleBarStyle: 'hiddenInset', and the
   // dev dock icon/name are Electron's own), so a test instance can never be mistaken for the
   // real app.
-  if (NT_MULTI && process.platform === 'darwin') app.dock?.setBadge('TEST')
   // Flip `quitting` before quitAndInstall so the window's close-event actually closes (not hides);
   // quitAndInstall closes all windows then calls app.quit(), which our hide-on-close would block.
   // Also skip the confirm dialog — this is a restart-to-update the user already asked for via the
@@ -1762,14 +1686,9 @@ app.whenReady().then(async () => {
     // get it wrong, and getting it wrong is invisible — the wrong list silently skips an agent's
     // nodes with every test still green.
   })
-  // macOS Notch HUD (docs/notch-hud.md): walking agent mascots by the notch. darwin + setting only;
-  // reads the same agent-status seams the mirror does. Live-toggled via settings below.
+  // Windows Agent HUD: a work-area overlay fed by the same agent-status seams as the main canvas.
   //
-  // Create the HUD only AFTER the main window is visible. The HUD is a focusable:false (non-
-  // activating) panel; if it is shown while the main window is still loading (created with
-  // show:false, shown on 'ready-to-show'), it can be the only orderFront-ed window on screen and
-  // demote the app to accessory — the Dock icon then disappears. Gating on the main window's first
-  // 'show' guarantees a regular window has established the app's Dock presence first.
+  // Create the HUD only after the main window is visible so startup ordering remains deterministic.
   const notchTunables = (): NotchHudTunables => {
     const s = settingsStore.get()
     return {
@@ -2449,10 +2368,6 @@ app.whenReady().then(async () => {
     }
   })
   ptyPressure.start()
-  // The banner's "Fix automatically…" button. Registered, never called on our own initiative: it
-  // raises `kern.tty.ptmx_max` behind macOS's own admin-password dialog. Its success re-announces
-  // through the monitor's funnel, so the banner clears without waiting out the next tick.
-  registerPtmxLimitHandler(corePlatform, { announce: (reading) => ptyPressure.announce(reading) })
   // Session memory (docs/superpowers/specs/2026-08-10-session-memory-panel-design.md): the pill's
   // cheap RAM read plus the on-demand per-session breakdown. An SSH project's sessions live on ITS
   // host, so they are read THERE over the project's ControlMaster — the same injection Context Link
@@ -3581,22 +3496,7 @@ app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', () => {
-  // On macOS the app stays alive, so the async final snapshots inside killAll can complete
-  // in the background; on other platforms quitting goes through before-quit below.
-  if (process.platform !== 'darwin') {
-    app.quit()
-  } else {
-    void ptyManager.killAll()
-    // Land any pending throttled .nodeterm mirror write BEFORE the masters die — killing a
-    // master mid-write used to leave a truncated project.json on the server.
-    void remoteWorkspaceIO.flush().finally(() => {
-      sshProjectManager?.disconnectAll()
-      // Every master is gone, so nothing can use the unlocked key; scheduled (not stop()) so a
-      // quick window-reopen + reconnect inside the grace re-uses the agent instead of re-prompting.
-      // Without this, a destroyed window left the key alive for the agent's full 12h backstop.
-      appSshAgent.scheduleStop()
-    })
-  }
+  app.quit()
 })
 
 // The final scrollback snapshots are async (capture subprocess + fs.promises write) — hold

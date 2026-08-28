@@ -8,7 +8,7 @@
 // extra streams in (the normalized agent-event stream for prompt+subagents, and context-update for
 // the model) via the module-level notchHudOn* functions, which no-op when the HUD is off.
 
-import { app, BrowserWindow, ipcMain, screen } from 'electron'
+import { BrowserWindow, ipcMain, screen } from 'electron'
 import { join } from 'path'
 import { IPC } from '../shared/ipc'
 import { getMainWindow, sendToMain } from './main-window'
@@ -49,32 +49,6 @@ const PUSH_DEBOUNCE_MS = 150
 /** Low-frequency sweep so stale (gone + idle > 6h) nodes drop even with no live events. */
 // Also the tick that lets the model's working watchdog and the relative times age without events.
 const SWEEP_MS = 60 * 1000
-
-/**
- * Keep the app a REGULAR Dock app even though the HUD is a `focusable:false` (non-activating
- * panel) overlay. On macOS `focusable:false` maps to AppKit's `setDisableKeyOrMainWindow:YES`, so
- * the HUD window can never become the app's key/main window. If such a panel is the only window
- * that is orderFront-ed on screen (e.g. it shows before the main window has finished loading, or
- * while the main window is hidden by hide-on-close), macOS re-evaluates the app as having no
- * regular window and drops its Dock tile — the "Dock icon disappears once the HUD opens" bug.
- * Asserting `regular` + `dock.show()` is idempotent and cheap, and guarantees the HUD never
- * demotes the app's Dock presence. No-op off macOS.
- */
-export function assertRegularDockPresence(): void {
-  if (process.platform !== 'darwin') return
-  try {
-    // Idempotent: re-asserting 'regular' when already regular is a no-op.
-    app.setActivationPolicy('regular')
-  } catch {
-    /* older Electron / transient — ignore */
-  }
-  // `dock.show()` returns a Promise in recent Electron; swallow it either way.
-  try {
-    void Promise.resolve(app.dock?.show()).catch(() => {})
-  } catch {
-    /* ignore */
-  }
-}
 
 // ---- Singleton (mirror main-window.ts) -----------------------------------------------------
 
@@ -258,26 +232,18 @@ class NotchHudController {
     notchCenterX: number
     hasNotch: boolean
   } {
-    const d = screen.getPrimaryDisplay()
-    const b = d.bounds
-    const wa = d.workArea
-    // The notch bar height is the strip between the display top and the usable work area
-    // (menu-bar / notch). Floor at 24 so we always have room for the mascots.
-    const inset = wa.y - b.y
-    const bar = Math.max(NOTCH_BAR_FLOOR, inset)
-    const height = Math.min(HUD_WINDOW_HEIGHT, b.height)
-    // A physical notch is present only when the display actually has a menu bar (inset > 0) AND that
-    // inset is as tall as a notched Mac's menu bar. Otherwise the renderer draws a floating pill.
-    const hasNotch = inset > 0 && inset >= NOTCH_MIN_BAR
+    const wa = screen.getPrimaryDisplay().workArea
+    const width = Math.min(560, wa.width)
+    const height = Math.min(HUD_WINDOW_HEIGHT, wa.height)
     return {
-      x: b.x,
-      y: b.y,
-      width: b.width,
+      x: wa.x + Math.round((wa.width - width) / 2),
+      y: wa.y,
+      width,
       height,
-      bar,
+      bar: NOTCH_BAR_FLOOR,
       notchWidth: sanitizeNotchWidth(this.tunables.notchWidth),
-      notchCenterX: Math.round(b.width / 2),
-      hasNotch
+      notchCenterX: Math.round(width / 2),
+      hasNotch: false
     }
   }
 
@@ -309,17 +275,6 @@ class NotchHudController {
       focusable: false,
       skipTaskbar: true,
       show: false,
-      // LOAD-BEARING (field bug: the capsule rendered as a detached black box BELOW the menu bar
-      // instead of fused with the notch). AppKit's -[NSWindow constrainFrameRect:toScreen:] pushes
-      // every window down so it can't overlap the menu bar / notch strip; Electron only skips that
-      // constraint when enableLargerThanScreen is set. Without it our y = display.bounds.y request
-      // is silently clamped to workArea.y and the window can never paint over the notch.
-      enableLargerThanScreen: true,
-      // NSPanel (non-activating), the same window class agent-notch uses for its indicator: floats
-      // over fullscreen spaces and never takes key/main.
-      type: 'panel',
-      // Do not steal the space or animate; it is a passive overlay.
-      acceptFirstMouse: true,
       backgroundColor: '#00000000',
       webPreferences: {
         preload: join(__dirname, '../preload/hud.js'),
@@ -329,15 +284,9 @@ class NotchHudController {
       }
     })
     hudWin = win
-    // Float above full-screen apps and every Space; screen-saver level keeps it over normal windows.
-    win.setAlwaysOnTop(true, 'screen-saver')
-    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+    win.setAlwaysOnTop(true, 'floating')
     // Passive by default: the strip is click-through; the renderer flips this OFF over the hotspot.
     win.setIgnoreMouseEvents(true, { forward: true })
-    // The HUD must NEVER affect the Dock: this is a regular Dock app. Creating a focusable:false
-    // panel can otherwise demote the app to accessory and drop the Dock icon — re-assert here.
-    assertRegularDockPresence()
-
     win.on('closed', () => {
       if (hudWin === win) hudWin = null
     })
@@ -350,9 +299,6 @@ class NotchHudController {
     }
     win.webContents.on('did-finish-load', () => {
       win.showInactive() // show without stealing focus
-      // Showing the panel is exactly when macOS re-evaluates the app's window set — re-assert the
-      // regular Dock policy so the freshly-shown non-activating panel can't demote us to accessory.
-      assertRegularDockPresence()
       this.pushNow()
     })
   }
@@ -396,13 +342,13 @@ class NotchHudController {
 let controller: NotchHudController | null = null
 let controllerDeps: NotchHudDeps | null = null
 
-/** Whether the HUD is supported on this platform (macOS desktop only). */
+/** Whether the HUD is supported on the Windows desktop. */
 function supported(): boolean {
-  return process.platform === 'darwin'
+  return process.platform === 'win32'
 }
 
 /**
- * Create the HUD (if darwin + enabled). Idempotent. `deps.getNodeTitle` is retained so a later
+ * Create the HUD (if Windows + enabled). Idempotent. `deps.getNodeTitle` is retained so a later
  * `setNotchHudEnabled(true)` (settings toggle) can recreate it without re-plumbing.
  */
 export function initNotchHud(deps: NotchHudDeps, t: NotchHudTunables): void {

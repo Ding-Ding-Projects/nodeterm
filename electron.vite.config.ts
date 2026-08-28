@@ -42,7 +42,7 @@ export default defineConfig({
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'src/preload/index.ts'),
-          // Tiny HUD-only preload for the macOS Notch HUD window (src/main/notch-hud.ts).
+          // Tiny HUD-only preload for the Windows Agent HUD window.
           hud: resolve(__dirname, 'src/preload/hud.ts')
         },
         external: ['electron'],
@@ -67,7 +67,7 @@ export default defineConfig({
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'src/renderer/index.html'),
-          // Second renderer entry: the macOS Notch HUD overlay window (src/main/notch-hud.ts).
+          // Second renderer entry: the Windows Agent HUD overlay window.
           hud: resolve(__dirname, 'src/renderer/hud.html')
         }
       }

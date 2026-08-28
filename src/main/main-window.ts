@@ -13,6 +13,7 @@ export interface MainWindowLike {
   restore(): void
   show(): void
   focus(): void
+  setOverlayIcon?(image: unknown, description: string): void
   on(event: 'closed', cb: () => void): void
   // `id` is Electron's webContents id — the same number CorePlatform addresses a UI by
   // (sendTo / the sender id of an ipcMain event). Optional so a test double may omit it.
@@ -71,7 +72,7 @@ export function createCrashReloadPolicy(
 // hook server, updater, license watchers — keeps running); a real close only happens
 // on quit. Other platforms quit on window close, so never intercept there.
 export function shouldHideOnClose(platform: NodeJS.Platform | string, quitting: boolean): boolean {
-  return platform === 'darwin' && !quitting
+  return false
 }
 
 export type CloseAction = 'default' | 'hide' | 'leave-fullscreen-then-hide'
