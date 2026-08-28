@@ -12,7 +12,7 @@ import {
 } from '@shared/keybindings'
 import type { ShortcutKeyEvent } from '@shared/shortcut'
 import { shortcutKeyParts } from '@shared/shortcut'
-import { isMacPlatform } from '@shared/platform-utils'
+import { isLegacyPrimaryPlatform } from '@shared/platform-utils'
 import { DEFAULT_SETTINGS } from '@shared/types'
 import { useSettings } from '../state/settings'
 
@@ -23,7 +23,7 @@ let lastSanitized: KeybindingOverrides = {}
 export function activeKeybindingOverrides(): KeybindingOverrides {
   const raw = useSettings.getState().settings.keybindings
   if (raw === lastRaw) return lastSanitized
-  const { overrides, warnings } = sanitizeKeybindingOverrides(raw, isMacPlatform())
+  const { overrides, warnings } = sanitizeKeybindingOverrides(raw, isLegacyPrimaryPlatform())
   if (warnings.length) console.warn(`[keybindings] ${warnings.join(' ')}`)
   lastRaw = raw
   lastSanitized = overrides
@@ -31,20 +31,20 @@ export function activeKeybindingOverrides(): KeybindingOverrides {
 }
 
 export function effectiveBindings(id: CommandId): readonly string[] {
-  return getEffectiveBindings(id, activeKeybindingOverrides(), isMacPlatform())
+  return getEffectiveBindings(id, activeKeybindingOverrides(), isLegacyPrimaryPlatform())
 }
 
 /** Display parts of the command's first effective binding; [] when unbound. */
-export function commandKeys(id: CommandId, isMac: boolean = isMacPlatform()): string[] {
-  const first = getEffectiveBindings(id, activeKeybindingOverrides(), isMac)[0]
-  return first ? shortcutKeyParts(first, isMac) : []
+export function commandKeys(id: CommandId, useMetaPrimary: boolean = isLegacyPrimaryPlatform()): string[] {
+  const first = getEffectiveBindings(id, activeKeybindingOverrides(), useMetaPrimary)[0]
+  return first ? shortcutKeyParts(first, useMetaPrimary) : []
 }
 
 /** `('Sessions', 'panel.sessions')` -> `'Sessions (⌘⇧L)'` (mac) / `'Sessions (Ctrl+Shift+L)'`
  *  — the same strings hintLabel produced for the defaults, but following remaps; bare text
  *  when unbound. */
-export function commandTooltip(text: string, id: CommandId, isMac: boolean = isMacPlatform()): string {
-  const parts = commandKeys(id, isMac)
+export function commandTooltip(text: string, id: CommandId, useMetaPrimary: boolean = isLegacyPrimaryPlatform()): string {
+  const parts = commandKeys(id, useMetaPrimary)
   if (!parts.length) return text
   return `${text} (${parts.join('+')})`
 }
@@ -52,8 +52,8 @@ export function commandTooltip(text: string, id: CommandId, isMac: boolean = isM
 /** The bare chord, as a chip: `'⌘K'` (mac) / `'Ctrl+K'`. **`''` when unbound** — every caller
  *  embeds this in a sentence (`⌘M to exit`, `Message (⌘Enter to commit)`), so they must test it
  *  and fall back to chord-less copy rather than rendering a stray fragment. */
-export function chipFor(id: CommandId, isMac: boolean = isMacPlatform()): string {
-  const parts = commandKeys(id, isMac)
+export function chipFor(id: CommandId, useMetaPrimary: boolean = isLegacyPrimaryPlatform()): string {
+  const parts = commandKeys(id, useMetaPrimary)
   return parts.join('+')
 }
 
@@ -90,9 +90,9 @@ export function setKeybindingOverride(id: CommandId, bindings: readonly string[]
 
 /** Display parts for EVERY effective binding (the panel shows the first; the Settings section
  *  shows them all). [] when unbound/disabled. */
-export function commandKeysFor(id: CommandId, isMac: boolean = isMacPlatform()): string[][] {
-  return getEffectiveBindings(id, activeKeybindingOverrides(), isMac).map((b) =>
-    shortcutKeyParts(b, isMac)
+export function commandKeysFor(id: CommandId, useMetaPrimary: boolean = isLegacyPrimaryPlatform()): string[][] {
+  return getEffectiveBindings(id, activeKeybindingOverrides(), useMetaPrimary).map((b) =>
+    shortcutKeyParts(b, useMetaPrimary)
   )
 }
 
@@ -130,7 +130,7 @@ export function terminalChordBubbles(e: ShortcutKeyEvent, kanbanOpen: boolean): 
       kanbanOpen
     },
     activeKeybindingOverrides(),
-    isMacPlatform()
+    isLegacyPrimaryPlatform()
   )
   if (id === null) return false
   return COMMANDS_BY_ID.get(id)?.scope !== 'terminal'

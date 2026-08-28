@@ -481,7 +481,7 @@ import type { CodexAccount } from '@shared/codex-account'
 import { useSystemCodexAccount } from '../state/systemCodexAccount'
 import { toKanbanSession } from './toKanbanSession'
 
-const isMac = false
+const useMetaPrimary = false
 
 const GRID = 24
 
@@ -3083,7 +3083,7 @@ export function Canvas() {
   const wheelZoom = settings.wheelZoom
   // The escape hatch, resolved ONCE: the router and React Flow's panOnScroll below must agree, or
   // a gesture neither of them pans is a gesture that does nothing.
-  const trackpadRouting = trackpadRoutingEnabled(isMac, settings.trackpadPan)
+  const trackpadRouting = trackpadRoutingEnabled(useMetaPrimary, settings.trackpadPan)
   useEffect(() => {
     const wrap = flowWrapRef.current
     if (!wrap) return
@@ -4221,7 +4221,7 @@ export function Canvas() {
         // some-but-not-all of it is down (e.g. Cmd alone, before Alt joins).
         if (e.repeat) return
         if (!isModifierEventKey(e.key)) return
-        if (!chordHeld(e, combo, isMac)) return
+        if (!chordHeld(e, combo, useMetaPrimary)) return
         armed = true
         heldSince = Date.now()
         const sel = nodesRef.current.find((n) => n.selected && n.type === 'terminal')
@@ -4241,7 +4241,7 @@ export function Canvas() {
 
       // Already armed: a non-modifier key, or an extra modifier joining the chord, is the
       // misfire guard — cancel without preventDefault so the real shortcut still fires.
-      if (!isModifierEventKey(e.key) || !chordHeld(e, combo, isMac)) {
+      if (!isModifierEventKey(e.key) || !chordHeld(e, combo, useMetaPrimary)) {
         cancel()
       }
     }
@@ -4252,14 +4252,14 @@ export function Canvas() {
       // The binding moved mid-hold (disabled, or remapped to a keyed chord): this gesture has
       // no owner any more, so cancel — the same thing the cleanup below does once the change
       // reaches React a tick later. Without this the `''` case would READ AS STILL HELD
-      // (`chordHeld(e, '', isMac)` is true exactly when no modifier is down) and the recording
+      // (`chordHeld(e, '', useMetaPrimary)` is true exactly when no modifier is down) and the recording
       // would never stop.
       if (combo === '' || !isHoldChord(combo)) {
         cancel()
         return
       }
       // Still fully down (an unrelated key was released) — keep recording.
-      if (chordHeld(e, combo, isMac)) return
+      if (chordHeld(e, combo, useMetaPrimary)) return
       const heldMs = Date.now() - heldSince
       if (heldMs < 400) {
         cancel()
@@ -6419,7 +6419,7 @@ export function Canvas() {
     activeElement: () => document.activeElement as unknown as ContextElement | null,
     kanbanOpen: () => isKanbanOpen(useProjects.getState().activeProjectId),
     overrides: activeKeybindingOverrides,
-    isMac,
+    useMetaPrimary,
     // Read per keystroke (the deps object is rebuilt each render anyway, but the thunk is what
     // the contract asks for): a policy change takes effect immediately, with no re-registration.
     terminalFirst: () => terminalShortcutPolicy() === 'terminal-first',
@@ -6510,7 +6510,7 @@ export function Canvas() {
       // (`''`) needs no guard for the same reason: an empty parse also has a null key.
       // The dispatcher only offers it in plain app focus (not typing / terminal / kanban).
       keyedDictation: (e) => {
-        if (!matchesShortcut(e, dictationBinding(), isMac)) return false
+        if (!matchesShortcut(e, dictationBinding(), useMetaPrimary)) return false
         e.preventDefault()
         toggleDictation()
         return true

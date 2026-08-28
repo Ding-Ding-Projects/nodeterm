@@ -27,7 +27,7 @@ const deps = (over: Partial<GlobalKeydownDeps> = {}): GlobalKeydownDeps => ({
   activeElement: () => null,
   kanbanOpen: () => false,
   overrides: () => ({}),
-  isMac: false,
+  useMetaPrimary: false,
   terminalFirst: () => false,
   handlers: {},
   gestures: { ...noGestures },

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { hintLabel, isMacPlatform, isWindowsPlatform, keyLabel, modSymbol } from './platform-utils'
+import { hintLabel, isLegacyPrimaryPlatform, isWindowsPlatform, keyLabel, modSymbol } from './platform-utils'
 
 describe('Windows platform display helpers', () => {
   it('never identifies the local desktop as Apple', () => {
-    expect(isMacPlatform()).toBe(false)
+    expect(isLegacyPrimaryPlatform()).toBe(false)
   })
 
   it('renders primary and shift modifiers with Windows labels', () => {

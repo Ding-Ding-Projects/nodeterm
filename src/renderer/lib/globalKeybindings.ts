@@ -57,7 +57,7 @@ export interface GlobalKeydownDeps {
   activeElement: () => ContextElement | null
   kanbanOpen: () => boolean
   overrides: () => KeybindingOverrides
-  isMac: boolean
+  useMetaPrimary: boolean
   /** The user's `terminalShortcutPolicy`, read live: true = 'terminal-first'. A thunk, not a
    *  value, so a policy change takes effect on the next keystroke without re-registering the
    *  window listener. */
@@ -86,7 +86,7 @@ export function dispatchGlobalKeydown(e: GlobalKeyEvent, deps: GlobalKeydownDeps
   // Keyed dictation predates the registry and may deliberately collide with a default; it
   // keeps first claim, but only in plain app focus (its old guard blocked inputs AND xterm).
   if (!ctx.typing && !ctx.terminal && !ctx.kanbanOpen && deps.gestures.keyedDictation(e)) return true
-  const id = resolveCommandForKeyEvent(e, ctx, deps.overrides(), deps.isMac)
+  const id = resolveCommandForKeyEvent(e, ctx, deps.overrides(), deps.useMetaPrimary)
   if (id) {
     const handler = deps.handlers[id]
     if (handler && handler()) {

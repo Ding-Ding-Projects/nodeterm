@@ -21,7 +21,7 @@
  *     path via `ChordModifiers.ctrl` here. The legacy field built `{cmd, alt, shift}` and dropped
  *     a held ⌃ on the floor.
  *  2. **Full release reads ALL FOUR flags.** The legacy `anyModDown` was
- *     `(isMac ? metaKey : ctrlKey) || altKey || shiftKey` — no `ctrlKey`, so a mac chord recorded
+ *     `(useMetaPrimary ? metaKey : ctrlKey) || altKey || shiftKey` — no `ctrlKey`, so a mac chord recorded
  *     with Ctrl held committed while Ctrl was still down, recording a chord the user never
  *     finished making.
  * A non-mac held Meta (Super/Win) is REFUSED rather than recorded as a bare `Cmd+…`: that gesture
@@ -70,7 +70,7 @@ export type RecordingAction =
   | { kind: 'ignored' }
 
 export interface RecordingOptions {
-  isMac: boolean
+  useMetaPrimary: boolean
   /** The command's `allowHoldChord`. When false, a modifier-only gesture can never commit — it
    *  only previews the requirement, and the user must go on to press a real key. */
   allowHold: boolean
@@ -90,17 +90,17 @@ export function recordingKeydown(
   e: ShortcutKeyEvent & { key: string },
   opts: RecordingOptions
 ): RecordingAction {
-  const { isMac, allowHold } = opts
+  const { useMetaPrimary, allowHold } = opts
   if (e.key === 'Escape') return { kind: 'cancel' }
 
   if (isModifierEventKey(e.key)) {
     // Only modifier keys are down so far. When the command permits a hold chord this is a
     // candidate commit-on-release; otherwise it is purely a preview of what is still missing.
-    if (!allowHold) return { kind: 'pending', state: { mods: null }, hint: keyedPrimaryHint(isMac) }
+    if (!allowHold) return { kind: 'pending', state: { mods: null }, hint: keyedPrimaryHint(useMetaPrimary) }
     if (e.metaKey) return { kind: 'pending', state: { mods: null }, hint: SUPER_UNSUPPORTED }
     const primaryPressed = e.ctrlKey
     if (!primaryPressed) {
-      return { kind: 'pending', state: { mods: null }, hint: holdPrimaryHint(isMac) }
+      return { kind: 'pending', state: { mods: null }, hint: holdPrimaryHint(useMetaPrimary) }
     }
     // A literal ⌃ beside the primary is part of the gesture on mac; off-mac `Cmd` already IS
     // ctrlKey, so recording both would be the chord keybindings.ts validation forbids.
@@ -114,18 +114,18 @@ export function recordingKeydown(
     return {
       kind: 'pending',
       state: { mods },
-      hint: preview ? `Release for ${formatShortcut(preview, isMac)} — or press a key` : ''
+      hint: preview ? `Release for ${formatShortcut(preview, useMetaPrimary)} — or press a key` : ''
     }
   }
 
-  const combo = captureToShortcut(e, isMac)
+  const combo = captureToShortcut(e, useMetaPrimary)
   if (combo) return { kind: 'commit', combo }
   // Refused: either the primary modifier is missing, or (off-mac) Super is held. Keep whatever
   // hold chord was armed — the user may still complete it by releasing everything.
   return {
     kind: 'pending',
     state,
-    hint: e.metaKey ? SUPER_UNSUPPORTED : keyedPrimaryHint(isMac)
+    hint: e.metaKey ? SUPER_UNSUPPORTED : keyedPrimaryHint(useMetaPrimary)
   }
 }
 

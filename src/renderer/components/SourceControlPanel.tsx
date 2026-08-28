@@ -18,7 +18,7 @@ import { PublishDialog } from './PublishDialog'
 import { defaultScmScope, type ScmScope } from '@shared/scm-scope'
 import { chipFor, effectiveBindings } from '../lib/keybindingOverrides'
 import { matchesShortcut } from '@shared/shortcut'
-import { isMacPlatform } from '@shared/platform-utils'
+import { isLegacyPrimaryPlatform } from '@shared/platform-utils'
 
 export interface SourceControlPanelProps {
   onClose: () => void
@@ -40,7 +40,7 @@ export interface SourceControlPanelProps {
 const AUTO_FETCH_MS = 180_000
 
 /** Which physical modifier the registry's abstract `Cmd` resolves to for the commit chord. */
-const isMac = isMacPlatform()
+const useMetaPrimary = isLegacyPrimaryPlatform()
 
 const STATUS_COLOR: Record<string, string> = {
   M: '#ffd60a',
@@ -521,7 +521,7 @@ export function SourceControlPanel({
                       // so a remapped scm.commit changes the KEY as well as the placeholder above.
                       // Matching is exact on all four modifiers, unlike the old
                       // `metaKey || ctrlKey` — see the named losses in the keybindings notes.
-                      if (effectiveBindings('scm.commit').some((s) => matchesShortcut(e, s, isMac))) {
+                      if (effectiveBindings('scm.commit').some((s) => matchesShortcut(e, s, useMetaPrimary))) {
                         commitAndPush()
                       }
                     }}

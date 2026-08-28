@@ -7,7 +7,7 @@
  * e.g. `"Cmd+Alt"`. `Cmd` is a PLATFORM-ABSTRACTED primary modifier — it means "the primary
  * modifier for this platform": metaKey (⌘) on mac, ctrlKey elsewhere. Storing shortcuts in terms
  * of the abstract "Cmd" is what lets one stored string match on every platform via
- * `matchesShortcut(e, s, isMac)`. `Ctrl` is a SEPARATE, LITERAL token meaning ctrlKey on every
+ * `matchesShortcut(e, s, useMetaPrimary)`. `Ctrl` is a SEPARATE, LITERAL token meaning ctrlKey on every
  * platform (⌃ on mac) — on non-mac it happens to resolve to the same physical key as `Cmd`, so a
  * `Ctrl+X` string still behaves exactly like `Cmd+X` there.
  *
@@ -180,7 +180,7 @@ function keyLabel(key: string): string {
  *  modifier-only chord (`"Cmd+Alt"`) -> `["⌘", "⌥"]` (no trailing key badge). One badge per
  *  element — used by ShortcutsPanel's `<kbd>` row rendering. The non-mac `cmd || ctrl` collapse
  *  is safe because keybindings.ts validation forbids both in one chord. */
-export function shortcutKeyParts(s: string, isMac: boolean): string[] {
+export function shortcutKeyParts(s: string, useMetaPrimary: boolean): string[] {
   const { cmd, ctrl, shift, alt, key } = parseShortcut(s)
   const parts: string[] = []
   if (cmd || ctrl) parts.push('Ctrl')
@@ -192,8 +192,8 @@ export function shortcutKeyParts(s: string, isMac: boolean): string[] {
 
 /** `"Cmd+Shift+D"` + mac -> `"⌘⇧D"`; + non-mac -> `"Ctrl+Shift+D"`; a modifier-only chord
  *  (`"Cmd+Alt"`) -> `"⌘⌥"` / `"Ctrl+Alt"`. */
-export function formatShortcut(s: string, isMac: boolean): string {
-  const parts = shortcutKeyParts(s, isMac)
+export function formatShortcut(s: string, useMetaPrimary: boolean): string {
+  const parts = shortcutKeyParts(s, useMetaPrimary)
   return parts.join('+')
 }
 
@@ -207,11 +207,11 @@ export interface ShortcutKeyEvent {
   key: string
 }
 
-/** The concrete modifier flags a chord requires on `isMac`. `Cmd` resolves to meta on mac and
+/** The concrete modifier flags a chord requires on `useMetaPrimary`. `Cmd` resolves to meta on mac and
  *  ctrl elsewhere; the literal `ctrl` field always demands ctrlKey. */
 export function resolvedModifiers(
   p: ParsedShortcut,
-  isMac: boolean
+  useMetaPrimary: boolean
 ): { meta: boolean; ctrl: boolean; alt: boolean; shift: boolean } {
   return {
     meta: false,
@@ -227,9 +227,9 @@ export function resolvedModifiers(
  *  different chord, not a sloppier one). For a keyed combo only — a modifier-only chord
  *  (`isHoldChord(s)`) never matches here (its `key` is `null`, which no `e.key` ever equals); the
  *  Canvas hold-mode listener uses `chordHeld` instead. */
-export function matchesShortcut(e: ShortcutKeyEvent, s: string, isMac: boolean): boolean {
+export function matchesShortcut(e: ShortcutKeyEvent, s: string, useMetaPrimary: boolean): boolean {
   const parsed = parseShortcut(s)
-  const need = resolvedModifiers(parsed, isMac)
+  const need = resolvedModifiers(parsed, useMetaPrimary)
   if (e.metaKey !== need.meta || e.ctrlKey !== need.ctrl) return false
   if (e.shiftKey !== need.shift || e.altKey !== need.alt) return false
   return parsed.key !== null && normalizeKey(e.key) === parsed.key
@@ -243,8 +243,8 @@ export function matchesShortcut(e: ShortcutKeyEvent, s: string, isMac: boolean):
  *  Shift added to a `Cmd+Alt` chord) makes this false, which is also the "third key" misfire
  *  guard for modifier keys specifically (a non-modifier third key is guarded separately, since
  *  this function ignores `e.key` entirely). */
-export function chordHeld(e: ShortcutKeyEvent, s: string, isMac: boolean): boolean {
-  const need = resolvedModifiers(parseShortcut(s), isMac)
+export function chordHeld(e: ShortcutKeyEvent, s: string, useMetaPrimary: boolean): boolean {
+  const need = resolvedModifiers(parseShortcut(s), useMetaPrimary)
   return (
     e.metaKey === need.meta &&
     e.ctrlKey === need.ctrl &&
@@ -266,7 +266,7 @@ export function chordHeld(e: ShortcutKeyEvent, s: string, isMac: boolean): boole
  * REFUSES the capture — that chord has no spelling in this grammar, and storing the bare `Cmd+…`
  * would save a binding the same gesture can never fire again.
  */
-export function captureToShortcut(e: ShortcutKeyEvent, isMac: boolean): string | null {
+export function captureToShortcut(e: ShortcutKeyEvent, useMetaPrimary: boolean): string | null {
   const primaryPressed = e.ctrlKey
   if (!primaryPressed) return null
   if (e.metaKey) return null

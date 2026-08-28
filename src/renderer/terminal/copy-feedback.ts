@@ -57,11 +57,11 @@ export function decideDragOutcome(input: {
   sawOsc52: boolean
   hasXtermSelection: boolean
   hintSeen: boolean
-  isMac: boolean
+  useMetaPrimary: boolean
 }): { kind: 'hint'; label: string } | null {
-  const { movedPx, sawOsc52, hasXtermSelection, hintSeen, isMac } = input
+  const { movedPx, sawOsc52, hasXtermSelection, hintSeen, useMetaPrimary } = input
   if (movedPx < DRAG_MIN_PX) return null
   // A copy happened (tmux copy-mode) or the user already knows the modifier — nothing to teach.
   if (sawOsc52 || hasXtermSelection || hintSeen) return null
-  return { kind: 'hint', label: `Hold ${isMac ? '⌥' : 'Shift'} to select text` }
+  return { kind: 'hint', label: `Hold ${useMetaPrimary ? '⌥' : 'Shift'} to select text` }
 }

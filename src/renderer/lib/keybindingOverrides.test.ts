@@ -46,7 +46,7 @@ describe('effectiveBindings / commandKeys / commandTooltip', () => {
   })
   it('resolves the defaults with the SAME platform it formats with', () => {
     // terminal.copySelection is the one command whose defaults differ per platform, so it is
-    // the only case that can catch a commandKeys that resolves with isMacPlatform() (true in
+    // the only case that can catch a commandKeys that resolves with isLegacyPrimaryPlatform() (true in
     // node) while formatting for the caller's platform.
     expect(commandKeys('terminal.copySelection', true)).toEqual(['Ctrl', 'C'])
     expect(commandKeys('terminal.copySelection', false)).toEqual(['Ctrl', 'C'])
@@ -63,8 +63,8 @@ describe('effectiveBindings / commandKeys / commandTooltip', () => {
 describe('the commit textarea matcher (scm.commit)', () => {
   const key = (over: Partial<ShortcutKeyEvent> = {}): ShortcutKeyEvent =>
     ({ metaKey: false, ctrlKey: false, shiftKey: false, altKey: false, key: 'Enter', ...over })
-  const commits = (e: ShortcutKeyEvent, isMac: boolean) =>
-    effectiveBindings('scm.commit').some((s) => matchesShortcut(e, s, isMac))
+  const commits = (e: ShortcutKeyEvent, useMetaPrimary: boolean) =>
+    effectiveBindings('scm.commit').some((s) => matchesShortcut(e, s, useMetaPrimary))
 
   it('commits on the platform chord', () => {
     expect(commits(key({ ctrlKey: true }), true)).toBe(true)

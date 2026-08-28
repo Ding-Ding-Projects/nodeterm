@@ -49,7 +49,7 @@ import {
   type TerminalShortcutPolicy
 } from '@shared/keybindings'
 import { formatShortcut } from '@shared/shortcut'
-import { isMacPlatform, keyLabel } from '@shared/platform-utils'
+import { isLegacyPrimaryPlatform, keyLabel } from '@shared/platform-utils'
 import {
   activeKeybindingOverrides,
   commandKeysFor,
@@ -176,16 +176,16 @@ export function commitCandidate(
   combo: string,
   mode: 'replace' | 'add'
 ): { ok: true } | { ok: false; error: string } {
-  const isMac = isMacPlatform()
+  const useMetaPrimary = isLegacyPrimaryPlatform()
   const current = activeKeybindingOverrides()
   const existing = effectiveBindings(id)
   const nextList = mode === 'add' ? [...existing.filter((b) => b !== combo), combo] : [combo]
-  const chord = formatShortcut(combo, isMac)
+  const chord = formatShortcut(combo, useMetaPrimary)
   // The candidate's platform identity, computed ONCE: the reverse-shadow block and both dictation
   // gates all ask the same question of it, and three copies of one call is three chances to drift.
-  const identity = bindingIdentity(combo, isMac)
+  const identity = bindingIdentity(combo, useMetaPrimary)
 
-  const conflicts = findKeybindingConflicts({ ...current, [id]: nextList }, isMac).filter((c) =>
+  const conflicts = findKeybindingConflicts({ ...current, [id]: nextList }, useMetaPrimary).filter((c) =>
     c.commandIds.includes(id)
   )
   if (conflicts.length) {
@@ -200,7 +200,7 @@ export function commitCandidate(
     return { ok: false, error: `${chord} is already used by ${titles.join(', ')}.` }
   }
 
-  const shadowed = findMainInterceptShadowing(id, combo, current, isMac)
+  const shadowed = findMainInterceptShadowing(id, combo, current, useMetaPrimary)
   if (shadowed.length) {
     const titles = shadowed.map((cid) => COMMANDS_BY_ID.get(cid)?.title ?? cid).join(', ')
     return { ok: false, error: `${chord} would be swallowed app-wide before ${titles} could see it.` }
@@ -213,7 +213,7 @@ export function commitCandidate(
   // in `before-input-event` and the terminal surface is never offered it.
   if (!MAIN_INTERCEPTED_COMMAND_IDS.includes(id)) {
     for (const cid of MAIN_INTERCEPTED_COMMAND_IDS) {
-      const hit = effectiveBindings(cid).some((b) => bindingIdentity(b, isMac) === identity)
+      const hit = effectiveBindings(cid).some((b) => bindingIdentity(b, useMetaPrimary) === identity)
       if (!hit) continue
       const title = COMMANDS_BY_ID.get(cid)?.title ?? cid
       const own = COMMANDS_BY_ID.get(id)?.title ?? id
@@ -249,7 +249,7 @@ export function commitCandidate(
     // "rarely", not "never": dictation's keyed listener only claims the chord where it listens.
     // An app-scope command flagged `allowInTerminal` still fires in terminal focus under
     // app-first — the message must not overclaim a chord that is merely usually lost.
-    const taken = effectiveBindings(dictationId).some((b) => bindingIdentity(b, isMac) === identity)
+    const taken = effectiveBindings(dictationId).some((b) => bindingIdentity(b, useMetaPrimary) === identity)
     if (taken) {
       const own = COMMANDS_BY_ID.get(id)?.title ?? id
       return {
@@ -263,7 +263,7 @@ export function commitCandidate(
       // The same focus gate, read from the other side: a focused-surface command cannot be hidden
       // by a gesture that is never offered on that surface.
       if (def.scope === 'terminal' || def.scope === 'scm') continue
-      const hit = effectiveBindings(def.id).some((b) => bindingIdentity(b, isMac) === identity)
+      const hit = effectiveBindings(def.id).some((b) => bindingIdentity(b, useMetaPrimary) === identity)
       if (!hit) continue
       return {
         ok: false,
@@ -298,7 +298,7 @@ function Chips({
   title: string
   onRemove?: (index: number) => void
 }): React.JSX.Element {
-  const isMac = isMacPlatform()
+  const useMetaPrimary = isLegacyPrimaryPlatform()
   const keys = limit === undefined ? chords : chords.slice(0, limit)
   if (keys.length === 0) return <></>
   return (
@@ -316,7 +316,7 @@ function Chips({
               type="button"
               // The chord is named in the label because a row can hold several: "Remove" alone
               // would leave a screen reader with N identical buttons.
-              aria-label={`Remove ${isMac ? parts.join('') : parts.join('+')} from ${title}`}
+              aria-label={`Remove ${useMetaPrimary ? parts.join('') : parts.join('+')} from ${title}`}
               title="Remove this shortcut"
               onClick={() => onRemove(i)}
               className="cursor-pointer border-0 bg-transparent px-0.5 text-[12px] leading-none text-muted opacity-0 group-hover/row:opacity-60 hover:!opacity-100 focus-visible:opacity-100"

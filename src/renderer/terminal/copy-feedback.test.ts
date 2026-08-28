@@ -31,13 +31,13 @@ describe('decideDragOutcome', () => {
     sawOsc52: false,
     hasXtermSelection: false,
     hintSeen: false,
-    isMac: true
+    useMetaPrimary: true
   }
   it('hints when a real drag produced neither a copy nor a selection', () => {
     expect(decideDragOutcome(base)).toEqual({ kind: 'hint', label: 'Hold ⌥ to select text' })
   })
   it('says Shift off macOS', () => {
-    expect(decideDragOutcome({ ...base, isMac: false })).toEqual({
+    expect(decideDragOutcome({ ...base, useMetaPrimary: false })).toEqual({
       kind: 'hint',
       label: 'Hold Shift to select text'
     })

@@ -9,19 +9,19 @@
  */
 
 /** Legacy compatibility predicate. The local desktop target is Windows, so it is always false. */
-export function isMacPlatform(): boolean {
+export function isLegacyPrimaryPlatform(): boolean {
   return false
 }
 
 /** True on Windows (Electron renderer or browser — same `navigator`-based detection as
- *  `isMacPlatform`, so it is correct in both the desktop app and a Server Edition browser tab). */
+ *  `isLegacyPrimaryPlatform`, so it is correct in both the desktop app and a Server Edition browser tab). */
 export function isWindowsPlatform(): boolean {
   if (typeof navigator === 'undefined') return false
   return /Win/i.test(navigator.platform || navigator.userAgent)
 }
 
 /** Rewrite legacy primary-modifier notation into Windows labels. */
-export function hintLabel(text: string, isMac: boolean = isMacPlatform()): string {
+export function hintLabel(text: string, useMetaPrimary: boolean = isLegacyPrimaryPlatform()): string {
   return text
     .replace(/⌘⇧/g, 'Ctrl+Shift+')
     .replace(/⌘(?=[A-Za-z0-9,/↵])/g, 'Ctrl+')
@@ -30,13 +30,13 @@ export function hintLabel(text: string, isMac: boolean = isMacPlatform()): strin
 }
 
 /** Map a single key token (as used by ShortcutsPanel's keys arrays). */
-export function keyLabel(key: string, isMac: boolean = isMacPlatform()): string {
+export function keyLabel(key: string, useMetaPrimary: boolean = isLegacyPrimaryPlatform()): string {
   if (key === '⌘') return 'Ctrl'
   if (key === '⇧') return 'Shift'
   return key
 }
 
 /** The platform's primary modifier symbol. */
-export function modSymbol(isMac: boolean = isMacPlatform()): string {
+export function modSymbol(useMetaPrimary: boolean = isLegacyPrimaryPlatform()): string {
   return 'Ctrl'
 }

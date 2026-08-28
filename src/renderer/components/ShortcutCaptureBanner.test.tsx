@@ -25,7 +25,7 @@ import { ShortcutCaptureBanner } from './ShortcutCaptureBanner'
 ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
 // jsdom reports a non-mac platform, and the body quotes a PLATFORM-FORMATTED chord ('⌘K' vs
-// 'Ctrl+K'). Pin macOS so the assertions name one spelling — `isMacPlatform()` is read at call
+// 'Ctrl+K'). Pin macOS so the assertions name one spelling — `isLegacyPrimaryPlatform()` is read at call
 // time, never captured at module load.
 Object.defineProperty(window.navigator, 'platform', { value: 'MacIntel', configurable: true })
 

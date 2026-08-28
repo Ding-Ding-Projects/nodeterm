@@ -269,7 +269,7 @@ export type NormalizedBinding = { ok: true; value: string } | { ok: false; error
 export function normalizeBindingForCommand(
   def: CommandDefinition,
   raw: string,
-  isMac: boolean
+  useMetaPrimary: boolean
 ): NormalizedBinding {
   const p = parseShortcut(raw)
   const hasAnyToken = p.cmd || p.ctrl || p.alt || p.shift || p.key !== null
@@ -303,7 +303,7 @@ export type KeybindingOverrides = Partial<Record<CommandId, readonly string[]>>
 export function getEffectiveBindings(
   id: CommandId,
   overrides: KeybindingOverrides,
-  isMac: boolean
+  useMetaPrimary: boolean
 ): readonly string[] {
   const override = overrides[id]
   if (override !== undefined) return override
@@ -317,7 +317,7 @@ export function getEffectiveBindings(
  *  through `serializeShortcut` so ALIAS spellings collapse too (`Cmd+Esc` === `Cmd+Escape`,
  *  `Cmd+Return` === `Cmd+Enter`) — without that a hand-edited `Cmd+Return` override would sit
  *  invisibly on top of the `Cmd+Enter` default. */
-export function bindingIdentity(binding: string, isMac: boolean): string {
+export function bindingIdentity(binding: string, useMetaPrimary: boolean): string {
   const p = parseShortcut(binding)
   const m = resolvedModifiers(p, false)
   return [
@@ -380,13 +380,13 @@ export interface KeybindingConflict {
  *  stock bindings). */
 export function findKeybindingConflicts(
   overrides: KeybindingOverrides,
-  isMac: boolean,
+  useMetaPrimary: boolean,
   opts: { includeDefaults?: boolean } = {}
 ): KeybindingConflict[] {
   const byBucketAndIdentity = new Map<string, { binding: string; ids: Set<CommandId> }>()
   for (const def of COMMAND_DEFINITIONS) {
-    for (const binding of getEffectiveBindings(def.id, overrides, isMac)) {
-      const key = `${conflictBucket(def)} ${bindingIdentity(binding, isMac)}`
+    for (const binding of getEffectiveBindings(def.id, overrides, useMetaPrimary)) {
+      const key = `${conflictBucket(def)} ${bindingIdentity(binding, useMetaPrimary)}`
       const entry = byBucketAndIdentity.get(key) ?? {
         // Canonicalized, so a hand-edited `cmd+k` override is reported as `Cmd+K`.
         binding: serializeShortcut(parseShortcut(binding)),
@@ -421,15 +421,15 @@ export function findMainInterceptShadowing(
   id: CommandId,
   candidate: string,
   overrides: KeybindingOverrides,
-  isMac: boolean
+  useMetaPrimary: boolean
 ): CommandId[] {
   if (!MAIN_INTERCEPTED_COMMAND_IDS.includes(id)) return []
-  const target = bindingIdentity(candidate, isMac)
+  const target = bindingIdentity(candidate, useMetaPrimary)
   const hits: CommandId[] = []
   for (const def of COMMAND_DEFINITIONS) {
     if (def.id === id) continue
-    for (const binding of getEffectiveBindings(def.id, overrides, isMac)) {
-      if (bindingIdentity(binding, isMac) === target) {
+    for (const binding of getEffectiveBindings(def.id, overrides, useMetaPrimary)) {
+      if (bindingIdentity(binding, useMetaPrimary) === target) {
         hits.push(def.id)
         break
       }
@@ -447,7 +447,7 @@ export function findMainInterceptShadowing(
  *  candidate binding: same detector, different surfacing (design.md D3). */
 export function sanitizeKeybindingOverrides(
   raw: unknown,
-  isMac: boolean
+  useMetaPrimary: boolean
 ): { overrides: KeybindingOverrides; warnings: string[] } {
   const warnings: string[] = []
   const overrides: Partial<Record<CommandId, string[]>> = {}
@@ -467,7 +467,7 @@ export function sanitizeKeybindingOverrides(
     const def = COMMANDS_BY_ID.get(id)!
     const normalized: string[] = []
     for (const s of value as string[]) {
-      const r = normalizeBindingForCommand(def, s, isMac)
+      const r = normalizeBindingForCommand(def, s, useMetaPrimary)
       if (r.ok) {
         if (!normalized.includes(r.value)) normalized.push(r.value)
       } else {
@@ -490,7 +490,7 @@ export function sanitizeKeybindingOverrides(
   // the map. A default-vs-default conflict has no deletable participant, so it would be reported
   // forever and the loop would spin.
   for (;;) {
-    const conflicts = findKeybindingConflicts(overrides, isMac)
+    const conflicts = findKeybindingConflicts(overrides, useMetaPrimary)
     if (conflicts.length === 0) break
     for (const conflict of conflicts) {
       const titles = conflict.commandIds
@@ -540,7 +540,7 @@ export function resolveCommandForKeyEvent(
   e: ShortcutKeyEvent,
   ctx: KeyDispatchContext,
   overrides: KeybindingOverrides,
-  isMac: boolean
+  useMetaPrimary: boolean
 ): CommandId | null {
   for (const def of COMMAND_DEFINITIONS) {
     // scm commands dispatch from their own focused composer (local onKeyDown), never from
@@ -560,7 +560,7 @@ export function resolveCommandForKeyEvent(
     }
     if (!ctx.terminal && def.scope === 'terminal') continue
     if (ctx.kanbanOpen && def.scope === 'canvas') continue
-    for (const binding of getEffectiveBindings(def.id, overrides, isMac)) {
+    for (const binding of getEffectiveBindings(def.id, overrides, useMetaPrimary)) {
       // Hold chords belong to the dedicated hold listener, and this skip STATES that contract
       // rather than relying on it being unreachable: `matchesShortcut` also refuses a key-null
       // chord today (`parsed.key !== null`), so removing this line changes nothing — until the

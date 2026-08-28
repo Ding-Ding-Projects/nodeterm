@@ -93,12 +93,12 @@ export interface KeydownInterceptBindings {
  */
 export function resolveInterceptBindings(
   rawOverrides: unknown,
-  isMac: boolean
+  useMetaPrimary: boolean
 ): KeydownInterceptBindings {
-  const { overrides } = sanitizeKeybindingOverrides(rawOverrides, isMac)
+  const { overrides } = sanitizeKeybindingOverrides(rawOverrides, useMetaPrimary)
   return {
-    closeNode: getEffectiveBindings('node.close', overrides, isMac),
-    toggleMarkdown: getEffectiveBindings('node.toggleMarkdown', overrides, isMac)
+    closeNode: getEffectiveBindings('node.close', overrides, useMetaPrimary),
+    toggleMarkdown: getEffectiveBindings('node.toggleMarkdown', overrides, useMetaPrimary)
   }
 }
 
@@ -141,7 +141,7 @@ function toShortcutEvent(input: KeydownInterceptInput): {
 export function keydownIntercept(
   input: KeydownInterceptInput,
   bindings: KeydownInterceptBindings,
-  isMac: boolean
+  useMetaPrimary: boolean
 ): KeydownInterceptDecision | null {
   if (input.type !== 'keyDown') return null
   // Matched against the user's effective bindings (defaults ⌘M / ⌘W). `matchesShortcut` is exact
@@ -149,13 +149,13 @@ export function keydownIntercept(
   // are now different chords and go back to the page. Parsing is memoized in shortcut.ts, so this
   // stays cheap on main's input path.
   const ev = toShortcutEvent(input)
-  if (bindings.toggleMarkdown.some((s) => matchesShortcut(ev, s, isMac))) {
+  if (bindings.toggleMarkdown.some((s) => matchesShortcut(ev, s, useMetaPrimary))) {
     return { action: 'toggle-markdown' }
   }
   // Repurpose Cmd/Ctrl+W: the renderer closes the selected node(s); if none are selected it asks
   // us to close the window (the standard behavior). ⇧ is left to the menu's Close All Windows —
   // now by the binding being `Cmd+W` and the match being exact, rather than by a `!input.shift`.
-  if (bindings.closeNode.some((s) => matchesShortcut(ev, s, isMac))) {
+  if (bindings.closeNode.some((s) => matchesShortcut(ev, s, useMetaPrimary))) {
     return { action: 'close-node' }
   }
   // NOT remappable: this is the renderer's `zoomShortcutChord` half of a canvas gesture, not a
@@ -240,8 +240,8 @@ export function policyStandsDown(
  * and the Window ▸ Close menu item (whose role owns the Ctrl+W accelerator above the page) consult
  * THIS predicate — one definition, two consumers, per the house rule.
  */
-export function closeStandsDownInTerminal(isMac: boolean, terminalFocused: boolean): boolean {
-  return !isMac && terminalFocused
+export function closeStandsDownInTerminal(useMetaPrimary: boolean, terminalFocused: boolean): boolean {
+  return !useMetaPrimary && terminalFocused
 }
 
 /**
@@ -337,9 +337,9 @@ export const MENU_ITEM_ID_SETTINGS = 'app-settings'
  * so suspending reload would strand the very bits a stuck page leaves set. The cost is honest and
  * small: a terminal-first user's ⌘R reloads the window instead of reaching the shell.
  */
-export function menuItemIdsToSuspend(isMac: boolean): string[] {
+export function menuItemIdsToSuspend(useMetaPrimary: boolean): string[] {
   const shared = [MENU_ITEM_ID_MINIMIZE, MENU_ITEM_ID_KANBAN, MENU_ITEM_ID_SETTINGS]
-  return isMac ? shared : [...shared, MENU_ITEM_ID_CLOSE]
+  return useMetaPrimary ? shared : [...shared, MENU_ITEM_ID_CLOSE]
 }
 
 /** The renderer channel a claimed action is forwarded on. */
@@ -422,7 +422,7 @@ export interface KeydownInterceptTarget {
 export function installKeydownIntercepts(
   win: KeydownInterceptTarget,
   getBindings: () => KeydownInterceptBindings,
-  isMac: boolean,
+  useMetaPrimary: boolean,
   isRecording: () => boolean,
   isStoodDown: () => boolean,
   // The close leg's OWN stand-down (`closeStandsDownInTerminal` — off-mac + terminal focused,
@@ -431,7 +431,7 @@ export function installKeydownIntercepts(
 ): void {
   win.webContents.on('before-input-event', (event, input) => {
     if (isRecording() || isStoodDown()) return
-    const decision = keydownIntercept(input, getBindings(), isMac)
+    const decision = keydownIntercept(input, getBindings(), useMetaPrimary)
     if (!decision) return
     // Checked AFTER resolution and only for close: the chord must fall through UNTOUCHED (no
     // preventDefault) so it reaches the page → xterm → the pty as readline's kill-word. The menu

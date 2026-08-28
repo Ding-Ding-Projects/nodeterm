@@ -11,8 +11,8 @@ const e = (
   key: '',
   ...over
 })
-const HOLD = { isMac: false, allowHold: true }
-const KEYED = { isMac: false, allowHold: false }
+const HOLD = { useMetaPrimary: false, allowHold: true }
+const KEYED = { useMetaPrimary: false, allowHold: false }
 
 describe('recordingKeydown', () => {
   it('a keyed chord commits immediately', () => {
@@ -41,7 +41,7 @@ describe('recordingKeydown', () => {
   })
   it('non-mac held Super is refused with a hint', () => {
     const r = recordingKeydown({ mods: null }, e({ metaKey: true, ctrlKey: true, key: 'Control' }), {
-      isMac: false,
+      useMetaPrimary: false,
       allowHold: true
     })
     expect(r.kind).toBe('pending')

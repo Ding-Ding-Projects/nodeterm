@@ -38,12 +38,12 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { COMMANDS_BY_ID, normalizeBindingForCommand, type CommandId } from '@shared/keybindings'
-import { isMacPlatform } from '@shared/platform-utils'
+import { isLegacyPrimaryPlatform } from '@shared/platform-utils'
 import { recordingKeydown, recordingKeyup, type RecordingState } from './shortcutRecording'
 import { IconRecordKey } from './ShortcutRowIcons'
 import { Tooltip } from '../Tooltip'
 
-const isMac = isMacPlatform()
+const useMetaPrimary = isLegacyPrimaryPlatform()
 
 export function ShortcutRecorderButton({
   commandId,
@@ -76,7 +76,7 @@ export function ShortcutRecorderButton({
   // Did THIS instance arm the (global) main-process bit? See `release`.
   const armedRef = useRef(false)
   const def = COMMANDS_BY_ID.get(commandId)!
-  const opts = { isMac, allowHold: def.allowHoldChord === true }
+  const opts = { useMetaPrimary, allowHold: def.allowHoldChord === true }
 
   // Refs only ⇒ stable with no deps, so the mount-time cleanup below cannot capture stale state,
   // and idempotent ⇒ running it twice, or on an unmount that was never armed, does nothing.
@@ -111,7 +111,7 @@ export function ShortcutRecorderButton({
     window.nodeTerminal.shortcuts.setRecording(true)
   }
   const commit = (combo: string): void => {
-    const r = normalizeBindingForCommand(def, combo, isMac)
+    const r = normalizeBindingForCommand(def, combo, useMetaPrimary)
     if (!r.ok) {
       setHint(r.error)
       return

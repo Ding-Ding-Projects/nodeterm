@@ -11,7 +11,7 @@ import { ShortcutsSection, commitCandidate } from './ShortcutsSection'
 ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
 // jsdom reports a non-mac platform; the chips and the refusal messages are platform-formatted,
-// so pin macOS here — `isMacPlatform()` is read at call time, never captured at module load.
+// so pin macOS here — `isLegacyPrimaryPlatform()` is read at call time, never captured at module load.
 Object.defineProperty(window.navigator, 'platform', { value: 'MacIntel', configurable: true })
 
 /** How many commands ship with NO chord on the pinned (mac) platform. COMPUTED, because the
