@@ -25,11 +25,15 @@ Code name: [Classic Har Gow · 蝦餃](https://github.com/Ding-Ding-Projects/dim
   tests, and evidence assets with Windows equivalents.
 - Limited release publication to the `main` branch so task branches can be preserved without
   creating duplicate releases.
+- Routed warning-level remote service notices through the application's internal non-blocking
+  notification path. Informational and success feed items now remain silent.
 
 ### Removed
 
 - Removed retired desktop packaging, launch, entitlement, toolchain, credential-service, bundled tmux,
   renderer-policy, and historical promotion paths.
 - Removed the non-Windows static-analysis workflow and obsolete platform-only tests.
+- Removed the automatic App Store banner, the startup promotional modal, and the promotional action
+  from first-run onboarding.
 
 Implementation: [`3c1826ed`](https://github.com/Ding-Ding-Projects/nodeterm/commit/3c1826edb571ffa6e30fe435433d127d4c753fef)

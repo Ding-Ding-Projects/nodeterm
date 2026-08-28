@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import type { Announcement } from '@shared/types'
 
-// Polls the remote announcements feed (via the main process) and shows the newest
-// item the user hasn't dismissed. Dismissed ids are remembered in localStorage so a
-// given announcement is shown only once. Separate from the update banner.
 const SEEN_KEY = 'nodeterm.seenAnnouncements'
 const SIX_HOURS = 6 * 60 * 60 * 1000
+
+export interface AnnouncementNotification {
+  kind: 'warning'
+  message: string
+}
 
 function loadSeen(): Set<string> {
   try {
@@ -20,60 +22,64 @@ function saveSeen(seen: Set<string>): void {
   try {
     localStorage.setItem(SEEN_KEY, JSON.stringify([...seen]))
   } catch {
-    // ignore quota / serialization errors
+    // A storage refusal must not interrupt the application.
   }
 }
 
-export function AnnouncementBanner(): JSX.Element | null {
-  const [current, setCurrent] = useState<Announcement | null>(null)
+/**
+ * Remote informational and success items are not application events. Showing them on launch is
+ * unsolicited promotion, so they never enter the UI. Warning items can carry a functional service
+ * notice and are routed through the application's existing notification bus.
+ */
+export function notificationForAnnouncement(
+  announcement: Announcement
+): AnnouncementNotification | null {
+  if (announcement.level !== 'warning') return null
+  const body = announcement.body?.trim()
+  return {
+    kind: 'warning',
+    message: body ? `${announcement.title}: ${body}` : announcement.title
+  }
+}
 
+/**
+ * Polls the bounded announcement feed without rendering a banner. Functional warnings are emitted
+ * through the same in-application notification path used by local events. Promotional feed entries
+ * remain silent.
+ */
+export function AnnouncementNotifier(): null {
   useEffect(() => {
     let cancelled = false
 
-    const check = async () => {
-      const items = await window.nodeTerminal.announcements.fetch()
+    const check = async (): Promise<void> => {
+      let items: Announcement[]
+      try {
+        items = await window.nodeTerminal.announcements.fetch()
+      } catch {
+        return
+      }
       if (cancelled || !items.length) return
+
       const seen = loadSeen()
-      // Feed is newest-first; show the first one not yet dismissed.
-      const next = items.find((a) => !seen.has(a.id))
-      if (next) setCurrent(next)
+      const candidate = items.find(
+        (item) => !seen.has(item.id) && notificationForAnnouncement(item) !== null
+      )
+      if (!candidate) return
+
+      const notification = notificationForAnnouncement(candidate)
+      if (!notification) return
+      seen.add(candidate.id)
+      saveSeen(seen)
+      window.dispatchEvent(new CustomEvent('nodeterm:toast', { detail: notification }))
     }
 
     void check()
-    const timer = setInterval(check, SIX_HOURS)
+    const timer = window.setInterval(() => void check(), SIX_HOURS)
     return () => {
       cancelled = true
-      clearInterval(timer)
+      window.clearInterval(timer)
     }
   }, [])
 
-  if (!current) return null
-
-  const dismiss = () => {
-    const seen = loadSeen()
-    seen.add(current.id)
-    saveSeen(seen)
-    setCurrent(null)
-  }
-
-  return (
-    <div className={`announce-banner announce-banner--${current.level ?? 'info'}`}>
-      <span className="announce-banner__dot" />
-      <div className="announce-banner__content">
-        <span className="announce-banner__title">{current.title}</span>
-        {current.body && <span className="announce-banner__body">{current.body}</span>}
-      </div>
-      {current.url && (
-        <button
-          className="announce-banner__btn"
-          onClick={() => window.open(current.url, '_blank', 'noopener')}
-        >
-          Learn more
-        </button>
-      )}
-      <button className="announce-banner__close" title="Dismiss" onClick={dismiss}>
-        ✕
-      </button>
-    </div>
-  )
+  return null
 }

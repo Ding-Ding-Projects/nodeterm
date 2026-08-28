@@ -125,12 +125,10 @@ import {
   DictationOverlay,
   BugReportDialog,
   PhonePairPopover,
-  MobileLaunchCard,
   KanbanView
 } from '../components/lazyPanels'
 import { WelcomeScreen } from '../components/WelcomeScreen'
 import { CloneRepoDialog } from '../components/CloneRepoDialog'
-import { markMobileLaunchSeen, shouldShowMobileLaunch } from '../lib/mobileLaunch'
 import type { DictationTarget } from '../components/DictationOverlay'
 import { describeOs, REPO_URL } from '../lib/bugReport'
 import { shouldReleasePaneFocus } from '../lib/paneFocus'
@@ -158,7 +156,7 @@ import {
   type FocusDirection
 } from '../lib/directionalFocus'
 import { UpdateCard } from '../components/UpdateCard'
-import { AnnouncementBanner } from '../components/AnnouncementBanner'
+import { AnnouncementNotifier } from '../components/AnnouncementBanner'
 import { ResumeCard } from '../components/ResumeCard'
 import { TmuxBanner } from '../components/TmuxBanner'
 import { ShortcutCaptureBanner } from '../components/ShortcutCaptureBanner'
@@ -922,8 +920,6 @@ export function Canvas() {
   }, [])
   // First-run setup tour (agents / dictation / kanban / notifications) — see OnboardingFlow.
   const [onboardingOpen, setOnboardingOpen] = useState(false)
-  // One-shot mobile-launch announcement for established installs — see MobileLaunchCard.
-  const [mobileLaunchOpen, setMobileLaunchOpen] = useState(false)
   const [dictationOpen, setDictationOpen] = useState(false)
   // Target = the first selected terminal node AT OPEN TIME (not live-tracked while the
   // overlay is up — the design explicitly freezes it so a stray click elsewhere mid-dictation
@@ -1093,7 +1089,12 @@ export function Canvas() {
   useEffect(() => {
     const onToast = (e: Event): void => {
       const detail = (e as CustomEvent<{ kind: string; message: string }>).detail
-      if (detail?.kind === 'error') setCopyError(detail.message)
+      if (!detail?.message) return
+      if (detail.kind === 'error') {
+        setCopyError(detail.message)
+        return
+      }
+      setNotice({ kind: detail.kind === 'warning' ? 'error' : 'info', text: detail.message })
     }
     window.addEventListener('nodeterm:toast', onToast)
     return () => window.removeEventListener('nodeterm:toast', onToast)
@@ -1943,22 +1944,15 @@ export function Canvas() {
       .hydrate()
       .then(() => {
         const s = useSettings.getState().settings
-        if (s.seenOnboarding) {
-          // Established install: the one-shot mobile-launch card (fresh installs get the same
-          // pitch from the tour's phone step instead, marked below so it never shows twice).
-          if (shouldShowMobileLaunch()) setMobileLaunchOpen(true)
-          return
-        }
+        if (s.seenOnboarding) return
         if (s.seenShortcuts) {
-          // Existing install (pre-tour): the setup tour is for fresh installs — migrate
-          // silently so it never pops over an established workspace. Rerunnable via Ctrl+K.
+          // Existing install (pre-tour): the setup tour is for fresh installs. Migrate
+          // silently so it never opens over an established workspace. Rerunnable via Ctrl+K.
           useSettings.getState().update({ seenOnboarding: true })
-          if (shouldShowMobileLaunch()) setMobileLaunchOpen(true)
         } else {
           // Fresh install: the tour replaces the auto-opened ShortcutsPanel (Ctrl+/ still
           // opens it manually) and owns the notification-consent question.
           setOnboardingOpen(true)
-          markMobileLaunchSeen()
         }
       })
     api.workspace.load().then((ws) => {
@@ -11064,7 +11058,7 @@ export function Canvas() {
       />
 
       <div className="top-banners">
-        <AnnouncementBanner />
+        <AnnouncementNotifier />
         <TmuxBanner onInstall={runInTerminal} />
         {/* App-first just took a chord from a focused terminal, once per command ever —
             subscribes for itself; only the route into Settings is Canvas's to give. */}
@@ -11612,14 +11606,6 @@ export function Canvas() {
       )}
 
       {shortcutsOpen && <ShortcutsPanel onClose={() => setShortcutsOpen(false)} />}
-      {mobileLaunchOpen && (
-        <MobileLaunchCard
-          onClose={() => {
-            markMobileLaunchSeen()
-            setMobileLaunchOpen(false)
-          }}
-        />
-      )}
       {onboardingOpen && (
         <OnboardingFlow
           onClose={() => {

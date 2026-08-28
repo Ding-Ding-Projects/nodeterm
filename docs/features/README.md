@@ -10,6 +10,7 @@ failure modes, security boundaries, and verification.
 
 ## Runtime features
 
+- [Non-blocking notifications](non-blocking-notifications.md)
 - [Session memory and detached-session limits](../session-memory.md)
 - [Remote sessions](../remote-sessions.md)
 - [Node identity](../node-identity.md)

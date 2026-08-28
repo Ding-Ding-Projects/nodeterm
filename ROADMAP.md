@@ -15,6 +15,7 @@
 - [x] Verify version `0.3.4` through `build-installer.bat /s`, including unsigned setup, `RELEASES`, full package, bytes, and SHA-256.
 - [x] Verify the 7-frame ICO and associated icons from the packaged app and setup executable.
 - [x] Add and test a reproducible release line counter based on surviving `git blame` lines.
+- [x] Remove automatic promotional startup surfaces and route functional remote warnings through the internal notification path.
 
 ## Release automation and documentation
 

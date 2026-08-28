@@ -110,7 +110,7 @@ Hold `Ctrl+Alt` and say it. On-device **Whisper** transcribes locally — review
 then **Send** (nothing auto-submits). Your voice never leaves the machine.
 
 </td>
-<td><img src="docs/assets/dictation-tour.webp" alt="Dictation — hold cmd-shift-D, speak, review, send into the terminal" /></td>
+<td><img src="docs/assets/dictation-tour.webp" alt="Dictation on Windows: hold Ctrl+Alt, speak, review, and send into the terminal" /></td>
 </tr>
 </table>
 
@@ -150,8 +150,9 @@ GitHub Copilot / opencode / Grok / custom) · 📝 **Sticky note** (link to an a
   that doesn't sleep via the [Server Edition](./docs/SERVER.md).
 - **Command palette** (Ctrl+K), **file explorer** (Ctrl+Shift+E), **markdown view** (Ctrl+M),
   **undo/redo**, and a native Windows desktop UI.
-- **Auto-update & in-app announcements** — the app checks a self-hosted feed and
-  surfaces a "Restart to update" banner and product news.
+- **Automatic updates and in-app notifications:** the app checks its update feed and surfaces a
+  non-blocking "Restart to update" state. Remote warning notices use the same internal notification
+  path as local events. Informational and success feed items never appear on launch.
 
 ### 🌍 Server Edition — nodeterm in your browser
 

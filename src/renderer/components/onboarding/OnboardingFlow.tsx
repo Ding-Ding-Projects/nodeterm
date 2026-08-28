@@ -12,7 +12,6 @@ import {
 } from '../../lib/keybindingOverrides'
 import { useSettings } from '../../state/settings'
 import { useEntitlement } from '../../state/entitlement'
-import { IOS_APP_STORE_URL } from '../../lib/links'
 import { Switch } from '@renderer/ui/Switch'
 import { AgentIcon } from '../../lib/agentIcons'
 import {
@@ -432,17 +431,10 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                   terminal from anywhere.
                 </p>
                 <p>
-                  Grab it from the App Store, then pair in seconds: Settings → Phone (or the
-                  phone button top-right) shows a QR. Scan it and you're in.
+                  If you already use nodeterm mobile, pair it from Settings → Phone. The phone
+                  button at the top right shows the same QR. The desktop application works fully
+                  on its own and does not require the companion.
                 </p>
-                <div className="onb-notify-actions">
-                  <button
-                    className="onb-btn onb-btn--primary"
-                    onClick={() => window.nodeTerminal.shell.openExternal(IOS_APP_STORE_URL)}
-                  >
-                    Get the iOS app
-                  </button>
-                </div>
               </>
             )}
 
