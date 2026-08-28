@@ -78,7 +78,9 @@ Generated toolchains and packages are not committed.
 The bootstrap does not install credentials, signing material, or secrets. It does not change the
 persistent PowerShell execution policy. Local PowerShell helpers run with a per-process
 `-ExecutionPolicy Bypass`. Recursive output removal validates that the resolved target remains
-inside the extracted repository before deletion.
+inside the extracted repository before deletion. The installer path clears supported signing
+credential variables, disables certificate identity discovery, and keeps all three electron-builder
+signing controls explicitly false before packaging begins.
 
 ## Verification
 

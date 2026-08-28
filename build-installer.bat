@@ -39,6 +39,24 @@ if errorlevel 1 (
   exit /b 1
 )
 
+rem Signing is prohibited. Clear every supported credential route and disable identity discovery
+rem before the packaging process exists, so a host-level credential can never be picked up.
+set "CSC_IDENTITY_AUTO_DISCOVERY=false"
+set "CSC_LINK="
+set "CSC_KEY_PASSWORD="
+set "WIN_CSC_LINK="
+set "WIN_CSC_KEY_PASSWORD="
+set "CSC_NAME="
+set "AZURE_TENANT_ID="
+set "AZURE_CLIENT_ID="
+set "AZURE_CLIENT_SECRET="
+set "AZURE_CODE_SIGNING_ACCOUNT_NAME="
+set "AZURE_CODE_SIGNING_CERTIFICATE_PROFILE_NAME="
+set "SM_HOST="
+set "SM_API_KEY="
+set "SM_CLIENT_CERT_FILE="
+set "SM_CLIENT_CERT_PASSWORD="
+
 set "NODETERM_SAFE_ROOT=%ROOT%"
 set "NODETERM_SAFE_TARGET=%ROOT%\dist"
 if exist "%ROOT%\dist" (

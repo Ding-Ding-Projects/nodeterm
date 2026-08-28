@@ -70,7 +70,8 @@
         }
       ],
       "forceCodeSigning": false,
-      "signExecutable": false
+      "signExecutable": false,
+      "signAndEditExecutable": false
     },
     "squirrelWindows": {
       "artifactName": "${productName}-Setup-${version}.${ext}",

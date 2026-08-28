@@ -75,7 +75,9 @@ including negative native error codes, so a partial package tree cannot fall thr
 | `RELEASES` | 84 | `5947c2848412c98033d3c5dda5e6fd704dc4fd53761df08d2cadab4d8d4df612` |
 
 Signing was skipped for the app executable, execution stub, Squirrel helper, and setup executable.
-The independent certificate check returned `NotSigned`.
+The independent certificate check returned `NotSigned`. The installer path clears supported
+signing credential variables, disables certificate identity discovery, and keeps all three
+electron-builder signing controls explicitly false before packaging begins.
 
 ### Icon proof
 
