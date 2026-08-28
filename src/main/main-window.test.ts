@@ -148,31 +148,16 @@ describe('createCrashReloadPolicy', () => {
 })
 
 describe('shouldHideOnClose', () => {
-  it('hides instead of closing on macOS while the app is not quitting', () => {
-    expect(shouldHideOnClose('darwin', false)).toBe(true)
-  })
-  it('lets the close through when the app is quitting', () => {
-    expect(shouldHideOnClose('darwin', true)).toBe(false)
-  })
-  it('never intercepts close on other platforms', () => {
+  it('always lets the Windows close action through', () => {
     expect(shouldHideOnClose('win32', false)).toBe(false)
-    expect(shouldHideOnClose('linux', false)).toBe(false)
+    expect(shouldHideOnClose('win32', true)).toBe(false)
   })
 })
 
 describe('closeAction', () => {
-  it('hides a windowed macOS close', () => {
-    expect(closeAction('darwin', false, false)).toBe('hide')
-  })
-  it('leaves fullscreen before hiding — hiding in place strands a black Space (issue #78)', () => {
-    expect(closeAction('darwin', false, true)).toBe('leave-fullscreen-then-hide')
-  })
-  it('lets the close through when quitting, fullscreen or not', () => {
-    expect(closeAction('darwin', true, true)).toBe('default')
-    expect(closeAction('darwin', true, false)).toBe('default')
-  })
-  it('never intercepts on other platforms, fullscreen included', () => {
-    expect(closeAction('linux', false, true)).toBe('default')
+  it('always uses the native Windows close action', () => {
+    expect(closeAction('win32', false, false)).toBe('default')
     expect(closeAction('win32', false, true)).toBe('default')
+    expect(closeAction('win32', true, true)).toBe('default')
   })
 })

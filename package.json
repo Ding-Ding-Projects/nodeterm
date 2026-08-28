@@ -31,7 +31,7 @@
     "dist": "npm run dist:win",
     "dist:win": "npm run make-icon && npm run build && electron-builder --win squirrel --x64 --publish never",
     "release": "npm run dist:win",
-    "postinstall": "node scripts/patch-node-pty.mjs && electron-rebuild -f -w node-pty,smart-whisper"
+    "postinstall": "electron-rebuild -f -w node-pty,smart-whisper"
   },
   "build": {
     "appId": "com.nodeterm.app",

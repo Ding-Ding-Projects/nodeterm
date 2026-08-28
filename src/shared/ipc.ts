@@ -32,11 +32,6 @@ export const IPC = {
    *  for a held band at most once every five minutes; `level: 'none'` is what clears the banner.
    *  Desktop only — see the Server Edition note beside the monitor in src/server/index.ts. */
   ptyPressure: 'pty:pressure',
-  /** Renderer → main: the user clicked "Fix automatically…" on the pty-pressure banner. Raises
-   *  `kern.tty.ptmx_max` now AND installs a LaunchDaemon so it survives reboot, via ONE
-   *  administrator-privileges osascript (macOS's own password dialog). Resolves
-   *  `PtyLimitFixResult`. NEVER invoked on the app's own initiative — see main/ptmx-limit.ts. */
-  ptyRaiseDeviceLimit: 'pty:raise-device-limit',
   claudeReadTranscript: 'claude:read-transcript',
   chatReadTranscript: 'chat:read-transcript',
   claudeAccountsAdd: 'claude-accounts:add',
