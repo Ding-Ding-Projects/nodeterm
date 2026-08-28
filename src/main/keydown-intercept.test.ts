@@ -22,40 +22,40 @@ const input = (overrides: Partial<Parameters<typeof keydownIntercept>[0]> = {}) 
   ...overrides
 })
 
-const bindings = (overrides: unknown = undefined) => resolveInterceptBindings(overrides, false)
+const bindings = (overrides: unknown = undefined) => resolveInterceptBindings(overrides)
 
 describe('Windows keydown interception', () => {
   it('forwards Ctrl+M and Ctrl+W to their renderer actions', () => {
-    expect(keydownIntercept(input({ control: true, key: 'm', code: 'KeyM' }), bindings(), false)).toEqual({
+    expect(keydownIntercept(input({ control: true, key: 'm', code: 'KeyM' }), bindings())).toEqual({
       action: 'toggle-markdown'
     })
-    expect(keydownIntercept(input({ control: true, key: 'w', code: 'KeyW' }), bindings(), false)).toEqual({
+    expect(keydownIntercept(input({ control: true, key: 'w', code: 'KeyW' }), bindings())).toEqual({
       action: 'close-node'
     })
   })
 
   it('forwards Ctrl+0 once and suppresses auto-repeat', () => {
-    expect(keydownIntercept(input({ control: true }), bindings(), false)).toEqual({
+    expect(keydownIntercept(input({ control: true }), bindings())).toEqual({
       action: 'zoom-actual-size'
     })
-    expect(keydownIntercept(input({ control: true, isAutoRepeat: true }), bindings(), false)).toEqual({
+    expect(keydownIntercept(input({ control: true, isAutoRepeat: true }), bindings())).toEqual({
       action: null
     })
-    expect(keydownIntercept(input(), bindings(), false)).toBeNull()
+    expect(keydownIntercept(input(), bindings())).toBeNull()
   })
 
   it('refuses extra modifiers and follows explicit remaps', () => {
-    expect(keydownIntercept(input({ control: true, shift: true, key: 'm', code: 'KeyM' }), bindings(), false)).toBeNull()
+    expect(keydownIntercept(input({ control: true, shift: true, key: 'm', code: 'KeyM' }), bindings())).toBeNull()
     const remapped = bindings({ 'node.close': ['Ctrl+Shift+K'] })
-    expect(keydownIntercept(input({ control: true, shift: true, key: 'K', code: 'KeyK' }), remapped, false)).toEqual({
+    expect(keydownIntercept(input({ control: true, shift: true, key: 'K', code: 'KeyK' }), remapped)).toEqual({
       action: 'close-node'
     })
   })
 
   it('keeps the Windows close menu accelerator stood down in a focused terminal', () => {
-    expect(closeStandsDownInTerminal(false, true)).toBe(true)
-    expect(closeStandsDownInTerminal(false, false)).toBe(false)
-    expect(menuItemIdsToSuspend(false)).toContain('window-close')
+    expect(closeStandsDownInTerminal(true)).toBe(true)
+    expect(closeStandsDownInTerminal(false)).toBe(false)
+    expect(menuItemIdsToSuspend()).toContain('window-close')
   })
 })
 
