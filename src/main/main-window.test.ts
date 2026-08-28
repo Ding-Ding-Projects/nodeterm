@@ -4,8 +4,6 @@ import {
   getMainWindow,
   sendToMain,
   mainWindowClientIds,
-  shouldHideOnClose,
-  closeAction,
   createCrashReloadPolicy,
   type MainWindowLike
 } from './main-window'
@@ -69,8 +67,8 @@ describe('main-window tracking', () => {
     expect(getMainWindow()).toBeNull()
   })
 
-  // The original bug: hook events were bound to the FIRST window via closure, so after
-  // the macOS close→dock-reopen cycle every agent:status event was dropped forever.
+  // A replacement window must receive later hook events rather than leaving them bound to the
+  // first window through a stale closure.
   it('sendToMain reaches a replacement window registered after the first one died', () => {
     const first = fakeWindow()
     setMainWindow(first)
@@ -111,7 +109,6 @@ describe('main-window tracking', () => {
     expect(getMainWindow()).toBeNull()
   })
 })
-
 // Field bug (2026-08-10): a dead renderer left the window permanently blank — the
 // render-process-gone handler dropped pty clients but nothing ever reloaded the page.
 describe('createCrashReloadPolicy', () => {
@@ -144,20 +141,5 @@ describe('createCrashReloadPolicy', () => {
     onCrash('crashed', 1_000)
     expect(onCrash('crashed', 2_000)).toBe('give-up')
     expect(onCrash('crashed', 61_500)).toBe('reload') // both grants aged out
-  })
-})
-
-describe('shouldHideOnClose', () => {
-  it('always lets the Windows close action through', () => {
-    expect(shouldHideOnClose('win32', false)).toBe(false)
-    expect(shouldHideOnClose('win32', true)).toBe(false)
-  })
-})
-
-describe('closeAction', () => {
-  it('always uses the native Windows close action', () => {
-    expect(closeAction('win32', false, false)).toBe('default')
-    expect(closeAction('win32', false, true)).toBe('default')
-    expect(closeAction('win32', true, true)).toBe('default')
   })
 })

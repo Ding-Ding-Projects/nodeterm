@@ -110,7 +110,7 @@ import {
   isValidPendingId,
   syntheticAnsweredEvent
 } from '../core/agents/pending-approvals'
-import { setMainWindow, getMainWindow, sendToMain, closeAction, createCrashReloadPolicy } from './main-window'
+import { setMainWindow, getMainWindow, sendToMain, createCrashReloadPolicy } from './main-window'
 import {
   MENU_ITEM_ID_CLOSE,
   MENU_ITEM_ID_KANBAN,
@@ -940,38 +940,9 @@ function createWindow(): BrowserWindow {
 
   win.on('ready-to-show', () => win.show())
 
-  // macOS: closing the window hides it instead of destroying it. The app deliberately
-  // outlives its window (tmux sessions, hook server, updater); destroying the window
-  // would leave every window-bound subsystem (agent-status forwarding, tails, updater,
-  // license events) pointing at a dead webContents after a dock-reopen.
-  // A fullscreen window must LEAVE fullscreen before it hides: hiding in place strands the
-  // window's empty Space as a black screen (issue #78 / electron/electron#20263). The
-  // transition is async, so the hide waits for `leave-full-screen`; `leavingFullScreen`
-  // keeps a second ⌘W during the transition from stacking another listener.
-  let leavingFullScreen = false
+  // The native Windows close action reaches this handler directly, so the confirmation must run
+  // before the only window disappears.
   win.on('close', (e) => {
-    const action = closeAction(process.platform, quitting, win.isFullScreen())
-    if (action === 'hide') {
-      e.preventDefault()
-      win.hide()
-      return
-    }
-    if (action === 'leave-fullscreen-then-hide') {
-      e.preventDefault()
-      if (!leavingFullScreen) {
-        leavingFullScreen = true
-        win.once('leave-full-screen', () => {
-          leavingFullScreen = false
-          if (!win.isDestroyed() && !quitting) win.hide()
-        })
-        win.setFullScreen(false)
-      }
-      return
-    }
-    // action === 'default': the window is really closing. On Windows/Linux the native title-bar
-    // × reaches this directly (no app.quit() first), so the confirm gate must sit here too, not
-    // only in before-quit — otherwise the window (and with it the only place to show a dialog)
-    // would already be gone by the time we asked.
     if (!quitConfirmed && !skipQuitConfirmation) {
       e.preventDefault()
       void confirmQuit(win).then((ok) => {

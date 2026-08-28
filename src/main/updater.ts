@@ -1,9 +1,8 @@
 // Auto-update client (electron-updater). The packaged app downloads updates automatically
 // and forwards the full lifecycle (available → progress → downloaded → error/not-available)
 // to the renderer's UpdateCard. Version lookup, manual check, and restart work in dev too;
-// the automatic feed checks and event wiring are packaged-only. On macOS, silent self-install
-// requires a signed + notarized build; unsigned builds still surface the card for a manual
-// download.
+// the automatic feed checks and event wiring are packaged-only. Windows packages use the
+// unsigned Squirrel.Windows update feed configured by the release build.
 import { app, ipcMain, Notification } from 'electron'
 import fs from 'fs'
 import path from 'path'
@@ -50,11 +49,8 @@ function packagedUpdateMode(): unknown {
 }
 
 /**
- * The window is resolved AT EVENT TIME (getMainWindow/sendToMain) — never captured in a closure.
- * On macOS the window can be closed (the app lives on) and recreated from the dock, so a captured
- * reference is a DESTROYED window: touching it throws `TypeError: Object has been destroyed`. That
- * shipped — an update finishing downloading after a close→dock-reopen crashed the main process on
- * `win.isFocused()`.
+ * The window is resolved at event time and never captured in a closure. A replacement window must
+ * receive update progress and completion events without touching a destroyed reference.
  *
  * @param onBeforeRestart Run right before `quitAndInstall()`. Required so the caller can flip its
  *   "quitting" flag: `quitAndInstall()` closes all windows and only then calls `app.quit()`, but
@@ -102,8 +98,8 @@ export function initUpdater(onBeforeRestart?: () => void): void {
   autoUpdater.on('update-downloaded', (info) => {
     send(IPC.appUpdateDownloaded, { version: info.version })
     // OS notification only when the window is in the background; the card covers the foreground.
-    // Resolve the window HERE, not at init: a download can finish long after a close→dock-reopen.
-    // No live window (closed on macOS) reads as "not focused", which is exactly when we notify.
+    // Resolve the window here, not at init: a download can finish long after initialization.
+    // No live window reads as not focused, which is exactly when the notification is useful.
     if (!getMainWindow()?.isFocused() && Notification.isSupported()) {
       const n = new Notification({
         title: 'Update ready',
