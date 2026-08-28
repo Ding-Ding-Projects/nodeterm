@@ -42,7 +42,7 @@ const ROWS = {
   wheelZoom: { title: 'Scroll wheel zooms', keywords: ['zoom', 'wheel', 'scroll', 'mouse', 'pan'] },
   trackpadPan: {
     title: 'Trackpad scroll pans',
-    keywords: ['trackpad', 'pan', 'scroll', 'zoom', 'magic', 'mouse', 'two-finger', 'macos']
+    keywords: ['trackpad', 'touchpad', 'pan', 'scroll', 'zoom', 'mouse', 'two-finger', 'windows']
   },
   dragMode: {
     title: 'Canvas left-drag',
@@ -223,7 +223,7 @@ export function BehaviorSection({ isActive }: { isActive: boolean }): React.JSX.
       <SearchableRow {...ROWS.wheelZoom}>
         <FieldRow
           label="Scroll wheel zooms"
-          description={hintLabel('Zoom with a plain mouse wheel (no ⌘). Turns off scroll-to-pan — pan by dragging.')}
+          description="Zoom with a plain mouse wheel without Ctrl. Turns off scroll-to-pan; pan by dragging."
           control={
             <Switch
               checked={settings.wheelZoom}
@@ -293,7 +293,7 @@ export function BehaviorSection({ isActive }: { isActive: boolean }): React.JSX.
       <SearchableRow {...ROWS.confirmQuit}>
         <FieldRow
           label="Confirm before quitting"
-          description="Ask before the app quits (⌘Q / Ctrl+Q or the title-bar close). Terminal sessions survive a quit either way."
+          description="Ask before the app quits through Ctrl+Q or the title-bar close. Terminal sessions survive a quit either way."
           control={
             <Switch
               checked={settings.confirmBeforeQuit}

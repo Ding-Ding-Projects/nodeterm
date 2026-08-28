@@ -454,7 +454,7 @@ export function SourceControlPanel({
                     setScopeMenu({ top: r.bottom + 4, left: r.left })
                   }}
                 >
-                  ⌥ {scope?.label ?? status.repoName} ⌄
+                  ↳ {scope?.label ?? status.repoName} ⌄
                 </button>
               ) : (
                 <span className="scm-repo">{status.repoName}</span>
@@ -789,7 +789,7 @@ export function SourceControlPanel({
                   setFileMenu(null)
                 }}
               >
-                Reveal in Finder
+                Reveal in File Explorer
               </button>
             </div>
           </>,

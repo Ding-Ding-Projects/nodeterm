@@ -59,7 +59,7 @@ const STEP_COUNT = STEPS.length
  * pairs an animated scene with ONE decision, and every choice writes settings immediately
  * (there is no final "save" — closing mid-way keeps what was chosen so far). Replaces both
  * the auto-opened ShortcutsPanel and the standalone notification-consent dialog on first
- * launch; rerunnable via the ⌘K "Setup tour" command.
+ * launch; rerunnable via the Ctrl+K Setup tour command.
  */
 export function OnboardingFlow({ onClose }: { onClose: () => void }) {
   const settings = useSettings((s) => s.settings)
@@ -117,10 +117,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
   // ---- kanban try-it: catch the REAL kanban-toggle chord while the step is up (capture phase,
   // so the canvas's own toggle handler never fires under the tour). Matched through the registry
   // rather than by hand, so a remapped chord is what the tour accepts — and so the acceptance is
-  // exactly as strict as dispatch. The old test was LAX in two directions: `metaKey || ctrlKey`
-  // accepted Ctrl+Shift+B on a mac (where the command is ⌘⇧B) and Cmd+Shift+B on Linux, and it
-  // ignored `altKey` entirely, so ⌘⌥⇧B — a different chord — also lit the checkmark. Narrowing
-  // it means the tour can only be satisfied by the key that actually toggles the board. ----
+  // exactly as strict as dispatch, including every modifier flag. ----
   const [kanbanTried, setKanbanTried] = useState(false)
   const [kanbanPulse, setKanbanPulse] = useState(0)
   useEffect(() => {
@@ -255,7 +252,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                   {/* Follows a remap of `node.newAgent`. When the user unbound it there is no
                       key to name, so the label drops the parenthetical instead of promising a
                       chord that no longer fires — the setting itself still matters (the pane
-                      menu, the dock and ⌘K all open the default agent). */}
+                      menu, the app dock and Ctrl+K all open the default agent). */}
                   {newAgentChip ? `Default agent (what ${newAgentChip} opens)` : 'Default agent'}
                 </div>
                 <div className="onb-agent-grid">

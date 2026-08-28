@@ -1,5 +1,5 @@
 /** Decides whether a quick-open file should open as an editor node (text/image, handled by
- *  EditorNode) or be handed to the OS default app (binaries/installers like .dmg). */
+ *  EditorNode) or be handed to the OS default app (binaries and installers). */
 
 // Extensions the OS should handle — EditorNode (Monaco) can't render these. Anything NOT in
 // this set opens in an editor node (text, code, images, or extensionless config files).

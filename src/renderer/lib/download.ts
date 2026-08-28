@@ -11,7 +11,7 @@
 //    it. NOT `fs.readBinary`: that base64s the whole file into one RPC message and is capped.
 //
 // Everything else answers `none`, and the affordance is hidden rather than shown-and-broken:
-//  - **Desktop + local project** — the file is already on this machine; Reveal in Finder is the
+//  - **Desktop + local project** — the file is already on this machine; Reveal in File Explorer is the
 //    honest action, and it is right there in the same menu.
 //  - **Relay tab** — the files are on the peer's machine and the only path to them is the bridged
 //    `fs.readBinary`, i.e. the capped base64 one. Offering a Download that silently truncates a
@@ -42,7 +42,7 @@ export function downloadRoute({ browser, ssh, source }: DownloadContext): Downlo
 }
 
 /**
- * True when "Reveal in Finder" can actually do something: an Electron shell, showing paths that
+ * True when "Reveal in File Explorer" can actually do something: an Electron shell, showing paths that
  * are on THIS machine. It was previously offered unconditionally — on an SSH project it handed a
  * remote path to the local file manager, and in a browser tab it is an inert stub. Both were
  * silent no-ops, which reads as a broken app rather than as an unavailable feature.

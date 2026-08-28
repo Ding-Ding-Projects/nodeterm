@@ -678,7 +678,7 @@ export function ExplorerPanel({
                       setMenu(null)
                     }}
                   >
-                    Reveal in Finder
+                    Reveal in File Explorer
                   </button>
                 </>
               )}

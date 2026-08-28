@@ -16,7 +16,7 @@ async function bootstrap(): Promise<void> {
   }
   if (!window.nodeTerminal) {
     // Record the shell BEFORE the bridge installs: affordances that only work under Electron
-    // (Reveal in Finder) or only in a browser (HTTP downloads) read this. See bridge/runtime.ts.
+    // (Reveal in File Explorer) or only in a browser (HTTP downloads) read this. See bridge/runtime.ts.
     const [{ markBrowserRuntime }, { installWsBridge }] = await Promise.all([
       import('./bridge/runtime'),
       import('./bridge/ws-bridge')

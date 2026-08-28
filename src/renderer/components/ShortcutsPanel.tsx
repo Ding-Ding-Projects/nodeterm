@@ -57,9 +57,9 @@ function buildSections(dictationChord: string): { title: string; rows: Row[] }[]
         // Control") is the one that belongs, so the General duplicate is gone.
         ...cmd('view.kanbanToggle', 'Kanban board'),
         ...cmd('panel.sessions', 'Pin the sessions sidebar'),
-        // Desktop only: browsers own Cmd/Ctrl+1-9 for tab switching and a page cannot take it
+        // Desktop only: browsers own Ctrl+1-9 for tab switching and a page cannot take it
         // back, so listing it in the Server Edition would promise a shortcut that never fires.
-        ...(isBrowserRuntime() ? [] : [{ keys: ['⌘', '1-9'], label: 'Jump to project' }]),
+        ...(isBrowserRuntime() ? [] : [{ keys: ['Ctrl', '1-9'], label: 'Jump to project' }]),
         ...dictate(),
         ...cmd('canvas.undo', 'Undo'),
         ...cmd('canvas.redo', 'Redo'),
@@ -74,8 +74,7 @@ function buildSections(dictationChord: string): { title: string; rows: Row[] }[]
         ...cmd('node.newAgent', 'New Claude Code'),
         ...cmd('node.close', 'Close selected node'),
         ...cmd('canvas.deleteSelection', 'Delete selection'),
-        // One row per direction rather than a single collapsed "⌘ ← → ↑ ↓": each is its own
-        // command, so a user who remapped or unbound only ⌘↑ must see exactly that.
+        // One row per direction because each is an independently remappable command.
         ...cmd('node.focusLeft', 'Focus the node to the left'),
         ...cmd('node.focusRight', 'Focus the node to the right'),
         ...cmd('node.focusUp', 'Focus the node above'),
@@ -85,14 +84,14 @@ function buildSections(dictationChord: string): { title: string; rows: Row[] }[]
         { keys: ['Middle / Right-drag'], label: 'Pan the canvas' },
         { keys: ['Double-click'], label: 'Center & focus a node' },
         ...cmd('view.focusMode', 'Focus mode (selected node fills the window)'),
-        { keys: ['⌘', 'wheel'], label: 'Zoom in / out' },
-        // Advertised on BOTH surfaces, unlike "Jump to project" above. ⌘1-9 is dropped there
+        { keys: ['Ctrl', 'wheel'], label: 'Zoom in / out' },
+        // Advertised on both surfaces, unlike Jump to project above. Ctrl+1-9 is dropped there
         // because the browser RESERVES it (tab switching, un-preventable) for something unrelated;
-        // ⌘0 is neither — it is not in the reserved set, so the page gets the keydown, and even
+        // Ctrl+0 is not reserved, so the page gets the keydown, and even
         // where a browser insists on handling it too it means the same thing we do ("actual size")
         // instead of fighting us. Shift+1 is nobody else's key on any surface.
-        { keys: ['⌘', '0'], label: 'Zoom to 100%' },
-        { keys: ['⇧', '1'], label: 'Fit view' },
+        { keys: ['Ctrl', '0'], label: 'Zoom to 100%' },
+        { keys: ['Shift', '1'], label: 'Fit view' },
         ...cmd('canvas.tidy', 'Tidy canvas')
       ]
     },
@@ -103,7 +102,7 @@ function buildSections(dictationChord: string): { title: string; rows: Row[] }[]
         { keys: ['Quick drag'], label: 'Move the terminal (before it focuses)' },
         ...cmd('node.toggleMarkdown', 'Toggle markdown view'),
         ...cmd('terminal.find', 'Find in terminal'),
-        { keys: ['⌘', 'C'], label: 'Copy selection (markdown view)' },
+        { keys: ['Ctrl', 'C'], label: 'Copy selection (markdown view)' },
         { keys: ['✦'], label: 'Name the terminal with AI' }
       ]
     },
@@ -117,7 +116,7 @@ function buildSections(dictationChord: string): { title: string; rows: Row[] }[]
   ]
 }
 
-/** Keyboard shortcuts reference; shown on first launch and via ⌘/ or the ? button. */
+/** Keyboard shortcuts reference, shown on first launch and via Ctrl+/ or the help button. */
 export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
   // A string selector, so an unrelated settings write cannot re-render the panel.
   const dictationChord = useSettings(() => dictationBinding())
