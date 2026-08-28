@@ -6,8 +6,6 @@ import { matchesQuery } from './search'
 import { SectionIcon } from './SettingsIcons'
 import { ProjectGlyph } from '../ProjectGlyph'
 
-const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
-
 export function SettingsSidebar({
   activeSectionId,
   query,
@@ -28,7 +26,7 @@ export function SettingsSidebar({
 }): React.JSX.Element {
   const hasQuery = query.trim() !== ''
   const GROUPS = useMemo(
-    () => [...visibleSettingsGroups(isMac), ...(extraGroups ?? [])],
+    () => [...visibleSettingsGroups(false), ...(extraGroups ?? [])],
     [extraGroups]
   )
   return (

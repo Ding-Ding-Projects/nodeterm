@@ -237,7 +237,7 @@ export function BehaviorSection({ isActive }: { isActive: boolean }): React.JSX.
         <FieldRow
           label="Trackpad scroll pans"
           description={hintLabel(
-            'macOS: a two-finger trackpad scroll pans the canvas even with wheel zoom on. Turn off if a precise-pixel mouse (Magic Mouse, MX) pans when you meant to zoom.'
+            'A precision touchpad scroll pans the canvas even with wheel zoom on. Turn this off if scrolling pans when you meant to zoom.'
           )}
           control={
             <Switch

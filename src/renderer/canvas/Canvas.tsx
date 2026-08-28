@@ -481,7 +481,7 @@ import type { CodexAccount } from '@shared/codex-account'
 import { useSystemCodexAccount } from '../state/systemCodexAccount'
 import { toKanbanSession } from './toKanbanSession'
 
-const isMac = /Mac/i.test(navigator.platform || navigator.userAgent)
+const isMac = false
 
 const GRID = 24
 
@@ -6293,7 +6293,7 @@ export function Canvas() {
     // copy on a Linux box. The board is an opaque overlay over the canvas, so a copy there
     // would act on a selection the user cannot see (the canvas-only-shortcut discipline).
     const projects = useProjects.getState()
-    if (!isMac || isKanbanOpen(projects.activeProjectId)) return false
+    if (isKanbanOpen(projects.activeProjectId)) return false
     const paths = selectedLocalFilePaths(nodesRef.current, {
       projectIsRelay: !!projects.getProject(projects.activeProjectId ?? '')?.remote
     })
@@ -6305,7 +6305,7 @@ export function Canvas() {
         setCopyError(
           copied
             ? null
-            : 'Copy failed — only existing local files can be copied from the macOS desktop app.'
+            : 'Copy failed — only existing local files can be copied from the Windows desktop app.'
         )
       })
       .catch(() => setCopyError('Copy failed — the system clipboard is unavailable.'))

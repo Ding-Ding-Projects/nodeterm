@@ -33,8 +33,7 @@ export function NotificationsSection({ isActive }: { isActive: boolean }): React
   const mobileLiveActivities = useSettings((s) => s.settings.mobileLiveActivities)
   const mobilePushPresenceAware = useSettings((s) => s.settings.mobilePushPresenceAware)
   const update = useSettings((s) => s.update)
-  // The OS refused our test notification (macOS permission denied). macOS never re-prompts
-  // once the app's record exists, so the only way back is the System Settings pane.
+  // Keep a recovery action visible when the operating system refuses the test notification.
   const [osBlocked, setOsBlocked] = useState(false)
   return (
     <SettingsSection
@@ -54,9 +53,8 @@ export function NotificationsSection({ isActive }: { isActive: boolean }): React
               onChange={(on) => {
                 update({ notifyOnClaudeDone: on, notifyConsentAsked: true })
                 setOsBlocked(false)
-                // Enabling fires a real test notification: on a fresh install this is what
-                // triggers the macOS permission prompt; on a denied/stale record the OS
-                // rejects it and we surface the repair path below.
+                // Enabling fires a real test notification. A denied or stale permission is
+                // surfaced with a direct operating-system recovery action below.
                 if (on)
                   void window.nodeTerminal
                     .notify({
@@ -72,9 +70,9 @@ export function NotificationsSection({ isActive }: { isActive: boolean }): React
         />
         {osBlocked && (
           <div className="mt-2 flex items-center gap-3 text-[13px] text-[color:var(--caution)]">
-            macOS is blocking notifications for this app.
+            The operating system is blocking notifications for this app.
             <Button onClick={() => void window.nodeTerminal.openNotificationSettings()}>
-              Open System Settings
+              Open notification settings
             </Button>
           </div>
         )}
