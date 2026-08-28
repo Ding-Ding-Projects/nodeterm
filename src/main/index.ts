@@ -286,10 +286,10 @@ if (NT_MULTI && process.env.NT_USER_DATA) app.setPath('userData', process.env.NT
 // before app 'ready' or the switch is silently ignored.
 app.commandLine.appendSwitch('max-active-webgl-contexts', String(WEBGL_CONTEXT_CAP_DESKTOP))
 
-// A throwaway NT_MULTI sandbox must not touch the real Keychain. The "node-terminal Safe Storage"
+// A throwaway NT_MULTI sandbox must not touch the real OS credential vault. The "node-terminal Safe Storage"
 // entry is keyed by the app NAME, which a dev instance shares with the installed app, so every
 // launch prompted for the login password and logged a scary os_crypt error when dismissed. The
-// mock keychain keeps safeStorage available in-process (no prompt, no error) while storing
+// mock credential vault keeps safeStorage available in-process (no prompt, no error) while storing
 // nothing in the OS; the only consumer is the relay identity keypair, which already has a
 // documented plaintext fallback. Never set this for a real build: it would silently downgrade
 // at-rest encryption of that key.
@@ -349,13 +349,13 @@ settingsStore.onChange((s) => {
 })
 // TWO bits the RENDERER owns and main only mirrors. Both are module-level `let`s read through a
 // closure, exactly like `interceptBindings` above: the window is created later and can be recreated
-// (macOS dock reopen), so nothing may capture a value.
+// (Windows dock reopen), so nothing may capture a value.
 //
 // 1. `shortcutRecording` — Settings' shortcut recorder is armed: stand every intercept down so the
-//    chord the user presses reaches the recorder. Without it, recording ⌘W CLOSES THE SELECTED
+//    chord the user presses reaches the recorder. Without it, recording Ctrl+W CLOSES THE SELECTED
 //    NODES — a claimed chord never reaches the page, so the recorder's own preventDefault cannot
 //    save it. It ALSO drives the menu leg (`menuStandsDown` → `syncMenuForStandDown`, called from
-//    this bit's IPC receiver), which is what lets a menu-owned chord — ⌘M, ⌘⇧B, ⌘,, off-mac
+//    this bit's IPC receiver), which is what lets a menu-owned chord — Ctrl+M, Ctrl+Shift+B, Ctrl+,, Windows
 //    Ctrl+W — reach the recorder instead of the item that owns it.
 // 2. `terminalFocused` — an xterm holds keyboard focus, which under the `terminal-first` policy
 //    means the intercepts stand down so the terminal gets the chord. `before-input-event` fires
@@ -363,11 +363,11 @@ settingsStore.onChange((s) => {
 //    `renderer/lib/terminalFocusMirror.ts` keeps it current and change-deduped.
 //
 // FAIL-SAFE DIRECTION, and it is the same one for both: every uncertainty resolves to `false`
-// (intercepts ON — the app as it behaved before either feature). The alternative is ⌘W/⌘M/⌘0
+// (intercepts ON — the app as it behaved before either feature). The alternative is Ctrl+W/Ctrl+M/Ctrl+0
 // silently handed back to the application MENU app-wide, with no component left alive to release
 // the bit. So EVERY way the page that set one can stop existing owes a clear, and `createWindow`
-// wires three — window `closed`, `render-process-gone`, and a main-frame navigation (⌘R). That is
-// three known paths, not a proof of exhaustiveness: a fourth would show up as "⌘W stopped working
+// wires three — window `closed`, `render-process-gone`, and a main-frame navigation (Ctrl+R). That is
+// three known paths, not a proof of exhaustiveness: a fourth would show up as "Ctrl+W stopped working
 // after I did X", so add its reset beside the others rather than assuming this list is closed.
 // The two bits are cleared TOGETHER, by one function called at all three sites, because they die
 // for the same reason (the page is gone) and a reset that remembered only one of them would be
@@ -388,7 +388,7 @@ const clearRendererKeyState = (): void => {
   terminalFocused = false
   // The menu leg follows the same state, so it must follow it here too — otherwise a crash or a
   // reload while stood down would leave Window ▸ Minimize disabled with nothing left to re-enable
-  // it, i.e. ⌘M dead app-wide. Safe before any window exists: it no-ops without a menu.
+  // it, i.e. Ctrl+M dead app-wide. Safe before any window exists: it no-ops without a menu.
   syncMenuForStandDown()
 }
 const sshStore = new SshStore()
@@ -503,7 +503,7 @@ const projectSetupService = new ProjectSetupService({
   // to every relay peer (a paired phone, another desktop). Broadcasting it would hand a guest the
   // shared script bodies (the exact bytes being approved) and put the host's own trust dialog on
   // their screen. Same main-window-only push the ssh passphrase prompt uses; with the window closed
-  // (macOS) the prompt is simply not delivered and the run rides out its expiry as `unanswered`,
+  // (Windows) the prompt is simply not delivered and the run rides out its expiry as `unanswered`,
   // which is the fail-closed direction.
   sendConsent: (channel, payload) => sendToMain(channel, payload)
 })
@@ -579,7 +579,7 @@ let activeRemote: { cwd: string; ref: GitRemoteRef } | null = null
 
 // The single app window is tracked in ./main-window (setMainWindow/getMainWindow) and
 // resolved AT SEND TIME everywhere — a closure-captured window goes stale after the
-// macOS close→dock-reopen cycle and silently swallows every send.
+// Windows close→dock-reopen cycle and silently swallows every send.
 // True from the first before-quit on: lets window close-events through (see hide-on-close).
 let quitting = false
 
@@ -593,7 +593,7 @@ let quitConfirmationPending = false
 
 /** Resolves true once quitting may proceed. Shows a native confirm dialog (all platforms) on
  * first call; a Quit answer is remembered so the re-issued app.quit() below is not re-prompted.
- * Read at ASK TIME, not captured: the Settings toggle must apply to the very next ⌘Q. */
+ * Read at ASK TIME, not captured: the Settings toggle must apply to the very next Ctrl+Q. */
 function confirmQuit(parentWin: BrowserWindow | null): Promise<boolean> {
   if (!settingsStore.get().confirmBeforeQuit) return Promise.resolve(true)
   if (quitConfirmed || skipQuitConfirmation) return Promise.resolve(true)
@@ -618,7 +618,7 @@ function confirmQuit(parentWin: BrowserWindow | null): Promise<boolean> {
   })
 }
 
-// Keep-awake tracker (created in whenReady next to the notch HUD, disposed in before-quit).
+// Keep-awake tracker (created in whenReady next to the Agent HUD, disposed in before-quit).
 let keepAwake: KeepAwakeTracker | undefined
 
 // Browser <webview> guest webContents id → the browser node (and which of its two surfaces) it
@@ -670,9 +670,8 @@ function buildAppMenu(win: BrowserWindow): void {
   const send = (channel: string): void => {
     if (!win.isDestroyed()) win.webContents.send(channel)
   }
-  // ONE object, placed into BOTH templates below (mac's app menu, off-mac's own `Settings` menu),
-  // so `MENU_ITEM_ID_SETTINGS` resolves on every platform — which is why `menuItemIdsToSuspend`
-  // lists it unconditionally. ⌘, is an ordinary registry command (`app.settings`), not an
+  // The Settings item owns Ctrl+, above the renderer page, so the stand-down list includes it.
+  // It is an ordinary registry command (`app.settings`), not an
   // intercepted chord: the menu just takes it above the page, and disabling this item under the
   // stand-down is the only way it can reach a focused terminal.
   const settingsItem: Electron.MenuItemConstructorOptions = {
@@ -688,11 +687,11 @@ function buildAppMenu(win: BrowserWindow): void {
     // Restored from Electron's default View menu, which the custom menu replaced. Reloading the
     // renderer is a real recovery lever and safe here: the tmux sessions live in the MAIN process,
     // so a reload only re-hydrates the canvas from the workspace store — it never drops a session
-    // (same path the crash-reload policy uses). No interceptor claims ⌘R, so the accelerator is
-    // honest (unlike ⌘0, which `installKeydownIntercepts` owns for zoom-to-100%).
+    // (same path the crash-reload policy uses). No interceptor claims Ctrl+R, so the accelerator is
+    // honest (unlike Ctrl+0, which `installKeydownIntercepts` owns for zoom-to-100%).
     //
     // These two carry NO id and are the NAMED EXCEPTION to the stand-down (see
-    // `menuItemIdsToSuspend`): ⌘R / ⌘⇧R keep working over a focused terminal under terminal-first,
+    // `menuItemIdsToSuspend`): Ctrl+R / Ctrl+Shift+R keep working over a focused terminal under terminal-first,
     // because a renderer wedged badly enough to stop dispatching keys is exactly when the user
     // needs the lever — and the reload is also what resets `terminalFocused` / `shortcutRecording`
     // in main. Do not "complete" the suspend list with them.
@@ -707,25 +706,24 @@ function buildAppMenu(win: BrowserWindow): void {
       click: () => send(IPC.appToggleAutoAlign)
     },
     {
-      // No accelerator: `installKeydownIntercepts` already claims ⌘0 for zoom-to-100% before the
-      // renderer sees it, so labelling this item "⌘0" would show a shortcut that does something
+      // No accelerator: `installKeydownIntercepts` already claims Ctrl+0 for zoom-to-100% before the
+      // renderer sees it, so labelling this item "Ctrl+0" would show a shortcut that does something
       // else. The item stays click-only; the renderer's own Shift+1 chord is the keyboard route to
       // Fit View.
       label: 'Fit View',
       click: () => send(IPC.appFitView)
     },
     {
-      // `viewSubmenu` goes into BOTH templates, so this id resolves on every platform (the same
-      // reason `menuItemIdsToSuspend` lists it unconditionally). ⌘⇧B is a registry command
+      // Ctrl+Shift+B is a registry command
       // (`view.kanbanToggle`) the menu happens to own above the page; suspending the item is what
-      // lets a terminal-first user's ⌘⇧B reach the shell like every other chord.
+      // lets a terminal-first user's Ctrl+Shift+B reach the shell like every other chord.
       id: MENU_ITEM_ID_KANBAN,
       label: 'Toggle Kanban Board',
       accelerator: 'CmdOrCtrl+Shift+B',
       click: () => send(IPC.appToggleKanban)
     },
     { type: 'separator' },
-    // Also restored from the default menu: Enter Full Screen (Ctrl+⌘F on mac, F11 on Linux).
+    // Restore the native full-screen menu action.
     { role: 'togglefullscreen' }
   ]
   const template: Electron.MenuItemConstructorOptions[] = [
@@ -755,7 +753,7 @@ function buildAppMenu(win: BrowserWindow): void {
   ]
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
   // A REBUILD resets every item to `enabled: true`, and this function runs on every settings
-  // change — so without this line, a terminal-first user with a terminal focused would have ⌘M
+  // change — so without this line, a terminal-first user with a terminal focused would have Ctrl+M
   // silently start minimizing again the moment they toggled any unrelated setting. The sync is
   // idempotent and cheap; it belongs at the end of every path that installs a menu, not only at
   // the paths where the stand-down state changes.
@@ -768,26 +766,26 @@ function buildAppMenu(win: BrowserWindow): void {
  * **Two stand-downs share this leg**, composed by `menuStandsDown(shortcutRecording, policy,
  * terminalFocused)`: the terminal-first policy (below) and an armed Settings shortcut RECORDER.
  * The recorder needs it for the same structural reason and a different destination — a menu
- * accelerator is handled above the page, so while it was armed ⌘M minimized the window, ⌘⇧B opened
- * the kanban board behind the dialog and ⌘, re-opened Settings, none of them recordable. With the
+ * accelerator is handled above the page, so while it was armed Ctrl+M minimized the window, Ctrl+Shift+B opened
+ * the kanban board behind the dialog and Ctrl+, re-opened Settings, none of them recordable. With the
  * items suspended those chords reach the recorder. **Reload is still not among them** (see below),
- * so ⌘R / ⌘⇧R remain unrecordable by design. The two INTERCEPT thunks stay independent parameters
+ * so Ctrl+R / Ctrl+Shift+R remain unrecordable by design. The two INTERCEPT thunks stay independent parameters
  * on `installKeydownIntercepts`; only this single `enabled` boolean ORs them.
  *
  * `installKeydownIntercepts` standing down means only that main stops calling `preventDefault` —
  * the key then reaches the page, and if the page ignores it, the MENU, which is handled above the
- * page either way. So under `terminal-first` with a terminal focused, ⌘M would still hit
+ * page either way. So under `terminal-first` with a terminal focused, Ctrl+M would still hit
  * `{role:'minimize'}` and (Windows/Linux) Ctrl+W would still hit `{role:'close'}` — the latter
  * closing the window on what a terminal user means as readline's kill-word, i.e. strictly worse
  * than not having the policy at all. Disabling the item suppresses its accelerator, so the chord
  * falls through: page → the renderer's dispatcher (terminal context under terminal-first, where
  * nothing matches) → xterm → the PTY. That is what makes "everything reaches the shell" true for
- * ⌘M and Ctrl+W too, not just for ⌘0 and mac's ⌘W.
+ * Ctrl+M and Ctrl+W too, not just for Ctrl+0 and Windows Ctrl+W.
  *
- * The list is `menuItemIdsToSuspend` and it also carries **Toggle Kanban Board (⌘⇧B)** and
- * **Settings (⌘,)** on every platform. Those two are not intercepted chords at all — they are
+ * The list is `menuItemIdsToSuspend` and it also carries **Toggle Kanban Board (Ctrl+Shift+B)** and
+ * **Settings (Ctrl+,)** on every platform. Those two are not intercepted chords at all — they are
  * ordinary registry commands the menu simply takes above the page, which is why the dispatcher
- * never sees them and could not stand them down itself. **Reload (⌘R / ⌘⇧R) is the named
+ * never sees them and could not stand them down itself. **Reload (Ctrl+R / Ctrl+Shift+R) is the named
  * exception** and stays live while stood down; see `menuItemIdsToSuspend`'s comment for why.
  *
  * Called from every place the composed answer can change — the `ui:terminal-focus` receiver, the
@@ -803,7 +801,7 @@ function buildAppMenu(win: BrowserWindow): void {
  * sides of the lookup use the same exported constants rather than string literals.
  *
  * KNOWN COST, deliberate: while either stand-down holds, every suspended item — Window ▸ Minimize,
- * View ▸ Toggle Kanban Board, Settings, and off-mac Window ▸ Close — is greyed out to the MOUSE as
+ * View ▸ Toggle Kanban Board, Settings, and Windows Window ▸ Close — is greyed out to the MOUSE as
  * well. They re-enable the moment focus leaves the terminal, or the recorder disarms (and the
  * traffic-light button is unaffected), so this is a visible but self-healing trade. The alternative
  * — rebuilding the whole menu without those accelerators on every focus change — costs a menu
@@ -815,7 +813,7 @@ function buildAppMenu(win: BrowserWindow): void {
  * `Menu` singleton inside `src/main/index.ts`, which no test imports (the same gap the intercept
  * WIRING has — see `keydown-intercept.ts`'s header on why the decision lives in a pure module).
  * The testable parts were extracted: `menuStandsDown` (the composed state) over `policyStandsDown`
- * (the policy half) and `menuItemIdsToSuspend` (the list, including the mac/non-mac asymmetry), all
+ * (the policy half) and `menuItemIdsToSuspend` (the list, including the cross-platform asymmetry), all
  * pinned in `keydown-intercept.test.ts`.
  */
 function syncMenuForStandDown(): void {
@@ -826,11 +824,10 @@ function syncMenuForStandDown(): void {
     const item = menu.getMenuItemById(id)
     if (item) item.enabled = enabled
   }
-  // The CLOSE item's extra, policy-independent stand-down (issue #383): off-mac its role owns the
+  // The Close item's policy-independent stand-down protects Ctrl+W while a terminal is focused.
   // Ctrl+W accelerator above the page, and while a terminal has focus that keystroke is readline's
   // kill-word. Applied ON TOP of the shared suspension — the item must never be MORE enabled than
-  // the shared rule says. Mac has no close item in the template, so the lookup is null there and
-  // this is a no-op by construction.
+  // the shared rule says.
   if (closeStandsDownInTerminal(terminalFocused)) {
     const close = menu.getMenuItemById(MENU_ITEM_ID_CLOSE)
     if (close) close.enabled = false
@@ -871,7 +868,7 @@ function createWindow(): BrowserWindow {
   // Team presence: this window is one peer. With nobody else connected the renderer draws nothing
   // (≤1 peer = zero cost); it matters when a phone joins over the relay, or when this desktop
   // hosts. Its ClientId is the webContents id — the same id space sendTo/handleWithSender use.
-  // `closed` (not `close` — which only hides the window on macOS) is the real departure.
+  // `closed` (not `close` — which only hides the window on Windows) is the real departure.
   // (The id is captured up front: reading `win.webContents` after 'closed' throws — the window and
   // its webContents are destroyed by then.)
   const presenceId = win.webContents.id
@@ -886,7 +883,7 @@ function createWindow(): BrowserWindow {
     // themselves keep running, exactly as they do on quit (killAll).
     ptyManager.dropClient(presenceId)
     // The window that armed the recorder — or reported a focused terminal — is gone, so nothing
-    // can ever release either bit. Leaving one set would suppress ⌘W/⌘M/⌘0 for the NEXT window too
+    // can ever release either bit. Leaving one set would suppress Ctrl+W/Ctrl+M/Ctrl+0 for the NEXT window too
     // (the flags outlive the window; a dock reopen builds a fresh one). Same shape as the
     // dropClient above: state this window owned, released where its departure is observed.
     clearRendererKeyState()
@@ -901,7 +898,7 @@ function createWindow(): BrowserWindow {
   win.webContents.on('render-process-gone', (_event, details) => {
     ptyManager.dropClient(presenceId)
     // A dead renderer sends no disarm and no focus-lost report. The reloaded page mounts no
-    // recorder and no terminal, so without this the user would come back to an app where ⌘W does
+    // recorder and no terminal, so without this the user would come back to an app where Ctrl+W does
     // nothing at all (recording) or minimizes the window (stood down).
     clearRendererKeyState()
     if (quitting || win.isDestroyed()) return
@@ -937,10 +934,10 @@ function createWindow(): BrowserWindow {
     }
   })
 
-  // Steal ⌘M / ⌘W / ⌘0 back from Electron's default application menu (minimize / close /
+  // Steal Ctrl+M / Ctrl+W / Ctrl+0 back from Electron's default application menu (minimize / close /
   // resetZoom) and forward each to the renderer instead. The decision — and, importantly, what it
   // must REFUSE — is in `keydown-intercept.ts`, where it can be pressed by a test. The first two
-  // are the user's effective `node.toggleMarkdown` / `node.close` bindings (⌘0 is not remappable).
+  // are the user's effective `node.toggleMarkdown` / `node.close` bindings (Ctrl+0 is not remappable).
   // The two suspensions are separate thunks on purpose (see `installKeydownIntercepts`): the
   // recorder suspends ALWAYS, the policy only while the mirror says a terminal has focus. Both are
   // read per keystroke — the settings memo and the mirror both change under a live window.
@@ -954,7 +951,7 @@ function createWindow(): BrowserWindow {
   )
 
   // The THIRD way the page that armed a recorder (or reported terminal focus) can go away: a
-  // reload. The View menu above restores `{role:'reload'}` / `{role:'forceReload'}`, and ⌘R/⌘⇧R are
+  // reload. The View menu above restores `{role:'reload'}` / `{role:'forceReload'}`, and Ctrl+R/Ctrl+Shift+R are
   // accelerators — handled above the page, so the recorder cannot preventDefault its way out of
   // one, and a same-process reload fires neither `closed` nor `render-process-gone`.
   // `navigationClearsRecording` is the (tested) filter: a same-document navigation is the SAME page
@@ -1190,12 +1187,12 @@ app.whenReady().then(async () => {
   // (the same `getMainWindow()?.webContents.id !== event.sender.id` test `registerElectronGitHubControl`
   // uses): a <webview> guest — a browser node showing an arbitrary page — is a webContents in this
   // process too, and this bit disables the app's own keyboard shortcuts. Resolved at call time, not
-  // captured, because the window can be closed and recreated on macOS.
+  // captured, because the window can be closed and recreated on Windows.
   ipcMain.on(IPC.uiShortcutRecording, (event, active: boolean) => {
     if (getMainWindow()?.webContents.id !== event.sender.id) return
     shortcutRecording = active === true
     // The menu leg follows recording too (`menuStandsDown`), so an arm/disarm owes a sync — that is
-    // what lets ⌘M, ⌘⇧B, ⌘, and off-mac Ctrl+W reach the recorder instead of the menu item that
+    // what lets Ctrl+M, Ctrl+Shift+B, Ctrl+, and Windows Ctrl+W reach the recorder instead of the menu item that
     // owns them. A recorder arms and disarms once per chord the user records, which is the right
     // cadence for a menu mutation; NEVER per keystroke (same rule as the focus mirror below). It
     // must be INSIDE the guard for the same reason as there: a rejected sender must not move the
@@ -1205,7 +1202,7 @@ app.whenReady().then(async () => {
 
   // The terminal-focus mirror, under the SAME sender guard and for a sharper version of the same
   // reason: a <webview> guest is a webContents in this process, and this bit decides whether the
-  // window claims ⌘W/⌘M/⌘0 at all — an arbitrary page in a browser node could otherwise hand
+  // window claims Ctrl+W/Ctrl+M/Ctrl+0 at all — an arbitrary page in a browser node could otherwise hand
   // itself the window's shortcuts by claiming a terminal is focused. `focused === true` so a
   // malformed payload reads as NOT focused, the fail-safe direction (intercepts on).
   ipcMain.on(IPC.uiTerminalFocus, (event, focused: boolean) => {
@@ -1217,7 +1214,7 @@ app.whenReady().then(async () => {
     syncMenuForStandDown()
   })
 
-  // Bring the window forward after a file is dropped into a terminal. On macOS a drag-drop from
+  // Bring the window forward after a file is dropped into a terminal. On Windows a drag-drop from
   // another app does NOT activate the destination app, so without this the drag-source keeps OS
   // keyboard focus and the user types into the wrong application. `getMainWindow()` (not the
   // focused window — there may be none) restores + shows + focuses.
@@ -1595,7 +1592,7 @@ app.whenReady().then(async () => {
   })
   const win = createWindow()
   // NT_MULTI instances are throwaway dev sandboxes. The dock badge is the one marker that is
-  // always visible on macOS (the window title is hidden by titleBarStyle: 'hiddenInset', and the
+  // always visible on Windows (the window title is hidden by titleBarStyle: 'hiddenInset', and the
   // dev dock icon/name are Electron's own), so a test instance can never be mistaken for the
   // real app.
   // Flip `quitting` before quitAndInstall so the window's close-event actually closes (not hides);
@@ -1711,25 +1708,25 @@ app.whenReady().then(async () => {
   //
   // GRANTED-MODE FALLBACK (spec: 2026-07-21-push-grants; owner-approved "B"). The desktop ALSO
   // wires the SSH-possession push grants the Server Edition uses (src/server/index.ts) — a phone
-  // that reached this Mac by plain SSH drops a signed, device-scoped grant at
-  // `~/.nodeterm/push-grants/<deviceId>.grant` on the Mac's own fs. `resolveSendTarget` sends BOTH
+  // that reached this machine by plain SSH drops a signed, device-scoped grant at
+  // `~/.nodeterm/push-grants/<deviceId>.grant` on the the machine's own fs. `resolveSendTarget` sends BOTH
   // legs whenever both are live — host mode for the relay-paired phones, one Bearer POST per grant
   // for the SSH-only ones. It used to be either/or (host wins), which meant a SINGLE relay-paired
-  // phone silenced every SSH-only phone on this Mac: host mode fans out over the backend's
+  // phone silenced every SSH-only phone on this machine: host mode fans out over the backend's
   // `relay_devices` rows, where an SSH-only phone has no row at all. The per-device exclusion that
   // would prevent the reverse cost (a phone that is paired AND granted gets two pushes) is not
   // expressible here — a grant is keyed by the phone's deviceId, `loadApprovedDevices` stores only
   // NaCl box pubkeys, and nothing on this machine maps one to the other. See the long note on
   // `resolveSendTarget` in core/push-notify.ts.
   const pushGrants = createGrantsAccessor()
-  // ...and the REMOTE half of the same idea. A Mac-driven SSH project's phone can only reach the
+  // ...and the REMOTE half of the same idea. A Windows-driven SSH project's phone can only reach the
   // HOST, so its grant is dropped there, not here — without this sweep an SSH-only user got no
   // push at all (no paired phone, no local grant ⇒ `resolveTarget` silently returns null). Filled
   // by a timer below; `get()` is sync so it can sit behind `getGrants`. See
   // core/remote-push-grants.ts.
   const remoteGrants = createRemoteGrantsCache()
   /** Local grants first (this machine's own phone), then the hosts'. ORDER MATTERS: one phone that
-   *  reached both this Mac and an SSH host dropped a different token on each, and push-notify's
+   *  reached both this machine and an SSH host dropped a different token on each, and push-notify's
    *  `dedupeGrantsByDevice` keeps the FIRST occurrence per deviceId — so the local token, the one
    *  that needs no host round-trip to stay fresh, is the survivor. */
   const allPushGrants = (): PushGrant[] => [...pushGrants.get(), ...remoteGrants.get()]
@@ -1746,9 +1743,7 @@ app.whenReady().then(async () => {
     } catch {
       pushHasPairedPhone = false
     }
-    // No paired destination means no host-mode push can be sent. Avoid touching macOS
-    // Safe Storage at boot in that state: locally signed development builds otherwise trigger
-    // a Keychain ACL prompt even though there is nobody to notify.
+    // No paired destination means no host-mode push can be sent, so avoid creating host-key state.
     if (!pushHasPairedPhone) {
       pushHostKeyB64 = null
       return
@@ -1763,7 +1758,7 @@ app.whenReady().then(async () => {
   const pushIdentityTimer = setInterval(() => void refreshPushIdentity(), 60_000)
   pushIdentityTimer.unref?.()
   // Presence-aware alert deferral (spec: presence-aware-push; owner UX call). Hold phone ALERTS
-  // while the user is actively at THIS Mac (noise); release them the moment they go idle or lock
+  // while the user is actively at this machine (noise); release them the moment they go idle or lock
   // the screen (exactly the right time). Presence = powerMonitor: idle < 180s AND not screen-locked.
   // A 15s poll detects the present→away idle edge; the lock event fires the flush immediately. Only
   // createPushNotify (alerts) is deferred — the live-update stream stays ambient. When the setting
@@ -1948,11 +1943,11 @@ app.whenReady().then(async () => {
     remoteSubagentTail.untrack(n.toolUseId)
     nodeSubagents.get(nodeId)?.delete(n.toolUseId)
   }
-  // Every context tail pushes through here, so an agent's meter reaches the renderer, the Notch HUD
+  // Every context tail pushes through here, so an agent's meter reaches the renderer, the Agent HUD
   // and the phone's context ring identically whichever CLI produced the numbers.
   const pushContextUpdate = (payload: unknown): void => {
     if (!win.isDestroyed()) win.webContents.send(IPC.contextUpdate, payload)
-    // Feed the macOS Notch HUD the model name (keyed by sessionId; no-op off/non-darwin).
+    // Feed the Windows Agent HUD the model name (keyed by sessionId; no-op off/non-darwin).
     agentHudOnContextUpdate(payload as { sessionId?: string; model?: string; usedPercent?: number })
     // Feed the mirror's per-node context ring (mobile-usage-inbox). The context tail keys by
     // sessionId; map it back to the node via the raw-listener's nodeId↔sessionId association.
@@ -2213,7 +2208,7 @@ app.whenReady().then(async () => {
     // the same single source of truth as the mirror/phone. Then broadcast the enriched event.
     const enriched = recordAgentEvent(e) ?? e
     sendToMain(IPC.agentStatus, enriched)
-    // Feed the macOS Notch HUD its prompt (ev.task on newTurn) + subagent grouping (no-op off/non-darwin).
+    // Feed the Windows Agent HUD its prompt (ev.task on newTurn) + subagent grouping (no-op off/non-darwin).
     agentHudOnAgentEvent(enriched)
     // Agent messaging taps the SAME stream: the sender's newTurn resets its fan-out budget, and
     // an open delivery receipt watch is satisfied by the target's verified advance.
@@ -2412,7 +2407,7 @@ app.whenReady().then(async () => {
       // Read through `grokRawFields` so grok's two field dialects (camelCase and the SDK's
       // snake_case) are decoded in exactly one place.
       const g = grokRawFields(payload)
-      // 1. node → session: read by the phone's context ring and the ⌘K session lookup.
+      // 1. node → session: read by the phone's context ring and the Ctrl+K session lookup.
       if (nodeId && g.sessionId) nodeContextSession.set(nodeId, g.sessionId)
       // 2. session → its session DIRECTORY, derived from (cwd, sessionId) — the two fields every
       // grok hook does carry — and remembered here, the one place they arrive together. That is
@@ -3157,7 +3152,7 @@ app.whenReady().then(async () => {
   // Revocation reaches its sessions via `killRelayHostsByPeerKey` (peerRevoker, above).
   initRelayHost(win, corePlatform, {})
   // Standing (phone) relay host: keep a host connection registered so a paired phone can reach
-  // this Mac from anywhere. Honors settings.phoneAccessEnabled internally.
+  // this machine from anywhere. Honors settings.phoneAccessEnabled internally.
   const standingHost = initStandingHost(win, ptyManager, () => settingsStore.get(), listProjectsOutput, hostBridge)
   ipcMain.on(IPC.remoteStandingHostSet, (_e, enabled: boolean) => standingHost.setEnabled(!!enabled))
   // Reconcile from persisted settings on launch (starts hosting if enabled).
