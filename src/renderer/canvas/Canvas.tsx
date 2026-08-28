@@ -34,7 +34,7 @@ import {
   wakeHibernatedNode
 } from '../nodes/TerminalNode'
 import { solveFitPadding } from './fit-view'
-import { MacWheelGestureRouter, trackpadRoutingEnabled } from './wheel-gesture'
+import { TrackpadWheelGestureRouter, trackpadRoutingEnabled } from './wheel-gesture'
 import { selectedLocalFilePaths } from './canvas-file-copy'
 import {
   canvasImagePasteArmedAfterKey,
@@ -3036,7 +3036,7 @@ export function Canvas() {
     // linkSessionSig is read only as an effect trigger — infoOf re-reads sessionIds via getState().
   }, [linkEdges, nodes, setLinkEdges, agentIdOf, linkSessionSig])
 
-  // Reflect Claude nodes with unread output as a macOS Dock badge count (across all projects).
+  // Reflect Claude nodes with unread output in the Windows taskbar badge (across all projects).
   // Subscribes to the derived count (a primitive), not the byId map, for the same reason as
   // loopSig above — state flips must not re-render the canvas.
   const unreadCount = useAgentStatus((s) => {
@@ -3078,18 +3078,18 @@ export function Canvas() {
   // With settings.wheelZoom on, a PLAIN mouse wheel zooms too (mouse-first workflow) — except
   // inside a `nowheel` node body (focused xterm scrollback, Monaco, markdown/chat panes), which
   // keeps its own scrolling. The hover guard overlay is NOT nowheel, so an unfocused terminal
-  // still zooms under the cursor. On macOS a two-finger TRACKPAD scroll keeps panning even with
-  // wheelZoom on: Chromium reports both devices as an unmodified pixel-wheel, so
-  // MacWheelGestureRouter tells them apart (and stays sticky for the length of one physical
+  // still zooms under the cursor. A two-finger TRACKPAD scroll keeps panning even with wheelZoom
+  // on: Chromium reports both devices as an unmodified pixel-wheel, so TrackpadWheelGestureRouter
+  // tells them apart (and stays sticky for the length of one physical
   // gesture) and hands trackpad packets back to React Flow's own panOnScroll.
   const wheelZoom = settings.wheelZoom
   // The escape hatch, resolved ONCE: the router and React Flow's panOnScroll below must agree, or
   // a gesture neither of them pans is a gesture that does nothing.
-  const trackpadRouting = trackpadRoutingEnabled(useMetaPrimary, settings.trackpadPan)
+  const trackpadRouting = trackpadRoutingEnabled(settings.trackpadPan)
   useEffect(() => {
     const wrap = flowWrapRef.current
     if (!wrap) return
-    const wheelRouting = new MacWheelGestureRouter()
+    const wheelRouting = new TrackpadWheelGestureRouter()
     const onWheel = (e: WheelEvent) => {
       if (canvasLocked) return
       if (!e.ctrlKey && !e.metaKey) {
@@ -3099,11 +3099,11 @@ export function Canvas() {
         const target = e.target as HTMLElement | null
         let scroller: boolean | undefined
         const overNativeScrollable = (): boolean => (scroller ??= !!target?.closest('.nowheel'))
-        // A macOS trackpad's two-finger scroll pans the canvas outside native scroll surfaces;
+        // A trackpad's two-finger scroll pans the canvas outside native scroll surfaces;
         // inside them (terminal, Monaco, markdown) it scrolls that surface as before.
-        if (wheelRouting.destination(e, trackpadRouting, overNativeScrollable) === 'flow-pan')
+        if (trackpadRouting && wheelRouting.destination(e, overNativeScrollable) === 'flow-pan')
           return
-        // pinch (ctrl+wheel) / Cmd/Ctrl+scroll always zoom; plain wheel only when opted in
+        // Pinch or modifier-scroll always zoom; plain wheel only when opted in.
         if (!wheelZoom) return
         if (overNativeScrollable()) return
       }
@@ -6289,9 +6289,9 @@ export function Canvas() {
     //
     // Gated to where it can actually succeed, because the failure path raises a banner that
     // stays until dismissed — and before this feature the keystroke was a silent no-op, which
-    // is what every other machine must keep getting. `writeFilesToClipboard` is darwin-gated
-    // in main and the browser bridge stub answers false, so on a non-mac renderer (desktop OR
-    // Server Edition) this branch could only ever produce that banner, wearing macOS-specific
+    // is what every other machine must keep getting. `writeFilesToClipboard` is Windows-gated
+    // in main and the browser bridge stub answers false, so on a non-desktop renderer this branch
+    // could only ever produce that banner, wearing desktop-specific
     // copy on a Linux box. The board is an opaque overlay over the canvas, so a copy there
     // would act on a selection the user cannot see (the canvas-only-shortcut discipline).
     const projects = useProjects.getState()
@@ -6590,7 +6590,8 @@ export function Canvas() {
   // ⌘/Ctrl+0 on the DESKTOP never reaches the keydown handler above: Electron's default View menu
   // binds the accelerator to `resetZoom`, and a menu accelerator is handled before the page sees
   // the key. `main/index.ts` intercepts it in `before-input-event` — exactly as it already does for
-  // ⌘M (else macOS minimizes) and ⌘W — and forwards it here, so the chord zooms the CANVAS to 100%
+  // Ctrl+M and Ctrl+W are intercepted by the desktop shell and forwarded here, so the chord
+  // zooms the CANVAS to 100%
   // instead of resetting the WINDOW's page zoom, which is not what a canvas app's user means by
   // "actual size". The forwarded signal carries no event, so the refusals are re-asked here from
   // the same module rather than re-derived. Server Edition has no menu and no intercept: there the

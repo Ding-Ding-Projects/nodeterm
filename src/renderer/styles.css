@@ -2,9 +2,8 @@
 @import '@xyflow/react/dist/style.css';
 
 :root {
-  /* macOS dark-mode palette (NSColor / HIG). The LIGHT overrides live in the
-     `:root[data-theme='light']` block below — everything here is the dark default, which is what
-     an install with no appearance choice keeps rendering, byte for byte. */
+  /* Dark-mode palette. The LIGHT overrides live in the `:root[data-theme='light']` block below.
+     Everything here is the dark default used when no appearance choice exists. */
 
   /* The one triple every overlay in this stylesheet is mixed from. Nearly 300 rules lighten a dark
      surface with `rgba(255,255,255,α)` — text, borders, hover fills, gradient stops alike — and on
@@ -77,8 +76,7 @@
   --radius: 8px;
   --radius-sm: 6px;
   --radius-lg: 12px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
   /* Tells the engine which way its OWN chrome should go — scrollbars, form controls, the
@@ -145,7 +143,6 @@
   --menu-rgb: 253, 251, 247;
   --popover-rgb: 253, 251, 247;
   --card-rgb: 253, 251, 247;
-  /* macOS light-mode shadows are about a third of the weight of its dark ones. */
   --shadow-k: 0.35;
 
   /* The status hues are tuned for a dark field: on a pale one, yellow and orange fall under any
@@ -197,7 +194,7 @@ body,
   align-items: center;
   gap: 14px;
   height: 44px;
-  /* Leave room for the macOS traffic lights on the left. */
+  /* Leave room for the custom Windows title-bar controls on the right. */
   padding: 0 12px 0 86px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
@@ -1651,7 +1648,7 @@ body,
   background: var(--panel-header);
   color: var(--text);
   font-size: 11px;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   padding: 5px 9px;
   border-radius: 7px;
   border: 1px solid var(--border);
@@ -2030,15 +2027,7 @@ body,
   height: 100%;
 }
 
-/* Renderer parity, macOS: the app sets `-webkit-font-smoothing: antialiased` on :root (grayscale
-   AA — the right call for the chrome's UI font), and the DOM renderer's rows INHERIT it, while the
-   WebGL renderer never sees it: its glyphs are rasterized into a canvas atlas, which uses the
-   platform default. So the same text renders thinner/paler the moment a terminal falls back to the
-   DOM renderer, and a budget swap flashes that difference. Terminal rows opt back out to the
-   platform default so both renderers lay down comparable ink. Scoped to the rows only — the app
-   chrome keeps its grayscale AA — and inert on Linux/Windows Chromium, which ignores this property
-   (measured: DOM ink coverage unchanged there), so it is a macOS-targeted correction by
-   construction. */
+/* Keep terminal row text on the platform default so DOM and WebGL renderers use comparable ink. */
 .xterm-rows {
   -webkit-font-smoothing: auto;
 }
@@ -2252,7 +2241,7 @@ body,
   min-height: 0;
   overflow: auto;
   padding: 12px 16px;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   font-size: 13px;
   line-height: 1.6;
   color: var(--text);
@@ -3671,7 +3660,7 @@ body,
   justify-content: flex-end;
 }
 
-/* Overlays/menus that can overlap the macOS title-bar strip must opt out of window-drag,
+/* Overlays and menus that can overlap the custom title-bar strip must opt out of window-drag,
    otherwise clicks on their top controls (×, ↻, …) drag the window instead. */
 .drawer-overlay,
 .drawer--pinned,
@@ -4225,7 +4214,7 @@ body,
   border: 1px solid var(--border);
   border-radius: 10px;
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.45;
   padding: 11px 42px 11px 13px; /* right padding clears the ✦ corner button */
@@ -6878,7 +6867,7 @@ button.group-node__setup:disabled {
   border: 1px solid var(--accent);
   border-radius: 7px;
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   font-size: 14px;
   padding: 9px 11px;
   outline: none;
@@ -11202,8 +11191,8 @@ button.group-node__setup:disabled {
 
 /* --- Quiet scrollbars everywhere -----------------------------------------------------------
    The standard properties, not ::-webkit-scrollbar: `scrollbar-color` INHERITS (set once on
-   :root), `scrollbar-width` does not (hence the `*`), and on macOS they keep the native
-   overlay behavior — thumbs appear on scroll instead of reserving a chunky gutter, which is
+   :root), `scrollbar-width` does not (hence the `*`), and Chromium keeps the native overlay
+   behavior where supported, so thumbs appear on scroll instead of reserving a chunky gutter, which is
    what made the default bars read as foreign controls in every panel. Setting a standard
    property also makes Chromium ignore an element's ::-webkit-scrollbar rules, so the three
    deliberately-HIDDEN scrollbars (tab strip, xterm viewports) keep working through the

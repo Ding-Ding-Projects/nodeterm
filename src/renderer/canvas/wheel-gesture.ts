@@ -2,32 +2,31 @@ type WheelGesture = Pick<WheelEvent, 'ctrlKey' | 'metaKey' | 'deltaMode' | 'delt
   wheelDeltaY?: number
 }
 
-export type MacWheelDestination = 'flow-pan' | 'native'
+export type WheelDestination = 'flow-pan' | 'native'
 
 /**
- * Whether the trackpad override is live at all — the `mac` argument every method below takes.
+ * Whether the trackpad override is live at all.
  *
  * Two reasons it must be one named expression rather than an `useMetaPrimary &&` at each call site: the
  * router and React Flow's own `panOnScroll` have to agree exactly (disagreeing means a gesture
  * that neither of them pans), and `trackpadPan` is the user's ESCAPE HATCH. Turning it off
- * restores the pre-router behavior on macOS — `wheelZoom` alone decides, and a plain wheel zooms.
+ * restores the plain wheel behavior, where `wheelZoom` alone decides.
  * That is the recourse for a precise-pixel MOUSE (Magic Mouse, MX Master), whose deltas are
  * indistinguishable from a trackpad's here: it classifies as a trackpad and would otherwise have
  * no way back to wheel zoom.
  */
-export const trackpadRoutingEnabled = (mac: boolean, trackpadPan: boolean): boolean =>
-  mac && trackpadPan
+export const trackpadRoutingEnabled = (trackpadPan: boolean): boolean => trackpadPan
 
 const TRACKPAD_SEQUENCE_MS = 500
 const MOUSE_WHEEL_NOTCH = 120
 const LARGE_PIXEL_DELTA = 40
 
 /** Pixel mode alone is not a device identity: Chromium uses it for trackpads and many mice. */
-export class MacWheelGestureRouter {
+export class TrackpadWheelGestureRouter {
   private trackpadUntil = 0
 
-  shouldPan(event: WheelGesture, mac: boolean, now = performance.now()): boolean {
-    if (!mac || event.ctrlKey || event.metaKey || event.deltaMode !== 0) return false
+  shouldPan(event: WheelGesture, now = performance.now()): boolean {
+    if (event.ctrlKey || event.metaKey || event.deltaMode !== 0) return false
     // Device identity is sticky for one physical gesture. Chromium can quantize a later
     // trackpad/momentum event to wheelDeltaY=120; treating that single packet as a mouse notch
     // hands it to wheelZoom and creates the observed one-frame zoom inside an otherwise pure pan.
@@ -61,11 +60,10 @@ export class MacWheelGestureRouter {
    */
   destination(
     event: WheelGesture,
-    mac: boolean,
     overNativeScrollable: () => boolean,
     now = performance.now()
-  ): MacWheelDestination {
-    if (!this.shouldPan(event, mac, now)) return 'native'
+  ): WheelDestination {
+    if (!this.shouldPan(event, now)) return 'native'
     return overNativeScrollable() ? 'native' : 'flow-pan'
   }
 }
