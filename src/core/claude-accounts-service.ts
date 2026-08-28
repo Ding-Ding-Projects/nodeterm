@@ -34,7 +34,7 @@ export interface ClaudeAccountsRemote {
   add(
     projectId: string,
     id: string
-  ): Promise<{ configDir: string; versionSupported: boolean } | null>
+  ): Promise<{ configDir: string } | null>
   readLogin(projectId: string, id: string): Promise<string | null>
   remove(projectId: string, id: string): Promise<void>
 }
@@ -61,10 +61,6 @@ export interface ClaudeAccountsDeps {
 
 const waiters = new Map<string, { cancelled: boolean }>()
 
-async function checkClaudeVersion(): Promise<boolean> {
-  return true
-}
-
 /** Register the four `claude-accounts:*` channels on the core platform seam. */
 export function registerClaudeAccountsIpc(deps: ClaudeAccountsDeps = {}): void {
   const pollMs = deps.pollMs ?? LOGIN_POLL_MS
@@ -84,7 +80,7 @@ export function registerClaudeAccountsIpc(deps: ClaudeAccountsDeps = {}): void {
       const res = await remote.r.add(remote.projectId, id)
       // Null means the project wasn't connected / mkdir failed: still return the id so the renderer
       // can show the pending row; the login node will surface the connection error itself.
-      return { id, configDir: res?.configDir ?? '', versionSupported: res?.versionSupported ?? true }
+      return { id, configDir: res?.configDir ?? '' }
     }
     const configDir = claudeConfigDirFor(id)
     await fs.mkdir(configDir, { recursive: true })
@@ -93,11 +89,10 @@ export function registerClaudeAccountsIpc(deps: ClaudeAccountsDeps = {}): void {
     // and can control the canvas (Claude resolves both relative to CLAUDE_CONFIG_DIR, not ~/.claude).
     installClaudeHooksInto(configDir)
     deps.installSkill?.(configDir)
-    // Ensure fullscreen TUI in the new account dir (write-if-absent, version-gated). Best-effort,
+    // Ensure fullscreen TUI in the new account directory (write-if-absent). Best-effort,
     // off the response path — the memoized probe + write both fail open.
     void ensureClaudeFullscreenTuiInto(configDir)
-    const versionSupported = await checkClaudeVersion()
-    return { id, configDir, versionSupported }
+    return { id, configDir }
   })
 
   platform().handle(IPC.claudeAccountsWaitLogin, async (id: string, ctx?: AccountCtx) => {

@@ -32,7 +32,7 @@ describe('fileLinkDialect', () => {
 
   it('uses the relay host rather than the relay guest OS', () => {
     expect(
-      fileLinkDialect(facts({ source: 'relay', viewerWindows: true, corePlatform: 'darwin' }))
+      fileLinkDialect(facts({ source: 'relay', viewerWindows: true, corePlatform: 'linux' }))
     ).toBe('posix')
     expect(
       fileLinkDialect(facts({ source: 'relay', viewerWindows: false, corePlatform: 'win32' }))

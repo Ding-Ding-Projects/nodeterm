@@ -91,7 +91,7 @@ function defaultDataDirKey(): string {
 }
 
 /** The socket lives in the same short, space-free home dir as the ControlMaster sockets: a unix
- *  socket path is capped near 104 bytes, which userData (~/Library/Application Support/…) eats.
+ *  socket path is bounded, so the file lives under a short per-user directory.
  *  Keyed by data dir like `controlPathFor` is keyed by project id, so a second instance
  *  (`NT_MULTI=1`, ./dev-test.sh, a dev build next to the installed app) binds its own socket
  *  instead of unlinking the first one's and silently leaving that app agentless when it quits. */

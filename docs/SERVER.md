@@ -338,7 +338,7 @@ would otherwise be blocked) — rebuild the renderer or update the rewrite.
 
 ### Dictation
 
-Voice-to-text input works in the browser via the **same core speech service** the desktop app uses. Dictate with ⌘⌥D (or the dock mic button); transcribed text goes into the overlay's editable field and is sent only via explicit Send/Insert into the node that was selected when the overlay opened — nothing auto-submits. **Browser constraints:** `getUserMedia` requires a **secure context** — HTTPS or `localhost`; the microphone permission prompt is the browser's own. **Model storage:** Downloaded models (tiny free tier; larger Pro models) are stored on the **server's data dir** under `speech-models/`, persisted across sessions and server restarts.
+Voice-to-text input works in the browser via the **same core speech service** the desktop app uses. Dictate with Ctrl+Alt+D (or the dock mic button); transcribed text goes into the overlay's editable field and is sent only via explicit Send/Insert into the node that was selected when the overlay opened. Nothing auto-submits. **Browser constraints:** `getUserMedia` requires a **secure context**, either HTTPS or `localhost`; the microphone permission prompt is the browser's own. **Model storage:** Downloaded models (tiny free tier; larger Pro models) are stored on the **server's data dir** under `speech-models/`, persisted across sessions and server restarts.
 
 ## Documented deviations from the spec
 
@@ -379,7 +379,7 @@ APIs, so several node kinds and panels that were stubbed in Phase 2 now work in 
 browser:
 
 - **Editor & diff nodes** — Monaco editor nodes read/write files over `fs:read` /
-  `fs:write` (⌘S saves), and diff nodes render `git:show-file` + `fs:read` — both
+  `fs:write` (Ctrl+S saves), and diff nodes render `git:show-file` + `fs:read`; both
   now function unchanged in the browser.
 - **Source Control panel** — stage / unstage / discard, diff, branch switch/create,
   commit + push, and the ✦ AI commit message (BYO local agent CLI on the staged
@@ -393,7 +393,7 @@ The following affordances change shape in the browser (no native OS is reachable
   you navigate and pick a path on the server's filesystem.
 - **`shell.openExternal`** — opens the URL in a **new browser tab** rather than a
   desktop-side default browser.
-- **"Reveal in Finder" / "open with default app"** — **inert** in the browser
+- **"Reveal in File Explorer" / "open with default app"** is **inert** in the browser
   (there is no desktop file manager to reveal into); these actions are hidden or
   no-op rather than erroring.
 - **Clipboard (copy)** — the browser's `navigator.clipboard` only exists in a **secure
@@ -566,7 +566,7 @@ account-management IPC — that surface is desktop-driven over SSH.
 - **Arms the record secret (Decision 1).** At boot `armServerNodeIdentity`
   (`src/server/node-identity-arm.ts`) loads the raw node-auth secret and calls
   `setCodexThreadIdentityAuthSecret(...)` with it, so a managed Codex account's thread→node→account
-  ownership records can **sign and verify on a headless host**. Headless Linux has no OS keychain, so
+  ownership records can **sign and verify on a headless host**. Headless Linux has no OS credential vault, so
   the secret is 32 **raw bytes** at `node-auth-key.bin`, mode `0600` — the same both-shells channel the
   desktop seals via `safeStorage`. This only makes the record layer *able to sign*; it is orthogonal to
   the shared-app-server degrade (Codex nodes still launch bare here, exactly as before).
@@ -611,7 +611,7 @@ only exercises the HTTP/auth surface). With `npm run server:dev` running:
    picker** appears (no native dialog). Navigate to a git repo on the server and pick
    it; a project opens on its `cwd`.
 9. **Edit & save a file (Phase 3a)** — open a file (Explorer or picker) into an editor
-   node, make an edit, press ⌘S; the dirty dot clears and the change lands on disk.
+   node, make an edit, press Ctrl+S; the dirty dot clears and the change lands on disk.
 10. **Source Control (Phase 3a)** — open the Source Control panel; your edit shows as a
     change. Click it to see the **diff**, **stage** it (+), type a message, and
     **commit**; the file leaves the change list and the commit appears in recent commits.

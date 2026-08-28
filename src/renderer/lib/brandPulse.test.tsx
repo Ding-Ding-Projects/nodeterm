@@ -21,7 +21,7 @@ import { BrandPulse } from './agentIcons'
  *
  * The DECISION ("does this agent get a pulsing mark, and which glyph?") is the pure
  * `brandPulsePlan`, because it has two consumers with nothing in common: the React canvas badge and
- * the notch HUD, which builds DOM imperatively and must stay React-free. Testing the plan tests
+ * the Agent HUD, which builds DOM imperatively and must stay React-free. Testing the plan tests
  * both surfaces at once; the two thin renderers on top of it are checked separately below.
  */
 describe('brandPulsePlan', () => {
@@ -49,7 +49,7 @@ describe('brandPulsePlan', () => {
   })
 
   it('passes the caller\'s size through, because the two surfaces draw at different heights', () => {
-    // Canvas badge 16px (level with claude's critter), notch strip 13px (level with the sprites).
+    // Canvas badge 16px (level with claude's critter), Agent HUD strip 13px (level with the sprites).
     expect(brandPulsePlan('gemini', 13)?.size).toBe(13)
     expect(brandPulsePlan('grok', 13)?.size).toBe(13)
   })
@@ -58,7 +58,7 @@ describe('brandPulsePlan', () => {
 describe('brandPulseBackground', () => {
   // Measured, not assumed: with `url(${src})` the CSS parser rejected the declaration for ALL FOUR
   // marks (backgroundImage came back ''), because Vite inlines them as data URIs carrying literal
-  // `'` and, for three of them, literal `(`/`)`. The notch strip would have shown an empty box.
+  // `'` and, for three of them, literal `(`/`)`. The Agent HUD strip would have shown an empty box.
   it('survives a real CSS parser for every mark', () => {
     for (const agentId of ['claude', 'codex', 'gemini', 'opencode'] as const) {
       const plan = brandPulsePlan(agentId, 13)
@@ -146,7 +146,7 @@ describe('the pulse classes exist in both stylesheets', () => {
     expect(CANVAS_CSS).toContain('@keyframes mascot-pulse-brand')
   })
 
-  it('the notch strip class is styled and animated', () => {
+  it('the Agent HUD strip class is styled and animated', () => {
     const hudClass = HUD_BRAND_PULSE_CLASS.split(' ').at(-1)
     expect(HUD_CSS).toContain(`.${hudClass} {`)
     expect(HUD_CSS).toContain('@keyframes mascot-pulse-brand')

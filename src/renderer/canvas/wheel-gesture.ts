@@ -7,7 +7,7 @@ export type WheelDestination = 'flow-pan' | 'native'
 /**
  * Whether the trackpad override is live at all.
  *
- * Two reasons it must be one named expression rather than an `useMetaPrimary &&` at each call site: the
+ * Two reasons it must be one named expression rather than repeated conditions at each call site: the
  * router and React Flow's own `panOnScroll` have to agree exactly (disagreeing means a gesture
  * that neither of them pans), and `trackpadPan` is the user's ESCAPE HATCH. Turning it off
  * restores the plain wheel behavior, where `wheelZoom` alone decides.

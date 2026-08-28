@@ -203,7 +203,7 @@ describe('PresenceHub signals', () => {
     expect(hub.peers()).toHaveLength(1)
   })
 
-  // A project switch can be keyboard-driven (⌘1/⌘2, the palette) with the mouse parked, so no
+  // A project switch can be keyboard-driven (Ctrl+1/Ctrl+2, the palette) with the mouse parked, so no
   // pointermove follows it and the renderer's sampler never sends a new position. Leaving the old
   // cursor in the table would draw this peer on the NEW canvas at the OLD canvas's flow
   // coordinates — a ghost pointing at nothing, indefinitely, for everyone on that project.
@@ -716,8 +716,8 @@ describe('rate limiting must never drop an EDGE signal (a lost clear is lost sta
     for (let i = 0; i < PRESENCE_RATE_BUDGETS[channel].burst + 50; i++) cast(i)
   }
 
-  // THE STUCK BUBBLE: sendChat fires per keystroke, so a held key (X11 repeats ~25/s, macOS with
-  // KeyRepeat=0 far faster) drains the chat bucket. On release the renderer retracts with
+  // THE STUCK BUBBLE: sendChat fires per keystroke, so a held key with normal key repeat drains
+  // the chat bucket. On release the renderer retracts with
   // chat(null) — and if THAT is dropped, the hub keeps the last accepted line and every peer keeps
   // a chat bubble pinned to a cursor forever. The renderer has no ack and no retry: it already
   // believes it retracted.
@@ -791,7 +791,7 @@ describe('rate limiting must never drop an EDGE signal (a lost clear is lost sta
     hub.join(1, 'browser')
     const budget = PRESENCE_RATE_BUDGETS[IPC.presenceProject]
     expect(budget.perSec).toBeGreaterThanOrEqual(20) // > any key-repeat rate (X11 ~25/s is deduped)
-    expect(budget.burst).toBeGreaterThanOrEqual(60) // ~30 s of frantic ⌘1/⌘2 switching, back to back
+    expect(budget.burst).toBeGreaterThanOrEqual(60) // ~30 s of frantic Ctrl+1/Ctrl+2 switching, back to back
 
     // 30 distinct switches inside one second — far past anything a person can click or type — and
     // the last one still lands, because the hub must always know which canvas you are on.

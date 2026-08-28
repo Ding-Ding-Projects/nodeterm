@@ -33,7 +33,7 @@ vi.mock('emoji-picker-react', () => {
   }
 })
 
-const COLORS = ['#0a84ff', '#32d74b', '#ff375f'] as const
+const COLORS = ['#0078d4', '#107c10', '#e3008c'] as const
 
 describe('ProjectIconPicker', () => {
   let root: Root
@@ -50,7 +50,7 @@ describe('ProjectIconPicker', () => {
           projectId="p1"
           name="Alpha"
           icon={icon}
-          color="#0a84ff"
+          color="#0078d4"
           colors={COLORS}
           dark
           onIcon={onIcon}
@@ -187,8 +187,8 @@ describe('ProjectIconPicker', () => {
 
   it('picks a colour through the swatches', async () => {
     await mount()
-    await click(host.querySelector('button[data-project-color="#32d74b"]'))
-    expect(onColor).toHaveBeenCalledWith('#32d74b')
+    await click(host.querySelector('button[data-project-color="#107c10"]'))
+    expect(onColor).toHaveBeenCalledWith('#107c10')
   })
 
   const headerSubtitle = (): string =>
@@ -284,7 +284,7 @@ describe('ProjectIconPicker', () => {
           projectId="p1"
           name="Alpha"
           icon={undefined}
-          color="#0a84ff"
+          color="#0078d4"
           colors={COLORS}
           dark
           active={active}

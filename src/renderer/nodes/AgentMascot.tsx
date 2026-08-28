@@ -16,7 +16,7 @@ const BRAND_BADGE_SIZE = 16
  *   had a quadrant critter first; a hand-drawn creature next to two real mascots read as neither, so
  *   the glyph the agent actually has is what animates. gemini and opencode used to fall through to
  *   the plain dot, which says "something is happening" but not WHO. The decision and the bloom's
- *   caveat live in lib/brandPulse.ts, which the notch HUD shares.
+ *   caveat live in lib/brandPulse.ts, which the Agent HUD shares.
  * - anything else (custom agents, plain terminals) → the plain pulsing dot, unchanged.
  *
  * Animation is pure CSS (see .term-node__mascot* in styles.css) — no JS timers, so a canvas

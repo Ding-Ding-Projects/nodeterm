@@ -86,14 +86,14 @@ describe('openRelayTab (connect → tab → mount)', () => {
     const handle: RelayApiHandle = { api, ready: () => Promise.resolve(), close }
     const { deps, addProject, setActiveProject } = makeDeps({ handle })
 
-    const tab = await openRelayTab('conn-1', "Ayşe's Mac", deps)
+    const tab = await openRelayTab('conn-1', "Ayşe's PC", deps)
 
     // A relay session now exists and the tab is bound to it.
     const session = sessionForProject(tab.projectId)
     expect(session.source).toBe('relay')
     expect(session.id).toBe(tab.sessionId)
     expect(session.api).toBe(api)
-    expect(addProject).toHaveBeenCalledWith("Ayşe's Mac")
+    expect(addProject).toHaveBeenCalledWith("Ayşe's PC")
     expect(setActiveProject).toHaveBeenCalledWith('proj-1')
 
     // The one-protocol payoff: a TerminalNode under this session builds LocalTransport(session.api),
@@ -124,7 +124,7 @@ describe('openRelayTab (connect → tab → mount)', () => {
     const handle: RelayApiHandle = { api, ready: () => Promise.resolve(), close: vi.fn() }
     const { deps, addProject, adoptProject, setActiveProject } = makeDeps({ handle })
 
-    const tab = await openRelayTab('conn-1', "Ayşe's Mac", deps)
+    const tab = await openRelayTab('conn-1', "Ayşe's PC", deps)
 
     // Adopted (not an empty addProject) with the host's nodes and remote:true.
     expect(addProject).not.toHaveBeenCalled()
@@ -214,7 +214,7 @@ describe('handleRelayDrop (Stage 4 Task 7 — involuntary drop → greyed reconn
     const close = vi.fn()
     const handle: RelayApiHandle = { api, ready: () => Promise.resolve(), close }
     const { deps } = makeDeps({ handle })
-    const tab = await openRelayTab('conn-1', "Ayşe's Mac", deps)
+    const tab = await openRelayTab('conn-1', "Ayşe's PC", deps)
 
     const setProjectUnavailable = vi.fn()
     handleRelayDrop(tab, { setProjectUnavailable })

@@ -508,7 +508,7 @@ export function createAgentStatusSession(
       set((s) => {
         const prev = s.byId[id]
         if (!prev) return s
-        // Cross-surface ACK: opening a session marks its finish read EVERYWHERE — the notch
+        // Cross-surface ACK: opening a session marks its finish read EVERYWHERE, including the Agent HUD
         // capsule's green blob, the paired phone's lingering DONE Live Activity, and its Inbox
         // Finished card (all via the core mirror's `ackDone`). This is READ state only: the live
         // workflow state remains `done` until a genuine new turn begins.

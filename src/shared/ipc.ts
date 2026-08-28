@@ -71,13 +71,13 @@ export const IPC = {
   transcriptSearch: 'transcript:search',
   appToggleMarkdown: 'app:toggle-markdown',
   appCloseNode: 'app:close-node',
-  /** main → renderer: ⌘/Ctrl+0 ("actual size"). Intercepted in `before-input-event` because
+  /** main → renderer: Ctrl+0 ("actual size"). Intercepted in `before-input-event` because
    *  Electron's default View menu binds that accelerator to `resetZoom`, which resets the WINDOW's
    *  page zoom rather than the canvas's. */
   appZoomActualSize: 'app:zoom-actual-size',
   /** Renderer → main: the Settings shortcut recorder is armed (`true`) or disarmed (`false`).
    *  While armed the main window's `before-input-event` intercepts above stand down entirely, so
-   *  the chord the user is recording — ⌘W and ⌘M among them — reaches the recorder instead of
+   *  the chord the user is recording, including Ctrl+W and Ctrl+M, reaches the recorder instead of
    *  closing their selected nodes. Fire-and-forget `send`; desktop-only (a browser tab has no
    *  application menu to steal a chord back from, so the Server Edition stubs it). */
   uiShortcutRecording: 'ui:shortcut-recording',
@@ -87,12 +87,12 @@ export const IPC = {
    *  renderer handler could tell main so — the answer has to already be there. Change-deduped by
    *  the sender, fire-and-forget `send`, and read fail-safe: main starts at `false` and every way
    *  the page can stop existing resets it there, so a stale mirror means intercepts ON (the
-   *  pre-policy app), never a window whose ⌘W has silently gone back to the application menu.
+   *  pre-policy app), never a window whose Ctrl+W has silently gone back to the application menu.
    *  Desktop-only, for the same reason as the recording bit — the Server Edition stubs it. */
   uiTerminalFocus: 'ui:terminal-focus',
   appCloseWindow: 'app:close-window',
-  /** Main → renderer: the native application menu's "Settings…" item (⌘,) was clicked. The
-   *  renderer opens the settings page — same path as the in-canvas gear button / Cmd+, keydown. */
+  /** Main → renderer: the native application menu's "Settings…" item (Ctrl+,) was clicked. The
+   *  renderer opens the settings page through the same path as the in-canvas gear button or Ctrl+, keydown. */
   appOpenSettings: 'app:open-settings',
   appFocusWindow: 'app:focus-window',
   /** Native View menu → renderer: toggle the Snap-to-Grid arrange mode. */
@@ -456,7 +456,7 @@ export const IPC = {
   remoteHostCanvasState: 'remote:host:canvas-state',
   remoteHostApplyMutation: 'remote:host:apply-mutation',
   // Standing (phone) relay host: renderer toggles it on/off (settings.phoneAccessEnabled). Main
-  // starts/stops the always-on host connection so a paired phone can reach this Mac over the relay.
+  // starts/stops the always-on host connection so a paired phone can reach this PC over the relay.
   remoteStandingHostSet: 'remote:standing-host:set',
   // Revoke a paired PEER (by its stable box public key). Unpinning alone only refuses the NEXT
   // handshake — the open relay socket keeps full shell access — so this ALSO cuts the live session

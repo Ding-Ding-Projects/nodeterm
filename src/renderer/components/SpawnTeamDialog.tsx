@@ -16,7 +16,7 @@ interface SpawnTeamDialogProps {
  * pre-prompted with it — the conductor's own manage-nodeterm-canvas skill does the role split
  * and the fan-out, so no model plumbing lives in the app. Reuses the `.confirm*` shell like
  * InputDialog; the input is a textarea (Enter inserts a newline — tasks are prose), so submit
- * is ⌘/Ctrl+Enter or the button.
+ * is Ctrl+Enter or the button.
  */
 export function SpawnTeamDialog({
   worktreesAvailable,
@@ -56,7 +56,7 @@ export function SpawnTeamDialog({
           spellCheck={false}
           onChange={(e) => setTask(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            if (e.key === 'Enter' && e.ctrlKey && !e.metaKey) {
               e.preventDefault()
               submit()
             } else if (e.key === 'Escape') {

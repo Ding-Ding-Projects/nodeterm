@@ -89,7 +89,7 @@ describe('preload sshProject passphrase wiring', () => {
   })
 
   // The recorder's release leg is a `false`, and main reads it as `active === true`. A preload
-  // that dropped the argument, or sent on the wrong channel, would leave ⌘W/⌘M/⌘0 suppressed
+  // that dropped the argument, or sent on the wrong channel, would leave Ctrl+W/Ctrl+M/Ctrl+0 suppressed
   // app-wide after Settings closed — with every other test in the tree still green.
   it('shortcuts.setRecording sends both edges on its own channel', () => {
     api.shortcuts.setRecording(true)
@@ -100,7 +100,7 @@ describe('preload sshProject passphrase wiring', () => {
 
   // Same story for the focus mirror, and its OWN channel matters: main keeps the two bits apart
   // (one suspends always, the other only under `terminal-first`), so a preload that folded the
-  // mirror onto the recording channel would disable ⌘W/⌘M/⌘0 for every user the moment they
+  // mirror onto the recording channel would disable Ctrl+W/Ctrl+M/Ctrl+0 for every user the moment they
   // clicked into a terminal — with the whole suite still green.
   it('shortcuts.setTerminalFocused sends both edges on its own channel', () => {
     const before = h.send.mock.calls.length
@@ -108,7 +108,7 @@ describe('preload sshProject passphrase wiring', () => {
     api.shortcuts.setTerminalFocused(false)
     // The whole call list, not two `toHaveBeenCalledWith`s: what must be true is that the mirror
     // touched the terminal-focus channel and NOTHING else — folding it onto `ui:shortcut-recording`
-    // would disable ⌘W/⌘M/⌘0 for every user the moment they clicked into a terminal, and a
+    // would disable Ctrl+W/Ctrl+M/Ctrl+0 for every user the moment they clicked into a terminal, and a
     // per-call assertion would stay green through exactly that.
     expect(h.send.mock.calls.slice(before)).toEqual([
       [IPC.uiTerminalFocus, true],

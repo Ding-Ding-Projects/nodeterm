@@ -108,7 +108,7 @@ export const RESUMABLE_AGENTS = ['claude', 'codex', 'gemini', 'opencode', 'grok'
 // from hook events. Each member must have a measured caller-chosen-id grammar below.
 //
 // Why it matters: everything that resumes a conversation — cold restore after a reboot, the
-// session reaper's recovery path, the ⌘M transcript view — needs the id, and the id used to
+// session reaper's recovery path and the Ctrl+M transcript view, needs the id, and the id used to
 // arrive ONLY over the hook channel (agent fires a hook → POST → renderer stores it in
 // localStorage). For an SSH node that POST rides the reverse tunnel, so a node whose tunnel was
 // down, or that simply never ran a tool, never had an id at all. Measured on one host after a
@@ -143,7 +143,7 @@ export const CONTEXT_LINK_CAPABLE = ['claude', 'codex', 'gemini', 'opencode'] as
 // grok is absent: its `updates.jsonl` parser is unbuilt (see docs/grok-agent.md), so there is no
 // used count to divide.
 export const USAGE_CAPABLE = ['claude', 'codex', 'gemini'] as const
-// Agents whose structured transcript we can render as a chat panel (Cmd+M chat mode).
+// Agents whose structured transcript we can render as a chat panel (Ctrl+M chat mode).
 export const CHAT_CAPABLE = ['claude'] as const
 // Agents whose native transcript we can read + render for cross-agent transfer.
 export const TRANSFER_SOURCE_CAPABLE = ['claude', 'codex', 'gemini'] as const
@@ -223,7 +223,7 @@ export const MODEL_SWITCH_CAPABLE = ['claude', 'codex', 'copilot'] as const
 // Claude Code captures the mouse itself and prints its own line — "copied N chars to tmux buffer ·
 // paste with prefix + ]" — which makes our copy pill a second message for one gesture. Membership
 // switches the WHOLE copy-feedback layer off for that agent's terminals: the receipt and the
-// one-time "Hold ⌥ to select text" hint alike, since a drag there is not swallowed at all.
+// one-time "Hold Alt to select text" hint alike, since a drag there is not swallowed at all.
 //
 // This is a list rather than a `=== 'claude'` for the usual reason: the next CLI to grow its own
 // copy notice joins by being added here, and nothing else changes.

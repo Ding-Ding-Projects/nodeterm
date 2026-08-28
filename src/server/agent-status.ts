@@ -180,7 +180,7 @@ export function wireAgentStatus(
       // Read through `grokRawFields` so grok's two field dialects (camelCase and the SDK's
       // snake_case) are decoded in exactly one place.
       const g = grokRawFields(payload)
-      // 1. node → session: read by the phone's context ring and the ⌘K session lookup.
+      // 1. node → session: read by the phone's context ring and the Ctrl+K session lookup.
       if (nodeId && g.sessionId) nodeContextSession.set(nodeId, g.sessionId)
       // 2. session → its session DIRECTORY, derived from (cwd, sessionId) — the two fields every
       // grok hook does carry — and remembered here, the one place they arrive together. That is

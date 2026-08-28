@@ -47,7 +47,7 @@ git-shared `settings.json` / `project.json`, so every id passes `isSafeAccountId
 | Ownership records | `<userDataDir>/codex-thread-nodes/` (system: bare root; managed: `<accountId>/`) |
 
 The digest is deliberately **short**: the app-server control Unix socket lives two levels below the
-home and must stay under macOS `SUN_LEN`, which an Electron userData path plus a UUID already
+home and must stay under Linux `SUN_LEN`, which a long data path plus a UUID can
 overshoots. `userDataDir` is folded into the LOCAL digest so separate NodeTerm profiles never
 collide; a remote host has one home root, so the remote digest is over `accountId` only. A
 pre-migration long home (`<userData>/codex-accounts/<id>`) is moved to its short home at boot,
@@ -61,7 +61,7 @@ Every ownership record is HMAC-signed by the **one** restart-stable 32-byte node
 
 - **Desktop:** sealed at rest via `safeStorage` → `node-auth-key.json` (ciphertext only, mode
   `0600`; no raw-secret fallback ever written).
-- **Server Edition (no keychain):** 32 raw bytes at `node-auth-key.bin`, mode `0600`.
+- **Server Edition (no credential vault):** 32 raw bytes at `node-auth-key.bin`, mode `0600`.
 
 It is **confidential and fail-closed**: a malformed/wrong-length persisted state **throws** rather
 than minting a fresh secret — rotating the key would orphan every bound thread on the machine — and
@@ -70,7 +70,7 @@ the single-flight cache clears on rejection so a healed machine retries. It is w
 
 > No `safeStorage`-only secret module is introduced. @Corvin's `codex-node-auth-secret.ts` in
 > PR #112 is `safeStorage`-ciphertext-only and throws on a headless server; the merged both-shells
-> channel above is the correct mirror, and duplicating it as a keychain-only file would regress the
+> channel above is the correct mirror, and duplicating it as a credential-vault-only file would regress the
 > Server Edition. This is the ratified Decision 1.
 
 ## The ownership records

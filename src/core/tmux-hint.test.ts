@@ -73,6 +73,6 @@ describe('tmuxCandidatePaths / findFixedTmux', () => {
       if (p === '/usr/bin/tmux') throw new Error('EPERM')
       return p === '/usr/bin/tmux'
     }
-    expect(findFixedTmux(exists, '/Users/dev', 'dev')).toBe('/usr/bin/tmux')
+    expect(findFixedTmux(exists, 'C:/Users/dev', 'dev')).toBe('/usr/bin/tmux')
   })
 })

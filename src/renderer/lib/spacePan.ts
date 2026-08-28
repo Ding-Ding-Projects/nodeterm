@@ -41,8 +41,8 @@ export interface SpaceKeyEvent {
  *
  * Ignored, and each for its own reason:
  *  - not the space bar;
- *  - a MODIFIED space (⌘Space is the OS switcher, Ctrl/Alt+Space belong to other bindings) — taking
- *    those would break something the user meant for someone else;
+ *  - a modified space (the Windows key plus Space changes input language, while Ctrl/Alt+Space
+ *    belong to other bindings), so taking it would break something meant for another owner;
  *  - the auto-REPEAT of a held key, so engaging happens once per press rather than sixty times a
  *    second;
  *  - anything typed into a terminal, a note or a field, which is the case that matters most: a
@@ -56,7 +56,7 @@ export function spacePanKeydown(e: SpaceKeyEvent, active: Element | null): Space
   return 'engage'
 }
 
-/** Is this keyup the release of the space bar? Modifier-blind on purpose: a user who taps ⌘ while
+/** Is this keyup the release of the space bar? Modifier-blind on purpose: a user who taps the Windows key while
  *  panning still gets a keyup for space, and a pan that never released would strand the canvas in
  *  grab mode. */
 export function isSpaceRelease(e: SpaceKeyEvent): boolean {

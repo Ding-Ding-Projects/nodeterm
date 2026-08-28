@@ -161,7 +161,7 @@ describe('inline (cwd-less) project kanban shape guard', () => {
 
   it('keeps a well-formed inline kanban verbatim (does not over-strip)', async () => {
     const board = {
-      columns: [{ id: 'kcol-a', title: 'To Do', color: '#0a84ff' }],
+      columns: [{ id: 'kcol-a', title: 'To Do', color: '#0078d4' }],
       assignments: [{ nodeId: 'term-abc', columnId: 'kcol-a' }]
     }
     await writeInlineIndex(board)
@@ -814,7 +814,7 @@ describe('ssh lineage safety', () => {
   /** A populated remote project file from ANOTHER lineage (different project id). */
   const foreignRemote = (rev: number, nodes = 1) =>
     JSON.stringify({
-      version: 1, rev, savedAt: 'then', id: 'old1', name: 'original', color: '#ffd60a',
+      version: 1, rev, savedAt: 'then', id: 'old1', name: 'original', color: '#fce100',
       viewport: { x: 0, y: 0, zoom: 1 },
       nodes: Array.from({ length: nodes }, (_, i) => ({
         id: `term-old-${i + 1}`, kind: 'terminal', position: { x: 0, y: 0 },

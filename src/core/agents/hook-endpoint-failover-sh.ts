@@ -56,8 +56,8 @@ export const HOOK_ENDPOINT_FALLBACK_SH = [
   // How many endpoints we may POST to AFTER the primary failed. See the "Fallback ordering and
   // bound" block comment above buildManagedScript for the full reasoning; the short version:
   // the ordered list is (at most 3) LOCAL endpoints followed by the reverse tunnels, only one or
-  // two locals can exist on a real host (the two desktop userData paths are per-OS and mutually
-  // exclusive), so 3 attempts always reaches a live local endpoint AND still leaves a tunnel slot.
+  // two locals can exist on a real host, so three attempts always reach a live local endpoint and
+  // still leave a tunnel slot.
   // The cost ceiling is what bounds it: each dead attempt can burn --max-time 1.5s, because an
   // sshd-held reverse-tunnel socket ACCEPTS and then never answers.
   'nt_fallback_max=3',
@@ -76,8 +76,7 @@ export const HOOK_ENDPOINT_FALLBACK_SH = [
   '  nt_tried="$1"',
   '  for nt_c in \\',
   '    "$HOME/.nodeterm-server/hook-endpoint.env" \\',
-  '    "$HOME/.config/node-terminal/hook-endpoint.env" \\',
-  '    "$HOME/Library/Application Support/node-terminal/hook-endpoint.env"; do',
+  '    "$HOME/.config/node-terminal/hook-endpoint.env"; do',
   '    [ "$nt_c" = "$nt_tried" ] && continue',
   '    [ -r "$nt_c" ] || continue',
   "    printf '%s\\n' \"$nt_c\"",

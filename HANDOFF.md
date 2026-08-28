@@ -41,13 +41,13 @@ Verified at commit `6ec87ac2520021f8d96ae85db12de575ce329b44`:
 The final source commit `d752e268` has a green full retained Windows suite with 591 passing files,
 7,737 passing tests, 2 skipped files, and 52 skipped tests. It also has green typecheck, focused
 session-budget, SSH-project, memory-pressure, and bug-report checks. The source scan at that commit
-reports no executable Darwin or Apple-only branches in the shipped source paths covered by the scan.
+reports no executable legacy non-Windows branches in the shipped source paths covered by the scan.
 The later font-stack cleanup commit `5667f07b` and neutral shortcut-name cleanup commit `160ddef2`
 have green production builds, focused renderer tests, and green typecheck. The final hidden-app
 verification was performed from the packaged executable built from this source state.
 The current public-surface commit `d30e754b` converts the landing page and release workflow to
 Windows-only unsigned Squirrel.Windows distribution. Its YAML parses successfully and the site
-and workflow scan contains no Apple or non-Windows package references.
+and workflow scan contains no non-Windows package references.
 The Windows package-smoke workflow is also aligned with the same `dist/squirrel-windows` output,
 including Setup.exe, the full nupkg, RELEASES, and unsigned-status validation.
 

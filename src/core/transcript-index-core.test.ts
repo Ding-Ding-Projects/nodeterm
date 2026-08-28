@@ -10,14 +10,14 @@ import {
 } from './transcript-index-core'
 
 const raw = [
-  JSON.stringify({ type: 'user', cwd: '/Users/me/proj', message: { content: 'fix the tmux config please' } }),
-  JSON.stringify({ type: 'assistant', cwd: '/Users/me/proj', message: { content: [{ type: 'text', text: 'editing tmux.conf now' }] } })
+  JSON.stringify({ type: 'user', cwd: 'C:/Users/me/proj', message: { content: 'fix the tmux config please' } }),
+  JSON.stringify({ type: 'assistant', cwd: 'C:/Users/me/proj', message: { content: [{ type: 'text', text: 'editing tmux.conf now' }] } })
 ].join('\n')
 
 describe('extractEntryFields', () => {
   it('pulls cwd, first-user-message title, and concatenated text', () => {
     const f = extractEntryFields(raw)
-    expect(f.cwd).toBe('/Users/me/proj')
+    expect(f.cwd).toBe('C:/Users/me/proj')
     expect(f.title).toBe('fix the tmux config please')
     expect(f.text).toContain('fix the tmux config')
     expect(f.text).toContain('editing tmux.conf now')
@@ -48,8 +48,8 @@ describe('makeSnippet', () => {
 
 describe('searchEntries', () => {
   const entries: TranscriptIndexEntry[] = [
-    { sessionId: 's1', transcriptPath: '/p/s1.jsonl', cwd: '/Users/me/alpha', mtime: 100, title: 'old tmux work', text: 'tmux mouse mode' },
-    { sessionId: 's2', transcriptPath: '/p/s2.jsonl', cwd: '/Users/me/beta', mtime: 200, title: 'recent', text: 'something about TMUX clipboard' }
+    { sessionId: 's1', transcriptPath: '/p/s1.jsonl', cwd: 'C:/Users/me/alpha', mtime: 100, title: 'old tmux work', text: 'tmux mouse mode' },
+    { sessionId: 's2', transcriptPath: '/p/s2.jsonl', cwd: 'C:/Users/me/beta', mtime: 200, title: 'recent', text: 'something about TMUX clipboard' }
   ]
 
   it('matches title+text case-insensitively, newest first, capped', () => {

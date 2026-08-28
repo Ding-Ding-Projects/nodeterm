@@ -1,4 +1,4 @@
-// Standing (always-on) phone host — the desktop side of the iOS relay-client "reach my Mac from
+// Standing (always-on) phone host, the desktop side of the mobile relay-client "reach my PC from
 // anywhere" flow.
 //
 // When Settings → phoneAccessEnabled is on, this keeps a HOST relay
@@ -453,6 +453,6 @@ export function initStandingHost(
 //     5. Disconnect + reconnect the phone: it now auto-approves (no dialog) — pin-once verified.
 //     6. Leave it idle ~2 min: the host re-mints its token + reconnects (watch it stay reachable).
 //     7. Toggle the setting OFF (or deactivate Pro): the standing host tears down; the phone can
-//        no longer reach the Mac over the relay (LAN pairing still works).
+//        no longer reach the PC over the relay (LAN pairing still works).
 //   Throughout, the relay only forwards opaque E2EE boxes — it never sees plaintext.
 // ---------------------------------------------------------------------------------------------

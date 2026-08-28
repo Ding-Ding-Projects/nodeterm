@@ -160,7 +160,7 @@ export function LicenseSection({ isActive }: { isActive: boolean }): React.JSX.E
                       {releasing ? 'Releasing…' : 'Release other devices'}
                     </Button>
                     {releaseNote ? (
-                      <p className="text-sm" style={{ color: '#ff9f0a' }}>
+                      <p className="text-sm" style={{ color: '#f7630c' }}>
                         {releaseNote}
                       </p>
                     ) : null}
@@ -212,7 +212,7 @@ export function LicenseSection({ isActive }: { isActive: boolean }): React.JSX.E
                     exactly who this screen exists for, and `Could not activate (seat_limit).` is
                     a dead end: the word is unsearchable and names no way out. */}
                 {ent.status.error ? (
-                  <p className="text-sm" style={{ color: '#ff9f0a' }}>
+                  <p className="text-sm" style={{ color: '#f7630c' }}>
                     {activationErrorSentence(ent.status.error)}
                   </p>
                 ) : null}

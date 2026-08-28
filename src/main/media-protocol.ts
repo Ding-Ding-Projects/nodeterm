@@ -148,7 +148,7 @@ export function initMediaProtocol(): void {
     if (!abs) return new Response('Not found', { status: 404 })
     // Symlink jail: reject a final-component symlink so an allowlisted entry can't be
     // turned into an arbitrary-file read. lstat does NOT follow the final link (it follows
-    // intermediate dir symlinks like macOS /tmp→/private/tmp, which is fine and avoids the
+    // intermediate directory links, which is fine and avoids the
     // realpath-equality pitfalls with those system dirs). One async lstat covers the jail
     // check AND the size (final component isn't a link, so lstat size == stat size) — the
     // previous sync lstat+stat pair blocked the main thread per request, and <video> seeking

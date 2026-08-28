@@ -18,7 +18,7 @@ describe('canvasSyncTarget (Task 4 — publisher/onMutation follow the ACTIVE se
   it('relay tab: the mutate/subscribe target is the RELAY api, and the gate arms when the relay presence has a peer', () => {
     const local = createSession('local', localApi, 'This PC')
     setActiveSession(local.id)
-    const relay = createSession('relay', relayApi, "Ayşe's Mac")
+    const relay = createSession('relay', relayApi, "Ayşe's PC")
     bindProjectToSession('remote-tab', relay.id)
 
     // The active tab is the relay one → publisher/onMutation must hit the RELAY core, not local.
@@ -39,7 +39,7 @@ describe('canvasSyncTarget (Task 4 — publisher/onMutation follow the ACTIVE se
   it('local tab: the target is window.nodeTerminal (the local api) — byte-identical to today', () => {
     const local = createSession('local', localApi, 'This PC')
     setActiveSession(local.id)
-    createSession('relay', relayApi, "Ayşe's Mac") // registered but not the active tab's binding
+    createSession('relay', relayApi, "Ayşe's PC") // registered but not the active tab's binding
 
     const active = sessionForProject('some-local-tab') // unbound → resolves local
     expect(canvasSyncTarget(active, { peers: { me: {} } }).api).toBe(localApi)

@@ -25,7 +25,7 @@ export default defineConfig({
     // These suites exercise a POSIX shell, a POSIX Unix socket, or a real tmux installation.
     // Windows has separate session-host, ConPTY, and Windows shell-profile coverage; collecting
     // the POSIX harnesses here only creates false failures when `sh`, tmux, or Unix sockets are
-    // unavailable. The POSIX suites remain active on Linux and macOS CI.
+    // unavailable. POSIX-only suites remain available to supported Linux host verification.
     exclude: process.platform === 'win32'
       ? [
           '**/*.realsh.test.ts',
@@ -94,7 +94,7 @@ export default defineConfig({
         ]
       : [],
     environment: 'node',
-    // Issue #160: with the default (one worker per core), a 10-core Mac runs ~10 fs-heavy suites
+    // Issue #160: with the default (one worker per core), a 10-core machine runs about 10 fs-heavy suites
     // at once and transient fd exhaustion (EMFILE) turns into silent test flakiness — probes like
     // `fs.existsSync` swallow the error and answer false, so whole files fail in ways that never
     // reproduce alone and vanish with --no-file-parallelism. Half the cores keeps wall-clock

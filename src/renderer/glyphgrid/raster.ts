@@ -6,7 +6,7 @@ import { unpackColor } from './cells'
  * THE SENTINEL TEXEL, and the blank-everything bug it exists to detect.
  *
  * The atlas page is an OffscreenCanvas 2D context created once, for the life of the shared context.
- * A GPU reset — macOS sleep/wake, a driver hiccup, a GPU-process restart — BLANKS its backing store,
+ * A GPU reset caused by sleep/wake, a driver hiccup, or a GPU-process restart blanks its backing store,
  * and every layer above it keeps believing the page is full: `GlyphAtlas.slots` still holds every
  * key, so not one glyph is re-rasterized, and `engine.reviveGpu` (whose comment says outright that
  * the 2D source survived) re-uploads the empty page as the atlas texture. The result is every
@@ -291,8 +291,8 @@ function baselineIn(ctx: OffscreenCanvasRenderingContext2D, font: RasterFont): n
  *  atlas xterm's own TextureAtlas builds — baseline-centered in the cell like xterm's renderers.
  *  Returns null when OffscreenCanvas 2D is unavailable — caller keeps the DOM renderer.
  *
- *  THE BACKDROP, AND WHY THIS IS STILL THE ROUND-6 PROPERTY. macOS rasterizes text drawn onto a
- *  TRANSPARENT backdrop thinner and softer than the same text drawn over an opaque one, which is
+ *  THE BACKDROP, AND WHY THIS IS STILL THE ROUND-6 PROPERTY. The platform rasterizer can draw text
+ *  on a transparent backdrop thinner and softer than the same text over an opaque one, which is
  *  what made plain text look softer than the per-terminal WebglAddon. xterm never rasterizes onto
  *  transparency either — read `_drawToCache` in @xterm/addon-webgl: before every `fillText` it does
  *  `globalCompositeOperation='copy'; fillStyle=backgroundColor.css; fillRect(...)`, i.e. it hands
@@ -300,7 +300,7 @@ function baselineIn(ctx: OffscreenCanvasRenderingContext2D, font: RasterFont): n
  *  fill plus a white-ink/coverage-in-the-red-channel encoding that the shader re-mixed; that
  *  encoding is GONE (the re-mix had no correct gamma — see atlas.ts's header). The property it was
  *  protecting is not: every slot's PITCH RECT is filled with that slot's own opaque background
- *  before any ink lands, so CoreText still draws over an opaque backdrop. The page-wide black fill
+ *  before any ink lands, so text still draws over an opaque backdrop. The page-wide black fill
  *  must NOT come back — it would put opaque black in slot 0, which every space samples.
  *
  *  The context is deliberately still `alpha: true` — exactly like xterm's tmp canvas, which is a

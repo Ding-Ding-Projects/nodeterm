@@ -69,13 +69,12 @@ One file per thread under `<userDataDir>/codex-thread-nodes/<threadId>`:
 
 ```
 nodeId=term-17
-endpoint=/Users/x/Library/Application Support/nodeterm/hook-endpoint.env
+endpoint=C:\Users\x\AppData\Roaming\node-terminal\hook-endpoint.env
 signature=<base64url HMAC-SHA256>
 ```
 
-Through `CorePlatform.userDataDir`, **not** `homedir()` — that was the original shape and it is why
-the Server Edition had no story at all. The generated sh gets the same path baked in, POSIX-quoted
-(the real one contains a space on macOS), so the two cannot disagree.
+Through `CorePlatform.userDataDir`, not `homedir()`. The native Windows hook receives the same path
+through its environment, while remote POSIX hooks receive a shell-quoted path.
 
 Account scoping is deliberately absent: managed Codex accounts are a later slice, and scoping adds
 a directory level above this without changing anything the format promises.
@@ -312,7 +311,7 @@ both without either shell being edited (the two drifted once before — see CLAU
 
 - **Desktop** — full support.
 - **Server Edition** — a deliberate, documented degrade to plain `codex`. The blocker is the
-  *secret*, not the plumbing: the per-node capability is keychain-backed on desktop (Electron
+  *secret*, not the plumbing: the per-node capability is credential-vault-backed on desktop (Electron
   `safeStorage`) and there is no equivalent on a headless Linux host, so arming it means a secret at
   rest in the data dir — a security decision this slice is not entitled to make quietly. Everything
   it would need already lives in `src/core` and boots from `CorePlatform`; the wiring is three calls

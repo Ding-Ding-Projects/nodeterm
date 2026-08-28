@@ -65,7 +65,7 @@ export interface RowFeedOpts {
    *
    * Separate from `decorations` because it is not a colour: xterm's linkifier reports a hovered
    * link as a range and its own render layers answer by drawing an underline, which is the
-   * affordance that tells you ⌘-click will open it. A renderer that replaces xterm's own therefore
+   * affordance that tells you Ctrl+click will open it. A renderer that replaces xterm's own therefore
    * has to draw it too, or the link is silently unclickable-looking (reported 2026-08-05 — the
    * `claude /login` URL underlined in GPU mode and bare in shared).
    *

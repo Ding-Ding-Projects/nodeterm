@@ -221,9 +221,8 @@ class HookServer {
    * The unix-domain twin of the loopback TCP listener (issue #367). Same HTTP handler, same
    * bearer + per-node token auth — the whole identity machinery is transport-agnostic (nothing
    * in the handler reads `remoteAddress`), so the socket is never an auth bypass. Two reasons it
-   * exists: it lets a sandboxed macOS Codex regain hook connectivity via codex's
-   * `network.allow_unix_sockets` allowlist (the TCP loopback can never be allowlisted), and it
-   * gives local traffic a filesystem-permissioned path (0700 dir, 0600 socket) that a
+   * exists: it gives supported POSIX hosts a filesystem-permissioned local path (0700 directory,
+   * 0600 socket) in addition to TCP loopback, and it
    * defense-in-depth follow-up to #195 can eventually make the ONLY door. It does not close #195
    * on its own: the TCP listener STAYS (existing tmux panes hold pre-socket env, and the Linux
    * codex sandbox blocks unix sockets anyway), so any local user can still reach the (bearer-gated)
@@ -767,8 +766,7 @@ class HookServer {
   private async startUnixListener(
     handler: (req: IncomingMessage, res: ServerResponse) => Promise<void>
   ): Promise<void> {
-    // Node's AF_UNIX support on Windows is not the discipline this path was built around, and no
-    // generated sh client runs there anyway.
+    // The native Windows client uses loopback TCP. This filesystem socket is for POSIX hosts.
     if (process.platform === 'win32') return
     const p = hookSockPath(platform().userDataDir)
     try {
@@ -1019,9 +1017,8 @@ class HookServer {
         p,
         // Every value is `posixQuote`d: the managed script SOURCES this file (`. "$file"`) under
         // /bin/sh, so an unquoted space or shell metachar in a path or token would break the source
-        // (issue #351: macOS userDataDir lives under "Application Support" — the space made sh try
-        // to run the tail of the path, exit 127, and the hook fell back to plain mode for EVERY
-        // macOS user). Quoting all four keeps the file a valid POSIX assignment list regardless.
+        // A path containing spaces otherwise makes sh run the tail as a command. Quoting all four
+        // values keeps the file a valid POSIX assignment list.
         `NODETERM_HOOK_PORT=${posixQuote(String(this.port))}\n` +
           `NODETERM_HOOK_TOKEN=${posixQuote(this.token)}\n` +
           `NODETERM_HOOK_VERSION=${posixQuote(NODETERM_HOOK_PROTOCOL_VERSION)}\n` +
@@ -1034,7 +1031,7 @@ class HookServer {
           // hook script, both sh shims, opencode plugin, codex launcher) is already sock-first —
           // `[ -n "$NODETERM_HOOK_SOCK" ]` — so advertising it moves local hook traffic off the
           // TCP port; the PORT line stays above for sessions holding a pre-socket script. Quoted
-          // like every other value (#351/#358): macOS data dirs carry a space.
+          // like every other value because data directories may contain spaces.
           (this.sockPath ? `NODETERM_HOOK_SOCK=${posixQuote(this.sockPath)}\n` : ''),
         // 0o600: this file holds the bearer token — owner read/write only so another local user
         // can't read it and forge hook events.
@@ -1081,8 +1078,8 @@ class HookServer {
       // The socket PATH is fine on the tmux -e argv where the token/port were not: it is an
       // address, not a credential — connecting still takes the bearer from the 0600 endpoint
       // file, and the socket itself sits in a 0700 dir. Advertised in env (not only the endpoint
-      // file) so the codex sandbox shim can name the exact path in its macOS
-      // `network.allow_unix_sockets` remedy line (issue #367) even when the endpoint file is
+      // file) so a POSIX sandbox shim can name the exact path in its socket allowlist even when
+      // the endpoint file is
       // what a sandboxed sh could not read.
       ...(this.sockPath ? { NODETERM_HOOK_SOCK: this.sockPath } : {}),
       NODETERM_NODE_ID: nodeId,

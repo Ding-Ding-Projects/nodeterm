@@ -1,5 +1,5 @@
 /**
- * Server Edition boot arming: the headless shell has no OS keychain, so it loads the RAW 0600
+ * Server Edition boot arming: the headless shell has no OS credential vault, so it loads the RAW 0600
  * secret and hands it to the hook server. This is the FIRST time the Server Edition arms node
  * identity — before this task it never called any setter and `identityAvailable()` stayed false
  * for the whole process, silently disabling every identity-scoped route. The invariant proven

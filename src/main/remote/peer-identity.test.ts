@@ -3,7 +3,7 @@ import { promises as fs } from 'fs'
 import os from 'os'
 import path from 'path'
 
-// A real temp userData dir + a swappable fake keychain. Both are read lazily inside the mock, so
+// A real temp userData dir + a swappable fake credential vault. Both are read lazily inside the mock, so
 // vitest's hoisting of `vi.mock` above the imports is harmless.
 let userData = ''
 let encryptionAvailable = false

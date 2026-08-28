@@ -30,7 +30,7 @@ import { codexContextParse, pickCodexUsage } from './codex-session'
 //   - every `response_item`, `world_state`, `agent_message`, `reasoning` and
 //     `function_call{,_output}` line: six `encrypted_content` blobs, two `developer_instructions`
 //     blocks, ~21 KB of verbatim handoff notes (real product discussion, plus a third party's
-//     environment dump) and absolute `/Users/<name>/…` paths.
+//     environment dump) and absolute Windows user-profile paths.
 //   - `session_meta.base_instructions`: OpenAI's ~15 KB shipped system prompt, verbatim.
 //   - `session_meta.git`: commit hash, branch and repository URL.
 //   - `turn_context.timezone`, `.permission_profile`, `.file_system_sandbox_policy` and

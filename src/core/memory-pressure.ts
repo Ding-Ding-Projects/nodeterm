@@ -1,6 +1,5 @@
 // Two-signal memory pressure (cmux's MemoryPressureMonitor pattern, Electron-free): host
-// available-memory watermarks (readMemInfo — the same source session-budget trusts, except on
-// darwin, where it is not measuring what its name says; see hostMemReader) plus this process's
+// available-memory watermarks from the same source session-budget trusts, plus this process's
 // own RSS, because the host signal alone can't tell you YOU are the problem.
 // Consumers hang reclaim levers off onPressure; all levers must be idempotent — the monitor
 // re-fires a held severity at most once per RE_FIRE_FLOOR_MS.

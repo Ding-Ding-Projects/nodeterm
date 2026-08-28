@@ -21,16 +21,15 @@ const event = (overrides: Partial<KeyboardEvent> = {}): KeyboardEvent =>
   }) as KeyboardEvent
 
 describe('Windows shortcut formatting', () => {
-  it('formats explicit and legacy primary bindings with Windows labels', () => {
-    expect(formatShortcut('Ctrl+Shift+D', false)).toBe('Ctrl+Shift+D')
-    expect(formatShortcut('Cmd+Shift+D', true)).toBe('Ctrl+Shift+D')
-    expect(formatShortcut('Ctrl+Alt', false)).toBe('Ctrl+Alt')
+  it('formats Control bindings with Windows labels', () => {
+    expect(formatShortcut('Ctrl+Shift+D')).toBe('Ctrl+Shift+D')
+    expect(formatShortcut('Ctrl+Alt')).toBe('Ctrl+Alt')
   })
 
   it('keeps named keys and punctuation as one readable part', () => {
-    expect(shortcutKeyParts('Ctrl+Space', false)).toEqual(['Ctrl', 'Space'])
-    expect(shortcutKeyParts('Ctrl+Slash', false)).toEqual(['Ctrl', '/'])
-    expect(formatShortcut('Ctrl+F5', false)).toBe('Ctrl+F5')
+    expect(shortcutKeyParts('Ctrl+Space')).toEqual(['Ctrl', 'Space'])
+    expect(shortcutKeyParts('Ctrl+Slash')).toEqual(['Ctrl', '/'])
+    expect(formatShortcut('Ctrl+F5')).toBe('Ctrl+F5')
   })
 
   it('round-trips parsed Windows bindings', () => {
@@ -41,19 +40,19 @@ describe('Windows shortcut formatting', () => {
 
 describe('Windows shortcut matching', () => {
   it('requires the exact Windows modifier set', () => {
-    expect(matchesShortcut(event({ ctrlKey: true, shiftKey: true }), 'Ctrl+Shift+D', false)).toBe(true)
-    expect(matchesShortcut(event({ metaKey: true, shiftKey: true }), 'Ctrl+Shift+D', true)).toBe(false)
-    expect(matchesShortcut(event({ ctrlKey: true, shiftKey: true, altKey: true }), 'Ctrl+Shift+D', false)).toBe(false)
+    expect(matchesShortcut(event({ ctrlKey: true, shiftKey: true }), 'Ctrl+Shift+D')).toBe(true)
+    expect(matchesShortcut(event({ metaKey: true, shiftKey: true }), 'Ctrl+Shift+D')).toBe(false)
+    expect(matchesShortcut(event({ ctrlKey: true, shiftKey: true, altKey: true }), 'Ctrl+Shift+D')).toBe(false)
   })
 
   it('handles named keys and shifted browser key values', () => {
-    expect(matchesShortcut(event({ ctrlKey: true, key: 'F5' }), 'Ctrl+F5', false)).toBe(true)
-    expect(matchesShortcut(event({ ctrlKey: true, shiftKey: true, key: 'D' }), 'Ctrl+Shift+D', false)).toBe(true)
-    expect(matchesShortcut(event({ ctrlKey: true, key: ',' }), 'Ctrl+Comma', false)).toBe(true)
+    expect(matchesShortcut(event({ ctrlKey: true, key: 'F5' }), 'Ctrl+F5')).toBe(true)
+    expect(matchesShortcut(event({ ctrlKey: true, shiftKey: true, key: 'D' }), 'Ctrl+Shift+D')).toBe(true)
+    expect(matchesShortcut(event({ ctrlKey: true, key: ',' }), 'Ctrl+Comma')).toBe(true)
   })
 
-  it('resolves Cmd as the Windows Control modifier for compatibility', () => {
-    expect(resolvedModifiers(parseShortcut('Cmd+Shift+K'), true)).toEqual({
+  it('resolves Control without enabling Meta', () => {
+    expect(resolvedModifiers(parseShortcut('Ctrl+Shift+K'))).toEqual({
       meta: false,
       ctrl: true,
       alt: false,
@@ -64,15 +63,15 @@ describe('Windows shortcut matching', () => {
 
 describe('Windows shortcut capture and hold chords', () => {
   it('captures a Ctrl chord and rejects a Meta chord', () => {
-    expect(captureToShortcut(event({ ctrlKey: true, shiftKey: true, key: 'd' }), false)).toBe(
+    expect(captureToShortcut(event({ ctrlKey: true, shiftKey: true, key: 'd' }))).toBe(
       'Ctrl+Shift+D'
     )
-    expect(captureToShortcut(event({ metaKey: true, key: 'd' }), true)).toBeNull()
+    expect(captureToShortcut(event({ metaKey: true, key: 'd' }))).toBeNull()
   })
 
   it('requires exact Ctrl and Alt state for a hold chord', () => {
-    expect(chordHeld(event({ ctrlKey: true, altKey: true }), 'Ctrl+Alt', false)).toBe(true)
-    expect(chordHeld(event({ ctrlKey: true }), 'Ctrl+Alt', false)).toBe(false)
-    expect(chordHeld(event({ ctrlKey: true, altKey: true, shiftKey: true }), 'Ctrl+Alt', false)).toBe(false)
+    expect(chordHeld(event({ ctrlKey: true, altKey: true }), 'Ctrl+Alt')).toBe(true)
+    expect(chordHeld(event({ ctrlKey: true }), 'Ctrl+Alt')).toBe(false)
+    expect(chordHeld(event({ ctrlKey: true, altKey: true, shiftKey: true }), 'Ctrl+Alt')).toBe(false)
   })
 })

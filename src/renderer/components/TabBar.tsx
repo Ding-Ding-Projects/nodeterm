@@ -346,7 +346,7 @@ export function TabBar({
                 )}
 
                 {active && editingId !== p.id && (
-                  // The title was a hardcoded `(⌘⇧B)` — mac glyphs shown to Linux/Windows users
+                  // The title was a hardcoded shortcut that could drift from the Windows binding.
                   // (a pre-existing bug: it was never even hintLabel-wrapped), and stale after a
                   // remap. `commandTooltip` fixes both and drops the chord entirely when the
                   // command is unbound.

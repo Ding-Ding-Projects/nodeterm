@@ -11,8 +11,8 @@ import {
 describe('shouldIncludeQuickOpenPath', () => {
   it('keeps normal source and git-ignored build output', () => {
     expect(shouldIncludeQuickOpenPath('src/main/index.ts')).toBe(true)
-    expect(shouldIncludeQuickOpenPath('dist/nodeterm-0.2.0-arm64.dmg')).toBe(true)
-    expect(shouldIncludeQuickOpenPath('.claude/worktrees/b5-test/dist/app.dmg')).toBe(true)
+    expect(shouldIncludeQuickOpenPath('dist/nodeterm-Setup-0.3.2.exe')).toBe(true)
+    expect(shouldIncludeQuickOpenPath('.claude/worktrees/b5-test/dist/app-full.nupkg')).toBe(true)
   })
   it('drops node_modules, .git and blocklisted dirs at any depth', () => {
     expect(shouldIncludeQuickOpenPath('node_modules/react/index.js')).toBe(false)

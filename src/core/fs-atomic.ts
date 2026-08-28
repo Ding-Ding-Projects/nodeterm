@@ -76,8 +76,7 @@ const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms
  *
  * Use this instead of `fs.rename` for every temp-then-publish write. The retry is a no-op on
  * POSIX, where these codes do not arise from this operation, so there is no reason to branch on
- * platform — and branching would mean the behaviour under test on a developer's Mac was not the
- * behaviour shipped to a user on Windows.
+ * platform. Branching would mean the behavior under test was not the behavior shipped on Windows.
  */
 export async function renameAtomic(tmp: string, target: string): Promise<void> {
   for (let attempt = 0; ; attempt++) {

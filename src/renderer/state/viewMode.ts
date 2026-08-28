@@ -41,7 +41,7 @@ interface ViewModeState {
   toggle(projectId: string): void
   /**
    * A node whose CARD should be opened on the board, set by anything that "goes to" a node while
-   * the board is up — the notch HUD's Go, a notification click, ⌘K, the sessions sidebar. Those
+   * the board is up: the Agent HUD's Go, a notification click, Ctrl+K, and the sessions sidebar. Those
    * all funnel through `focusNodeById`, which frames the node on the CANVAS; with the board's
    * opaque overlay on top, that looked like the button did nothing at all (field report: "kanban
    * view'de notch'ın Go tuşu işe yaramıyor").

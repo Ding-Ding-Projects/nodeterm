@@ -22,7 +22,7 @@ const node = (id: string, over: Partial<CanvasNodeState> = {}): CanvasNodeState 
 const project = (nodes: CanvasNodeState[], over: Partial<Project> = {}): Project => ({
   id: 'p1',
   name: 'Project',
-  color: '#0a84ff',
+  color: '#0078d4',
   cwd: '/work/p1',
   viewport: { x: 0, y: 0, zoom: 1 },
   nodes,

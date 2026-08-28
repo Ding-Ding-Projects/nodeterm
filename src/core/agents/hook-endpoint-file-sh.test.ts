@@ -8,17 +8,15 @@ import { nodeTokenDir } from './node-token-files'
 import { initPlatform, resetPlatformForTests } from '../platform'
 import { fakePlatform } from '../platform-fake'
 
-// Issue #351: on macOS the userDataDir lives under "Application Support" — a directory name WITH A
-// SPACE. The managed hook script SOURCES the endpoint file (`. "$file"`) under /bin/sh, so an
-// unquoted `NODETERM_NODE_TOKEN_DIR=/Users/x/Library/Application Support/...` made sh try to run
-// `Support/...`, exit 127, and the hook fell back to plain mode for EVERY macOS user. This test
-// proves the file sources cleanly under a REAL /bin/sh — the current-line-27 structural assertion
+// Endpoint paths can contain spaces. The managed hook script sources the endpoint file under
+// /bin/sh, so an unquoted NODETERM_NODE_TOKEN_DIR makes sh try to run the path tail. This test
+// proves the file sources cleanly under a real /bin/sh. The old structural assertion
 // passed while real sh failed, which is exactly the class of bug this repo insists we prove against
 // a real reader.
 let spaced = ''
 beforeAll(async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'nodeterm-ep-sh-'))
-  // A subdir with a space in its name — the "Application Support" shape.
+  // A subdirectory with a space in its name.
   spaced = path.join(root, 'App Support', 'node-terminal')
   fs.mkdirSync(spaced, { recursive: true })
   resetPlatformForTests()

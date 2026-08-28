@@ -1,6 +1,6 @@
 // Pure mapping of Anthropic's OAuth usage payload into our normalized limit list.
 // Lives in core (no electron, no fs, no fetch) so both shells share it and it stays unit-tested;
-// the impure token/keychain/HTTP work stays in the shell (main/claude-usage.ts).
+// the impure token/credential vault/HTTP work stays in the shell (main/claude-usage.ts).
 //
 // The payload carries the same facts twice. The legacy shape is a set of fixed top-level
 // windows (`five_hour`, `seven_day`, and the now-always-null `seven_day_opus` /

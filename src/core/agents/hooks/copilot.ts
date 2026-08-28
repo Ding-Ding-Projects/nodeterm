@@ -12,7 +12,7 @@ import {
   installManagedHookScript
 } from './install-helper'
 
-const SCRIPT_FILE_NAME = 'copilot.sh'
+const SCRIPT_FILE_NAME = process.platform === 'win32' ? 'copilot.ps1' : 'copilot.sh'
 export const COPILOT_HOOK_FILE = 'nodeterm-status.json'
 
 type CopilotEnv = { COPILOT_HOME?: string }

@@ -44,7 +44,7 @@ is the cost of adding the next agent to the same list.
 | `CONTEXT_LINK_CAPABLE` | **not joined** | Needs a parser for `updates.jsonl` pinned by a real fixture, plus a locator in `core/context-link.ts`. Task 10 stops at its capture step. (For reference, this list is `claude, codex, gemini, opencode` — grok is the only builtin outside it.) |
 | `SUBAGENT_CAPABLE` | **not joined** | Needs the `spawn_subagent` `PreToolUse`/`PostToolUse` payload fields, including whatever marks a **background** launch. Task 11 stops at its capture step. |
 | `BRANCH_CAPABLE` | not joined | Branch sends claude's `/branch` and resumes by claude's session id; grok has no counterpart. |
-| `CHAT_CAPABLE` | not joined | The ⌘M `ChatPanel` renders claude's transcript `.jsonl`; grok's log is `updates.jsonl` and needs the same parser Task 10 is blocked on. |
+| `CHAT_CAPABLE` | not joined | The Ctrl+M `ChatPanel` renders claude's transcript `.jsonl`; grok's log is `updates.jsonl` and needs the same parser Task 10 is blocked on. |
 | `TRANSFER_SOURCE_CAPABLE` | not joined | Cross-agent transfer reads the source's native transcript — again the missing parser. Grok is a valid transfer **target** (it is an agent node like any other); it just cannot be the source. |
 | `RECURRING_CAPABLE` | not joined | `/loop`, `/schedule`, `/cron` are detected from claude's `Skill` / `CronCreate` / `ScheduleWakeup` tool names; grok's tool vocabulary for these is unknown. |
 
@@ -247,7 +247,7 @@ generated title (right name, just not overridable from grok's side) rather than 
 Confirming it is checklist item **14**.
 
 **Not captured at all:** `signals.json` (blocks the context meter — the used-token key, the window
-total, and whether a total exists anywhere) and `updates.jsonl` (blocks context links, the ⌘M
+total, and whether a total exists anywhere) and `updates.jsonl` (blocks context links, the Ctrl+M
 transcript view and transfer-as-source). Recipes for both, and for the `spawn_subagent` payload, are
 Step 1 of Tasks 5, 10 and 11 in
 `docs/superpowers/plans/2026-08-09-grok-agent-integration.md`. **Do not add a speculative key to any
@@ -322,7 +322,7 @@ ai-name / comments).
 |---|---|---|---|
 | Status hooks → badges, unread dot, notification | yes | yes — `wireAgentStatus` broadcasts the same normalized events, and the grok raw-listener branch is duplicated in `src/server/agent-status.ts` | yes, for free — the agent-status mirror threads `agentId` and is otherwise agent-agnostic |
 | Hook installation | `installGrokHooks()` at launch, plus `RemoteHooks.installGrokRemote` per SSH connect | same core installer (`core/agents/hooks/*` is Electron-free) | N/A — the phone installs nothing |
-| Session name ⇄ node title | both legs | **write only.** `ws-bridge.readSessionName` returns `''` — a **pre-existing** gap, not a grok one: `IPC.ptyReadSessionName` has never been registered server-side, so claude's read leg is equally stubbed. The fix is to move the routing into core and register it from both shells, exactly as `core/transcript-ipc.ts` did for the ⌘M channels | the mirror's session-name sweep runs in both shells and routes per agent, so a grok name reaches the phone when it resolves at all |
+| Session name ⇄ node title | both legs | **write only.** `ws-bridge.readSessionName` returns `''`, a **pre-existing** gap rather than a grok one: `IPC.ptyReadSessionName` has never been registered server-side, so claude's read leg is equally stubbed. The fix is to move the routing into core and register it from both shells, exactly as `core/transcript-ipc.ts` did for the Ctrl+M channels | the mirror's session-name sweep runs in both shells and routes per agent, so a grok name reaches the phone when it resolves at all |
 | Permission mode | yes | yes (pure renderer + the mode flag) | **follow-up owed** — see §8 |
 | In-place restart + cold-restore resume | yes | yes | N/A |
 | Canvas control | yes, via `~/.claude/skills` + the sh+curl shim (unverified) | **not wired at all** — `agent:control` has no server handler; pre-existing, unchanged by grok | N/A — no canvas |
@@ -387,7 +387,7 @@ ai-name / comments).
    default dark theme. That is also why the other four marks, which are multi-colour and carry their
    own fills, remain assets.
 9. **The local `$GROK_HOME` is read from an environment a GUI app does not have.** `grokHomeDir()`
-   defaults from `process.env`, but a desktop app launched from Finder/Dock/a `.desktop` entry never
+   defaults from `process.env`, but a desktop app launched from File Explorer or a desktop shortcut may never
    sourced the user's shell rc — while the grok CLI, started by the shell inside a tmux pane, did. For
    a user whose `export GROK_HOME=…` lives in `.zshrc`, we write the hook file under `~/.grok` and grok
    reads somewhere else: no badge, no unread dot, no notification, no session name, **ever**, and no
@@ -530,14 +530,14 @@ Surfaces
     confirm the node title does NOT adopt grok's session name there (readSessionName is stubbed).
 28. Phone: does a grok node appear in the inbox with the right state? Its "what it's doing now"
     activity line will be absent (§8.3).
-29. macOS notch: does the grok mark pulse and bloom while it works, on the black capsule, next to
+29. Windows Agent HUD: does the grok mark pulse and bloom while it works, next to
     claude's walking critter without looking out of place?
 30. Kanban board + card modal: badges and the 💬 comments panel on a grok card (the meter row has
     nothing to show).
 
 Two traps with no code fix — appended so the numbering above stays stable
 31. `echo $GROK_HOME` in a nodeterm terminal, then check where the hook file actually went. The app
-    resolves it from the APP's environment, and a GUI launch (Finder/Dock/`.desktop`) never sourced
+    resolves it from the application's environment, and a GUI launch may never have sourced
     your shell rc — so an `export GROK_HOME=…` in `.zshrc`/`.bashrc` splits the two sides and
     EVERYTHING silently stops working: no badge, no unread, no notification, no session name, no
     error (§8.9). Compare a shell launch (`npm start`) with a GUI launch (`open -a nodeterm`): a

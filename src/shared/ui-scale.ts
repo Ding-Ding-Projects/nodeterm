@@ -2,7 +2,7 @@
  * UI scale for the application chrome — issue #299 (4K / high-DPI readability).
  *
  * Mechanism: PAGE ZOOM (`webFrame.setZoomFactor` on desktop), the same thing a browser's
- * Cmd/Ctrl+± does. Chosen over a rem-based CSS rewrite because styles.css carries ~2,900 px
+ * Ctrl+± does. Chosen over a rem-based CSS rewrite because styles.css carries ~2,900 px
  * literals (plus px-valued Tailwind utilities like `text-[13px]`) — a conversion would be a mass
  * rewrite with visual-regression risk on every surface, while page zoom is coordinate math
  * Chromium already maintains: React Flow, xterm and Monaco all run under browser zoom today.
@@ -18,7 +18,7 @@
  * cols/rows.
  *
  * Server Edition: intentionally inert — a browser page cannot set its own page zoom, and the
- * browser already owns the identical mechanism (Cmd/Ctrl+±, persisted per site by the browser).
+ * browser already owns the identical mechanism (Ctrl+±, persisted per site by the browser).
  * The bridge stub is a documented no-op and the Settings row is disabled with that reason
  * (VS Code's `window.zoomLevel` draws the same desktop-only line).
  */

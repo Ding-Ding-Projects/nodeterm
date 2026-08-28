@@ -4,7 +4,7 @@
 // Two deliberate limits, both narrower than other implementations of the same idea:
 //
 //   * We read ONLY `~/.gemini/oauth_creds.json`. It is possible to also scan opencode's data
-//     directories (`~/.local/share/opencode/auth.json`, the macOS Application Support copy, …)
+//     directories (`~/.local/share/opencode/auth.json` and other supported local stores)
 //     for a Google token, behind an explicit opt-in, precisely because it means
 //     reading another application's credentials off disk. The simplest correct answer is not to.
 //

@@ -41,20 +41,22 @@ describe('copilot hook installer', () => {
     expect(cfg.hooks.SessionStart).toEqual([
       {
         type: 'command',
-        bash: expect.stringContaining(
-          path.join(home, '.nodeterm', 'agent-hooks', 'copilot.sh')
-        ),
+        bash: expect.stringContaining('powershell.exe'),
         timeoutSec: 5
       }
     ])
-    expect(cfg.hooks.SessionStart[0].bash).toMatch(/^if \[ -r /)
+    const encoded = cfg.hooks.SessionStart[0].bash.split(' ').at(-1)
+    expect(encoded).toBeTruthy()
+    const body = Buffer.from(encoded, 'base64').toString('utf16le')
+    expect(body).toContain(path.join(home, '.nodeterm', 'agent-hooks', 'copilot.ps1'))
+    expect(body).toContain('[Console]::In.ReadToEnd()')
     expect(cfg.hooks.SessionStart[0].matcher).toBeUndefined()
     expect(cfg.hooks.Notification[0].matcher).toBe(
       'permission_prompt|elicitation_dialog'
     )
     expect(
       readFileSync(
-        path.join(home, '.nodeterm', 'agent-hooks', 'copilot.sh'),
+        path.join(home, '.nodeterm', 'agent-hooks', 'copilot.ps1'),
         'utf8'
       )
     ).toContain('/hook/copilot')

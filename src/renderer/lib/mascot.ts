@@ -131,14 +131,14 @@ export const CLAUDE_MASCOT = {
   frameCount: CLAUDE_FRAMES.length
 }
 
-// --- "Done, unseen" pixel blob (Notch HUD) -------------------------------------------------
+// --- "Done, unseen" pixel blob (Agent HUD) -------------------------------------------------
 //
-// agent-notch draws a shimmering green blob on a 7×7 grid of crisp pixels for a finished-but-
+// agent-hud draws a shimmering green blob on a 7×7 grid of crisp pixels for a finished-but-
 // unseen agent slot. We reproduce the SHAPE as a static 7×7 green circle sprite (crisp pixels via
 // image-rendering:pixelated) and let CSS drive the shimmer (opacity pulse) — same reuse pattern as
 // the Claude sprite above, so the HUD stays plain-DOM with no per-pixel JS.
 
-/** systemGreen — matches agent-notch's NSColor.systemGreen done blob. */
+/** Windows green matches the Agent HUD done indicator. */
 export const DONE_GREEN = 'rgb(48, 209, 88)'
 
 /** 7×7 filled-circle mask (1 = green pixel). */

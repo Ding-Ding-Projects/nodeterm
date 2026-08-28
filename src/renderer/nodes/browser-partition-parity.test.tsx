@@ -40,7 +40,7 @@ function partitionFromCanvas(nodePartition: string | undefined): string | null {
   const host = document.createElement('div')
   document.body.append(host)
   const root = createRoot(host)
-  const data = { title: 'B', color: '#0a84ff', group: null, url: 'https://x.test/', partition: nodePartition }
+  const data = { title: 'B', color: '#0078d4', group: null, url: 'https://x.test/', partition: nodePartition }
   act(() =>
     root.render(
       <ReactFlowProvider>
@@ -62,7 +62,7 @@ function partitionFromModal(sessionPartition: string | undefined): string | null
   const session: KanbanSession = {
     id: 'browser-1',
     title: 'B',
-    color: '#0a84ff',
+    color: '#0078d4',
     kind: 'browser',
     url: 'https://x.test/',
     partition: sessionPartition,

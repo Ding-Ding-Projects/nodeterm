@@ -177,7 +177,7 @@ describe('matchUrlTokens', () => {
 
 describe('createOsc8LinkHandler', () => {
   const range = { start: { x: 1, y: 1 }, end: { x: 1, y: 1 } }
-  const click = (mod: boolean): MouseEvent => ({ metaKey: mod, ctrlKey: false }) as MouseEvent
+  const click = (mod: boolean): MouseEvent => ({ metaKey: false, ctrlKey: mod }) as MouseEvent
 
   it('opens http(s) only, and only on a modifier click', () => {
     const opened: string[] = []

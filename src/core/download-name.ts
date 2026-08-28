@@ -22,7 +22,7 @@ export function safeDownloadBasename(remotePath: string): string | null {
 
 /**
  * The n-th candidate name for a collision: `notes.md`, `notes (2).md`, `notes (3).md`. The counter
- * goes before the extension (Finder/Explorer convention) so the file still opens in the right app;
+ * goes before the extension (File Explorer convention) so the file still opens in the right app;
  * a dotfile (`.bashrc`) has no extension to speak of and takes the suffix at the end.
  */
 export function candidateName(name: string, attempt: number): string {

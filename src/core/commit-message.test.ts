@@ -5,27 +5,27 @@ import { localAgentCwd } from './commit-message'
 /**
  * The 2026-08-05 report: "AI commit message" failed on every SSH project with
  *
- *     Error: spawn /Users/enes/.local/bin/claude ENOENT
+ *     Error: spawn C:/Users/enes/.local/bin/claude ENOENT
  *
  * which reads as "claude is not installed" and is not. Node reports a MISSING WORKING DIRECTORY as
  * `spawn <command> ENOENT`, naming the binary rather than the directory — and the directory was an
- * SSH project's cwd, a path that exists on the server and not on the Mac doing the spawning.
+ * SSH project's cwd, a path that exists on the server and not on the Windows PC doing the spawning.
  *
  * The agent spawn is local by design (only the git reads route over the ControlMaster, and the diff
  * is inside the prompt by then), so the fix is to not hand it a remote path.
  */
 describe('localAgentCwd', () => {
   it('uses the project folder for a LOCAL project', () => {
-    expect(localAgentCwd('/Users/enes/code/app', false, '/Users/enes')).toBe('/Users/enes/code/app')
+    expect(localAgentCwd('C:/Users/enes/code/app', false, 'C:/Users/enes')).toBe('C:/Users/enes/code/app')
   })
 
   it('falls back to home for a REMOTE project — that path is on the server', () => {
-    expect(localAgentCwd('/root/nodeterm', true, '/Users/enes')).toBe('/Users/enes')
+    expect(localAgentCwd('/root/nodeterm', true, 'C:/Users/enes')).toBe('C:/Users/enes')
   })
 
   it('falls back to home for a project with no folder at all', () => {
     // The pre-existing `cwd || os.homedir()` behaviour, kept.
-    expect(localAgentCwd('', false, '/Users/enes')).toBe('/Users/enes')
+    expect(localAgentCwd('', false, 'C:/Users/enes')).toBe('C:/Users/enes')
   })
 })
 

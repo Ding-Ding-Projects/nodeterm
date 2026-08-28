@@ -1,49 +1,21 @@
 /**
- * Generalized shortcut recorder: click to arm, press a chord. Keyed chords commit on keydown;
- * for allowHoldChord commands a modifier-only chord commits on full release (hold-to-talk).
+ * Generalized Windows shortcut recorder: click to arm, then press a Control-based chord. Keyed
+ * chords commit on keydown. Commands that allow a modifier-only hold chord commit on full release.
  *
- * **Two separate mechanisms hold the keys off, one per process.** In the RENDERER it is this
- * component's own `preventDefault` + `stopPropagation` on every key it sees — the window
- * dispatcher bails on `defaultPrevented`, so nothing else in the page acts on the chord. The
- * `data-shortcut-recording` attribute is NOT part of that path: nothing reads it, and it is kept
- * only as the DOM-visible signal that the recorder is armed (tests, debugging, styling hooks). In
- * MAIN it is `shortcuts.setRecording`, because a chord the window intercepts in
- * `before-input-event` (⌘W, ⌘M, ⌘0) never reaches the page at all — no amount of renderer-side
- * preventing can catch a key the page was never given. Recording ⌘W without it DELETES THE
- * SELECTED NODES.
+ * The renderer prevents and stops every key event while recording. The main process separately
+ * suspends its own interceptors and command menu accelerators because those keys can be consumed
+ * before the renderer sees them. The global recording bit is released on stop, blur, and unmount.
+ * Only the instance that armed it may clear it, so filtering another settings row cannot
+ * accidentally re-enable shortcuts during an active capture.
  *
- * **The main-process bit is GLOBAL, so it owes an unmount release.** Chromium does not reliably
- * fire `blur` on a focused element that is REMOVED from the DOM, so closing Settings while the
- * recorder is armed can skip `onBlur` entirely — leaving the bit set with no component left to
- * clear it, suppressing ⌘W/⌘M/⌘0 app-wide until the next arm/disarm cycle. `release` (below) is
- * the teardown both `stop()` and the unmount cleanup run; it touches refs only, so it is stable.
- * It is safe to run from an instance that was never armed because it CHECKS (`armedRef`) — not
- * because the send would be harmless. One global bit, many instances: an unconditional release
- * would let a sibling unmounting for unrelated reasons clear the armed recorder's bit.
- *
- * **A menu accelerator needs a THIRD mechanism, and it now has one.** The main-process bit above
- * only stops nodeterm's own `before-input-event` intercepts; the application menu's accelerators
- * are handled above the page regardless. So main also DISABLES the command-style menu items in
- * `menuItemIdsToSuspend` while this bit is set (`menuStandsDown` → `syncMenuForStandDown` in
- * `src/main/index.ts`) — a disabled item suppresses its accelerator, which is what lets ⌘M
- * (Window ▸ Minimize), ⌘⇧B (Toggle Kanban Board), ⌘, (Settings) and, off-mac, Ctrl+W (Window ▸
- * Close) reach this component instead of acting. Pressing ⌘⇧B or ⌘, into an armed recorder used to
- * FIRE — opening the board behind the Settings dialog, or re-opening Settings.
- *
- * **What stays out of reach**, deliberately: **Reload** (⌘R / ⌘⇧R) is excluded from that list as
- * the crash-recovery lever, so it can never be recorded. And the list only covers the items the
- * policy stand-down needed — the always-on app roles (`quit` ⌘Q, `hide`/`hideOthers`,
- * `toggleDevTools`, `togglefullscreen`) are NOT suspended, so those chords still act while a
- * recorder is armed. See `menuItemIdsToSuspend` in `src/main/keydown-intercept.ts`.
+ * Reload and always-on application roles remain outside the recordable menu set. See
+ * `menuItemIdsToSuspend` in `src/main/keydown-intercept.ts` for the exact policy.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { COMMANDS_BY_ID, normalizeBindingForCommand, type CommandId } from '@shared/keybindings'
-import { usesMetaPrimary } from '@shared/platform-utils'
 import { recordingKeydown, recordingKeyup, type RecordingState } from './shortcutRecording'
 import { IconRecordKey } from './ShortcutRowIcons'
 import { Tooltip } from '../Tooltip'
-
-const useMetaPrimary = usesMetaPrimary()
 
 export function ShortcutRecorderButton({
   commandId,
@@ -76,7 +48,7 @@ export function ShortcutRecorderButton({
   // Did THIS instance arm the (global) main-process bit? See `release`.
   const armedRef = useRef(false)
   const def = COMMANDS_BY_ID.get(commandId)!
-  const opts = { useMetaPrimary, allowHold: def.allowHoldChord === true }
+  const opts = { allowHold: def.allowHoldChord === true }
 
   // Refs only ⇒ stable with no deps, so the mount-time cleanup below cannot capture stale state,
   // and idempotent ⇒ running it twice, or on an unmount that was never armed, does nothing.
@@ -87,7 +59,7 @@ export function ShortcutRecorderButton({
   // hypothetical in this page: settings rows are wrapped in `SearchableRow`, which returns `null`
   // for every row the filter box does not match — so typing there unmounts a batch of recorders at
   // once. An unconditional `setRecording(false)` in that cleanup would clear the ARMED recorder's
-  // bit from under it, re-arming ⌘W/⌘M mid-capture: the original bug, reached by a different door.
+  // bit from under it, re-arming Ctrl+W/Ctrl+M mid-capture: the original bug, reached by a different door.
   // Only the instance that sent `true` may send `false`.
   const release = useCallback((): void => {
     stateRef.current = { mods: null }
@@ -111,7 +83,7 @@ export function ShortcutRecorderButton({
     window.nodeTerminal.shortcuts.setRecording(true)
   }
   const commit = (combo: string): void => {
-    const r = normalizeBindingForCommand(def, combo, useMetaPrimary)
+    const r = normalizeBindingForCommand(def, combo)
     if (!r.ok) {
       setHint(r.error)
       return

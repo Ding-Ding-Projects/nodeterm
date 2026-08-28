@@ -424,7 +424,7 @@ export function resolveLocalSessionShell(
 /**
  * A UTF-8 locale for spawned terminals, or null to leave the inherited locale untouched.
  *
- * A GUI app launched from Finder/Dock inherits NO locale env (no LANG/LC_*), so `locale` falls
+ * A GUI app can inherit no locale environment (no LANG/LC_*), so `locale` falls
  * back to "C" (non-UTF-8). TUIs that probe for UTF-8 support (Claude Code and other Ink/ncurses
  * apps) then render ASCII box-drawing — rounded borders come out as `_`/`|`. Same root cause as
  * the missing-PATH problem: the GUI process never sourced the shell environment. If the inherited
@@ -815,7 +815,7 @@ export class PtyManager {
    *    off the wire and an entry is recorded even when no live session exists, so an unbounded map
    *    would grow with client input alone. Eviction degrades to the pre-tombstone behavior, never
    *    worse.
-   *  - it is keyed by the DESTROYER, who is exempt: their own ⌘Z (undo of a delete) must still
+   *  - it is keyed by the DESTROYER, who is exempt: their own Ctrl+Z (undo of a delete) must still
    *    restore the node, and a solo user is always the destroyer, so their path is untouched.
    *  - a `recycle` (worktree move) explicitly CLEARS it: nothing was deleted there.
    * Stage 3's canvas-delete mutation now removes the node from every ATTACHED client's canvas, so
@@ -2991,7 +2991,7 @@ export class PtyManager {
     if (session.indexKey) this.byPersistKey.set(session.indexKey, sessionId)
     // This node has a live session again, so it is no longer deleted: drop any tombstone. Only the
     // destroyer can even reach a spawn for a tombstoned node (create() refuses everyone else), so
-    // this is exactly "the owner brought the node back" (⌘Z) — and its co-viewers must be able to
+    // this is exactly "the owner brought the node back" (Ctrl+Z), and its co-viewers must be able to
     // join the new session rather than stay refused.
     // A session-host record is provisional until its async attach succeeds. spawnNew() clears the
     // tombstone after ready so a failed resurrection cannot silently remove deletion protection.
@@ -4604,7 +4604,7 @@ export class PtyManager {
     // a node that is still on the canvas.
     //
     // Deleting a node used to tell the mirror nothing at all — `clearNode` had no production caller
-    // — so the surfaces the mirror feeds kept rendering a node that no longer exists: the notch HUD
+    // so the surfaces the mirror feeds kept rendering a node that no longer exists: the Agent HUD
     // held its needs-you/done row until the 6 h prune (its title collapsing to the literal
     // 'Session' once the entry behind it aged out), the phone's Inbox cards for it were never
     // resolved, and its Live Activity was never ended.

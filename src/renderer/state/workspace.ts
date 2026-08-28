@@ -26,15 +26,15 @@ import { useSettings } from './settings'
 export { applyCanvasMutation } from '@shared/canvas-mutations'
 import { sanitizeInboundNode } from '@shared/node-exec'
 
-/** Preset color palette — macOS system colors (dark mode). */
+/** Preset color palette for the Windows dark theme. */
 export const NODE_COLORS = [
-  '#0a84ff', // systemBlue
-  '#32d74b', // systemGreen
-  '#ffd60a', // systemYellow
-  '#ff453a', // systemRed
-  '#bf5af2', // systemPurple
-  '#6ac4dc', // systemTeal
-  '#ff9f0a' // systemOrange
+  '#0078d4', // Windows blue
+  '#107c10', // Windows green
+  '#fce100', // Windows yellow
+  '#d13438', // Windows red
+  '#8764b8', // Windows purple
+  '#00b7c3', // Windows cyan
+  '#f7630c' // Windows orange
 ]
 
 const TERMINAL_SIZE = { width: 640, height: 440 }
@@ -811,7 +811,7 @@ export function isAccountLoginNode(data: { title?: string; initialCommand?: stri
  * how `createTerminalNode` stamps `data.sshRemoteTmux`. The SSH-ness is passed EXPLICITLY by the
  * caller (only genuinely-remote, Explorer-opened files pass `true`); native-dialog-opened files
  * carry LOCAL paths and must stay local, so they omit it. (Self-detecting the active SSH project
- * here would wrongly stamp a dialog-opened local path and route its ⌘S write to the remote host.)
+ * here would wrongly stamp a dialog-opened local path and route its Ctrl+S write to the remote host.)
  */
 export function createEditorNode(
   index: number,
@@ -828,7 +828,7 @@ export function createEditorNode(
     style: { width: EDITOR_SIZE.width, height: EDITOR_SIZE.height },
     data: {
       title: filePath.split('/').pop() || 'untitled',
-      color: '#6ac4dc',
+      color: '#00b7c3',
       group: null,
       filePath,
       ...(sshFs ? { sshFs: true } : {})
@@ -863,7 +863,7 @@ export function createVideoNode(
     style: { width: VIDEO_SIZE.width, height: VIDEO_SIZE.height },
     data: {
       title: filePath.split('/').pop() || 'video',
-      color: '#bf5af2',
+      color: '#8764b8',
       group: null,
       filePath,
       ...(sshFs ? { sshFs: true } : {})
@@ -889,7 +889,7 @@ export function createWebNode(
     style: { width: WEB_SIZE.width, height: WEB_SIZE.height },
     data: {
       title,
-      color: '#6ac4dc',
+      color: '#00b7c3',
       group: null,
       ...(src.url ? { url: src.url } : {}),
       ...(src.filePath ? { filePath: src.filePath } : {})
@@ -922,7 +922,7 @@ export function createBrowserNode(
     style: { width: BROWSER_SIZE.width, height: BROWSER_SIZE.height },
     data: {
       title,
-      color: '#0a84ff',
+      color: '#0078d4',
       group: null,
       ...(url ? { url } : {}),
       ...(partition ? { partition } : {})
@@ -969,7 +969,7 @@ export function createStickyNode(index: number, center?: { x: number; y: number 
     style: { width: STICKY_SIZE.width, height: STICKY_SIZE.height },
     data: {
       title: 'Note',
-      color: '#ffd60a',
+      color: '#fce100',
       group: null,
       text: ''
     }

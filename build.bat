@@ -6,14 +6,44 @@ set "NODETERM_SILENT=0"
 if /I "%~1"=="/s" set "NODETERM_SILENT=1"
 if /I "%~1"=="--silent" set "NODETERM_SILENT=1"
 if /I "%SILENT%"=="1" set "NODETERM_SILENT=1"
-echo === nodeterm Windows build ===
+set "PS=%WINDIR%\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+if not exist "%PS%" (
+  echo [FAILED] Windows PowerShell 5.1 is unavailable.
+  exit /b 1
+)
+"%PS%" -NoProfile -NonInteractive -Command "$p=[Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent()); if($p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){exit 0}; exit 1" >nul 2>nul
+if not errorlevel 1 goto :elevation_ready
+if "%NODETERM_SILENT%"=="1" goto :elevation_ready
+set "NODETERM_ELEVATE_SCRIPT=%~f0"
+echo [ADMIN] Requesting administrator approval before any build or toolchain work begins.
+"%PS%" -NoProfile -ExecutionPolicy Bypass -Command "try { $p=Start-Process -FilePath $env:NODETERM_ELEVATE_SCRIPT -Verb RunAs -Wait -PassThru; exit $p.ExitCode } catch { Write-Error 'Administrator approval was declined or unavailable.'; exit 1223 }"
+exit /b %ERRORLEVEL%
+
+:elevation_ready
+echo === nodeterm one-click Windows build ===
+echo Fresh-install path: ZIP, extract, double-click this file. No manual tool installation is required.
 if "%NODETERM_SILENT%"=="1" (
   call "%ROOT%\download-dependencies.bat" /s
 ) else (
   call "%ROOT%\download-dependencies.bat"
 )
 if errorlevel 1 exit /b %ERRORLEVEL%
-if exist "%ROOT%\out" rd /s /q "%ROOT%\out" >nul 2>nul
+
+set "PINNED_NODE=%LOCALAPPDATA%\nodeterm\toolchain\node-v24.19.0-win-x64"
+if exist "%PINNED_NODE%\node.exe" set "PATH=%PINNED_NODE%;%PATH%"
+where node >nul 2>nul
+if errorlevel 1 (
+  echo [FAILED] Node.js is not resolvable after the dependency bootstrap.
+  exit /b 1
+)
+
+set "NODETERM_SAFE_ROOT=%ROOT%"
+set "NODETERM_SAFE_TARGET=%ROOT%\out"
+if exist "%ROOT%\out" (
+  "%PS%" -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$sep=[IO.Path]::DirectorySeparatorChar; $root=[IO.Path]::GetFullPath($env:NODETERM_SAFE_ROOT).TrimEnd($sep)+$sep; $target=[IO.Path]::GetFullPath($env:NODETERM_SAFE_TARGET); if(-not $target.StartsWith($root,[StringComparison]::OrdinalIgnoreCase)){throw 'Unsafe output path'}; Remove-Item -LiteralPath $target -Recurse -Force"
+  if errorlevel 1 exit /b 1
+)
 pushd "%ROOT%"
 call npm run build
 set "BUILD_EXIT=%ERRORLEVEL%"
@@ -26,7 +56,7 @@ for %%F in ("%ROOT%\out\main\index.js" "%ROOT%\out\preload\index.js" "%ROOT%\out
   echo [FAILED] Required build output is missing: %%~fF
   exit /b 1
 )
-echo [DONE] Built output is in "%ROOT%\out".
+echo [DONE] Runnable Windows output is in "%ROOT%\out".
 if "%NODETERM_SILENT%"=="1" exit /b 0
 choice /C YN /N /M "Run nodeterm now? [Y/N]: "
 if errorlevel 2 exit /b 0

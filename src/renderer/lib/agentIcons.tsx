@@ -4,14 +4,14 @@ import { BRAND_PULSE_CLASS, brandLogoSrc, brandPulsePlan } from './brandPulse'
 import { GROK_MARK_PATH, GROK_MARK_VIEWBOX } from './grokMark'
 import { COPILOT_MARK_PATHS, COPILOT_MARK_VIEWBOX } from './copilotMark'
 
-// The logo map itself lives in the REACT-FREE lib/brandPulse.ts, because the notch HUD needs the
+// The logo map itself lives in the REACT-FREE lib/brandPulse.ts, because the Agent HUD needs the
 // same assets and must not import React. Re-exported here so React callers have one import for
 // "which agents have a mark" beside the components that draw them.
 export { hasBrandLogo } from './brandPulse'
 
 /**
  * The official Grok mark (xAI), inlined rather than shipped as an asset — geometry from
- * `lib/grokMark.ts`, which the notch HUD's imperative renderer shares.
+ * `lib/grokMark.ts`, which the Agent HUD's imperative renderer shares.
  *
  * `className` is how the RUNNING badge reuses this exact glyph as its "working" indicator (it
  * pulses and blooms instead of walking — grok has no critter; see AgentMascot).
@@ -44,11 +44,11 @@ export function GrokMark({
  * itself, pulsing with a `currentColor` bloom. See `brandPulsePlan` for why (and for the bloom's
  * one caveat on the multi-colour assets); `null` here means "no mark — fall back to the dot".
  *
- * A thin renderer on purpose: every decision is in the pure plan, which the notch HUD shares.
+ * A thin renderer on purpose: every decision is in the pure plan, which the Agent HUD shares.
  */
 /**
  * The official GitHub Copilot mark, inlined rather than shipped as an asset — geometry from
- * `lib/copilotMark.ts`, which the notch HUD's imperative renderer shares. Monochrome, so
+ * `lib/copilotMark.ts`, which the Agent HUD's imperative renderer shares. Monochrome, so
  * `currentColor` lets it follow the theme (the asset's fixed #f0f6fc was invisible on light).
  */
 export function CopilotMark({

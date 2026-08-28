@@ -164,7 +164,7 @@ export const KanbanView = memo(function KanbanView({
     if (modalNodeId) useAgentStatus.getState().clearUnread(modalNodeId)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modalNodeId])
-  // Someone asked for a card while the board is up (notch Go, a notification, ⌘K…). Open it here
+  // Someone asked for a card while the board is up (notch Go, a notification, Ctrl+K…). Open it here
   // instead of framing the node on the canvas nobody can see under this overlay.
   const requestedCardNodeId = useViewMode((s) => s.requestedCardNodeId)
   useEffect(() => {

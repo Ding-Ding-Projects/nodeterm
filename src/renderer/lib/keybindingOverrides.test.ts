@@ -22,9 +22,9 @@ describe('activeKeybindingOverrides', () => {
   })
   it('sanitizes and memoizes by reference, warning once per change', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    setKb({ 'node.newTerminal': ['Cmd+Shift+Y'], 'bogus.command': ['Cmd+X'] })
+    setKb({ 'node.newTerminal': ['Ctrl+Shift+Y'], 'bogus.command': ['Ctrl+X'] })
     const first = activeKeybindingOverrides()
-    expect(first).toEqual({ 'node.newTerminal': ['Cmd+Shift+Y'] })
+    expect(first).toEqual({ 'node.newTerminal': ['Ctrl+Shift+Y'] })
     expect(activeKeybindingOverrides()).toBe(first)
     expect(warn).toHaveBeenCalledTimes(1)
     warn.mockRestore()
@@ -37,22 +37,20 @@ describe('effectiveBindings / commandKeys / commandTooltip', () => {
   })
   it('an override replaces the default everywhere', () => {
     setKb({ 'panel.sessions': ['Ctrl+Alt+L'] })
-    expect(commandKeys('panel.sessions', true)).toEqual(['Ctrl', 'Alt', 'L'])
-    expect(commandTooltip('Sessions', 'panel.sessions', true)).toBe('Sessions (Ctrl+Alt+L)')
+    expect(commandKeys('panel.sessions')).toEqual(['Ctrl', 'Alt', 'L'])
+    expect(commandTooltip('Sessions', 'panel.sessions')).toBe('Sessions (Ctrl+Alt+L)')
   })
-  it('formats the default shortcut consistently for explicit modifier modes', () => {
-    expect(commandTooltip('Sessions', 'panel.sessions', true)).toBe('Sessions (Ctrl+Shift+L)')
-    expect(commandTooltip('Sessions', 'panel.sessions', false)).toBe('Sessions (Ctrl+Shift+L)')
+  it('formats the default shortcut with Windows Control notation', () => {
+    expect(commandTooltip('Sessions', 'panel.sessions')).toBe('Sessions (Ctrl+Shift+L)')
   })
-  it('resolves the defaults with the SAME platform it formats with', () => {
+  it('resolves and formats the same Windows binding', () => {
     // terminal.copySelection exercises primary-modifier resolution, so it catches formatting and
     // binding resolution drifting apart.
-    expect(commandKeys('terminal.copySelection', true)).toEqual(['Ctrl', 'C'])
-    expect(commandKeys('terminal.copySelection', false)).toEqual(['Ctrl', 'C'])
+    expect(commandKeys('terminal.copySelection')).toEqual(['Ctrl', 'C'])
   })
   it('unbound commands render without a chord suffix', () => {
-    expect(commandTooltip('Fit all', 'canvas.fitAll', true)).toBe('Fit all')
-    expect(commandKeys('canvas.fitAll', true)).toEqual([])
+    expect(commandTooltip('Fit all', 'canvas.fitAll')).toBe('Fit all')
+    expect(commandKeys('canvas.fitAll')).toEqual([])
   })
 })
 
@@ -62,56 +60,53 @@ describe('effectiveBindings / commandKeys / commandTooltip', () => {
 describe('the commit textarea matcher (scm.commit)', () => {
   const key = (over: Partial<ShortcutKeyEvent> = {}): ShortcutKeyEvent =>
     ({ metaKey: false, ctrlKey: false, shiftKey: false, altKey: false, key: 'Enter', ...over })
-  const commits = (e: ShortcutKeyEvent, useMetaPrimary: boolean) =>
-    effectiveBindings('scm.commit').some((s) => matchesShortcut(e, s, useMetaPrimary))
+  const commits = (e: ShortcutKeyEvent) =>
+    effectiveBindings('scm.commit').some((s) => matchesShortcut(e, s))
 
-  it('commits on the platform chord', () => {
-    expect(commits(key({ ctrlKey: true }), true)).toBe(true)
-    expect(commits(key({ ctrlKey: true }), false)).toBe(true)
+  it('commits on the Windows Control chord', () => {
+    expect(commits(key({ ctrlKey: true }))).toBe(true)
   })
-  it('no longer commits on the OTHER platform primary (the named D-strict losses)', () => {
-    expect(commits(key({ metaKey: true }), true)).toBe(false) // Windows Meta+Enter
-    expect(commits(key({ metaKey: true }), false)).toBe(false) // non-mac Meta+Enter
+  it('does not commit on Super or Meta', () => {
+    expect(commits(key({ metaKey: true }))).toBe(false)
   })
   it('no longer commits with an extra modifier held on top', () => {
-    expect(commits(key({ ctrlKey: true, shiftKey: true }), true)).toBe(false)
-    expect(commits(key({ ctrlKey: true, altKey: true }), true)).toBe(false)
+    expect(commits(key({ ctrlKey: true, shiftKey: true }))).toBe(false)
+    expect(commits(key({ ctrlKey: true, altKey: true }))).toBe(false)
   })
   it('follows a remap, so the key agrees with the placeholder chip', () => {
     setKb({ 'scm.commit': ['Ctrl+Shift+Enter'] })
-    expect(commits(key({ metaKey: true }), true)).toBe(false)
-    expect(commits(key({ ctrlKey: true, shiftKey: true }), true)).toBe(true)
-    expect(chipFor('scm.commit', true)).toBe('Ctrl+Shift+Enter')
+    expect(commits(key({ metaKey: true }))).toBe(false)
+    expect(commits(key({ ctrlKey: true, shiftKey: true }))).toBe(true)
+    expect(chipFor('scm.commit')).toBe('Ctrl+Shift+Enter')
   })
   it('is inert when unbound — the placeholder drops its chord for the same reason', () => {
     setKb({ 'scm.commit': [] })
-    expect(commits(key({ metaKey: true }), true)).toBe(false)
-    expect(chipFor('scm.commit', true)).toBe('')
+    expect(commits(key({ metaKey: true }))).toBe(false)
+    expect(chipFor('scm.commit')).toBe('')
   })
   it('plain Enter never commits (it types a newline)', () => {
-    expect(commits(key(), true)).toBe(false)
+    expect(commits(key())).toBe(false)
   })
 })
 
 describe('chipFor', () => {
-  it('renders the bare chord the way each platform spells it', () => {
-    expect(chipFor('app.commandPalette', true)).toBe('Ctrl+K')
-    expect(chipFor('app.commandPalette', false)).toBe('Ctrl+K')
+  it('renders the bare chord with Windows Control notation', () => {
+    expect(chipFor('app.commandPalette')).toBe('Ctrl+K')
   })
   it('follows a remap', () => {
     setKb({ 'app.commandPalette': ['Ctrl+Shift+P'] })
-    expect(chipFor('app.commandPalette', true)).toBe('Ctrl+Shift+P')
+    expect(chipFor('app.commandPalette')).toBe('Ctrl+Shift+P')
   })
   it('is empty for an unbound command, so callers can fall back', () => {
-    expect(chipFor('canvas.fitAll', true)).toBe('')
+    expect(chipFor('canvas.fitAll')).toBe('')
   })
 })
 
 describe('setKeybindingOverride', () => {
   it('set, disable, and reset shape the map correctly', () => {
-    setKeybindingOverride('node.newTerminal', ['Cmd+Shift+T'])
+    setKeybindingOverride('node.newTerminal', ['Ctrl+Shift+T'])
     expect(useSettings.getState().settings.keybindings).toEqual({
-      'node.newTerminal': ['Cmd+Shift+T']
+      'node.newTerminal': ['Ctrl+Shift+T']
     })
     setKeybindingOverride('canvas.undo', [])
     expect(useSettings.getState().settings.keybindings?.['canvas.undo']).toEqual([])
@@ -119,8 +114,8 @@ describe('setKeybindingOverride', () => {
     expect('node.newTerminal' in (useSettings.getState().settings.keybindings ?? {})).toBe(false)
   })
   it('mirrors speech.dictation into speech.shortcut, and reset restores the default mirror', () => {
-    setKeybindingOverride('speech.dictation', ['Cmd+Alt+D'])
-    expect(useSettings.getState().settings.speech.shortcut).toBe('Cmd+Alt+D')
+    setKeybindingOverride('speech.dictation', ['Ctrl+Alt+D'])
+    expect(useSettings.getState().settings.speech.shortcut).toBe('Ctrl+Alt+D')
     setKeybindingOverride('speech.dictation', null)
     expect(useSettings.getState().settings.speech.shortcut).toBe(DEFAULT_SETTINGS.speech.shortcut)
   })
@@ -188,8 +183,8 @@ describe('terminalShortcutPolicy / noteTerminalCapture', () => {
 
 describe('commandKeysFor / dictationBinding', () => {
   it('lists every effective binding', () => {
-    expect(commandKeysFor('canvas.deleteSelection', true)).toEqual([['Delete'], ['Backspace']])
-    expect(commandKeysFor('canvas.fitAll', true)).toEqual([])
+    expect(commandKeysFor('canvas.deleteSelection')).toEqual([['Delete'], ['Backspace']])
+    expect(commandKeysFor('canvas.fitAll')).toEqual([])
   })
   it('dictationBinding follows the override and reports disabled as empty', () => {
     expect(dictationBinding()).toBe('Ctrl+Alt')

@@ -19,8 +19,8 @@ export function isCanvasImageDropTarget(target: EventTarget | null, wrap: Elemen
  * on this disk and the node would ask the peer for that path, producing a node that can never
  * render. Refusing is not a limitation dressed up as a feature: a clear message is strictly better
  * than a broken node, and it is the same fact (`Project.remote`), read the same way, that already
- * gates Cmd+C's file copy. Routing the write to the peer instead is a real feature — it also needs
- * the Finder-drop shortcut bypassed, since a local OS path is just as unreadable over there — and
+ * gates Ctrl+C's file copy. Routing the write to the peer instead is a real feature; it also needs
+ * the File Explorer drop shortcut bypassed, since a local path is just as unreadable over there, and
  * no file write in this app crosses that boundary today.
  */
 export function canvasImportRefusal(projectIsRelay: boolean): string | null {
@@ -36,7 +36,7 @@ export interface CanvasImagePlacement {
 
 /**
  * Keyboard-opened UI must revoke a prior canvas click. Modifier keydown events are part of the
- * normal Cmd+V sequence, so only they and the actual paste chord preserve the armed state.
+ * normal Ctrl+V sequence, so only they and the actual paste chord preserve the armed state.
  */
 export function canvasImagePasteArmedAfterKey(
   armed: boolean,
@@ -46,7 +46,7 @@ export function canvasImagePasteArmedAfterKey(
   if (event.key === 'Meta' || event.key === 'Control' || event.key === 'Alt' || event.key === 'Shift') {
     return true
   }
-  return (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'v'
+  return event.ctrlKey && !event.metaKey && event.key.toLowerCase() === 'v'
 }
 
 /** Resolve image files asynchronously, but abandon them if their originating project changed. */

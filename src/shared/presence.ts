@@ -80,11 +80,11 @@ export type PeerDiff =
  *  `readonly`: color assignment is app-wide state, so no consumer may push/sort/assign into it. */
 export const PRESENCE_COLORS: readonly string[] = [
   '#5ac8fa', // blue
-  '#ff9f0a', // orange
-  '#30d158', // green
-  '#ff375f', // pink
-  '#bf5af2', // purple
-  '#ffd60a', // yellow
+  '#f7630c', // orange
+  '#107c10', // green
+  '#e3008c', // pink
+  '#8764b8', // purple
+  '#fce100', // yellow
   '#64d2ff', // cyan
   '#ff6b3d' // clay
 ]

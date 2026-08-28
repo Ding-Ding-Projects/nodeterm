@@ -11,7 +11,7 @@ import type { WorktreeListResult } from '../shared/worktree'
 export { SETUP_OUTPUT_CAP, SETUP_TIMEOUT_MS }
 
 /** Resolve a configured shell to an absolute path via the cached login-shell PATH (exec-path.ts) —
- *  a GUI process's inherited PATH misses Homebrew/nvm/etc, the same problem commit-message.ts's
+ *  a GUI process's inherited PATH misses user runtime directories, the same problem commit-message.ts's
  *  `resolveBinary` solves for commit agents. An explicit path (contains a separator) is used as-is;
  *  an unresolvable bare name is handed to `spawn` unchanged so ITS own PATH search gets a chance
  *  (and a genuine ENOENT still surfaces cleanly through the runner's `error` handling below). */

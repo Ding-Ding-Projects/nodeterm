@@ -219,7 +219,7 @@ describe('clearUnread — cross-surface ack vs. external (host-driven) clear', (
     const { store } = createAgentStatusSession(undefined, (id) => acked.push(id))
     const id = 'nt-watched'
     // Watching the node when it finished means markUnread was skipped, so opening it is the only
-    // read signal there will ever be. Without this ack the notch blob / phone activity kept glowing.
+    // read signal there will ever be. Without this ack the Agent HUD indicator / phone activity kept glowing.
     store.getState().setState(id, 'done', 'claude')
     store.getState().clearUnread(id)
     expect(acked).toEqual(['nt-watched'])

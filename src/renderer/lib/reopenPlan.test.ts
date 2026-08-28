@@ -8,12 +8,12 @@ const snap = (over: Partial<ReopenNodeSnapshot> = {}): ReopenNodeSnapshot => ({
   type: 'sticky',
   position: { x: 0, y: 0 },
   absolutePosition: { x: 0, y: 0 },
-  data: { title: 'Note', color: '#ffd60a', group: null },
+  data: { title: 'Note', color: '#fce100', group: null },
   ...over
 })
 
 const node = (id: string): CanvasNode =>
-  ({ id, type: 'sticky', position: { x: 0, y: 0 }, data: { title: 'Note', color: '#ffd60a', group: null } }) as CanvasNode
+  ({ id, type: 'sticky', position: { x: 0, y: 0 }, data: { title: 'Note', color: '#fce100', group: null } }) as CanvasNode
 
 /** A `recreate` stand-in that always succeeds, tagging each output node with a counter so a
  *  multi-node batch is distinguishable in assertions. */

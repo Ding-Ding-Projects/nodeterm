@@ -28,7 +28,7 @@ export interface Command {
 interface CommandPaletteProps {
   commands: Command[]
   onClose: () => void
-  /** Prepared file index for the active project (⌘K file search). */
+  /** Prepared file index for the active project (Ctrl+K file search). */
   fileIndex?: QuickOpenIndexedFile[]
   /** Open a file result by its root-relative path. */
   onOpenFile?: (relPath: string) => void
@@ -53,7 +53,7 @@ function matches(label: string, q: string): boolean {
   return true
 }
 
-/** Cmd/Ctrl+K command palette: fuzzy-filter actions and jump targets, Enter to run. */
+/** Ctrl+K command palette: fuzzy-filter actions and jump targets, Enter to run. */
 export function CommandPalette({
   commands,
   onClose,
@@ -126,7 +126,7 @@ export function CommandPalette({
             } else if (e.key === 'ArrowUp') {
               e.preventDefault()
               setActive((a) => Math.max(a - 1, 0))
-            } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            } else if (e.key === 'Enter' && e.ctrlKey && !e.metaKey) {
               e.preventDefault()
               const c = items[active]
               if (c?.onSecondary) {

@@ -105,8 +105,8 @@ describe('boardLogEvents', () => {
 })
 
 describe('card meta events', () => {
-  const enes = { name: 'enes', color: '#0a84ff' }
-  const mehmet = { name: 'mehmet', color: '#bf5af2' }
+  const enes = { name: 'enes', color: '#0078d4' }
+  const mehmet = { name: 'mehmet', color: '#8764b8' }
   const titles = (id: string) => (id === 'dead' ? '' : 'card ' + id)
   const base = () => board([col('c1', 'To Do')], [])
   it('assigning and unassigning members emit per-person events', () => {

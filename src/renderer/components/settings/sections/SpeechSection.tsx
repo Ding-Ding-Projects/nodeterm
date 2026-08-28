@@ -242,8 +242,8 @@ export function SpeechSection({
             dictationChord === ''
               ? 'Currently disabled.'
               : isHoldChord(dictationChord)
-                ? `Currently hold-to-talk: hold ${formatShortcut(dictationChord, false)}.`
-                : `Currently toggle: press ${formatShortcut(dictationChord, false)}.`
+                ? `Currently hold-to-talk: hold ${formatShortcut(dictationChord)}.`
+                : `Currently toggle: press ${formatShortcut(dictationChord)}.`
           }
           control={
             <Button variant="ghost" onClick={() => onNavigate('shortcuts')}>
@@ -317,7 +317,7 @@ export function SpeechSection({
                           {downloading ? ` · downloading ${pct}%` : ''}
                         </p>
                         {rowError[m.id] ? (
-                          <p className="text-[12px]" style={{ color: '#ff9f0a' }}>
+                          <p className="text-[12px]" style={{ color: '#f7630c' }}>
                             {rowError[m.id]}
                           </p>
                         ) : null}

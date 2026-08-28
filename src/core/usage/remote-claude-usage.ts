@@ -89,9 +89,8 @@ export function remoteUsageTargets(
  *
  * The two file paths mirror `usageCredsPaths`' file leg, rooted at the REMOTE `$HOME`: a managed
  * account keeps both under its config dir (`remoteAccountConfigDir`), the system account splits
- * them (`~/.claude/.credentials.json` + `~/.claude.json`). There is no keychain leg — a remote
- * host is a Linux server in practice, and prompting a headless macOS host's Keychain over ssh
- * would hang rather than answer.
+ * them (`~/.claude/.credentials.json` + `~/.claude.json`). There is no local credential-vault leg
+ * because the remote Linux host is read through files over SSH.
  *
  * The account id is re-validated here even though the caller already filtered on it: this is an
  * interpolation into a remote shell command, and the type system is compile-time only.

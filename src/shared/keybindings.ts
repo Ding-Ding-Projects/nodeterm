@@ -2,9 +2,8 @@
  * The keybinding registry + engine, shared by main, renderer, and the Server Edition bridge.
  * Registry, validation, effective-binding resolution, conflict detection, override
  * sanitization, and the pure event→command resolver all live in this one module so the
- * dispatchers, Settings UI, and ShortcutsPanel cannot drift apart. Builds on shortcut.ts —
- * canonical binding strings are shortcut.ts strings (`Cmd` = abstract primary modifier,
- * `Ctrl` = literal Control, modifier-only chords = hold-to-talk).
+ * dispatchers, Settings UI, and ShortcutsPanel cannot drift apart. Canonical binding strings use
+ * Control, with modifier-only chords representing hold-to-talk.
  */
 import { AGENT_CONFIG } from './agents/config'
 import {
@@ -87,106 +86,100 @@ export type CommandId =
   | 'scm.commit'
   | 'speech.dictation'
 
-/** Convert the historical primary-modifier spelling into explicit Windows bindings. */
-const both = (...bindings: string[]): readonly string[] =>
-  bindings.map((binding) => binding.replaceAll('Cmd', 'Ctrl'))
-
 export const COMMAND_DEFINITIONS: readonly CommandDefinition[] = [
   // General — the Canvas.tsx:4491 block today; fires while an xterm has focus, and (bug,
   // fixed in the dispatch PR) also while typing. allowWhileTyping is deliberately absent.
   { id: 'app.commandPalette', title: 'Command palette', group: 'General', scope: 'app',
-    defaultBindings: both('Cmd+K'), allowInTerminal: true },
+    defaultBindings: ['Ctrl+K'], allowInTerminal: true },
   { id: 'app.settings', title: 'Open settings', group: 'General', scope: 'app',
-    defaultBindings: both('Cmd+Comma'), allowInTerminal: true },
+    defaultBindings: ['Ctrl+Comma'], allowInTerminal: true },
   { id: 'app.shortcutsPanel', title: 'Keyboard shortcuts panel', group: 'General', scope: 'app',
-    defaultBindings: both('Cmd+Slash'), allowInTerminal: true },
+    defaultBindings: ['Ctrl+Slash'], allowInTerminal: true },
   { id: 'view.kanbanToggle', title: 'Toggle kanban board', group: 'General', scope: 'app',
-    defaultBindings: both('Cmd+Shift+B'), allowInTerminal: true },
+    defaultBindings: ['Ctrl+Shift+B'], allowInTerminal: true },
   // Focus mode fills the window with one node — most naturally invoked from INSIDE the terminal
   // being enlarged, hence allowInTerminal. Scope stays 'canvas': over the kanban board or while
   // typing in an input there is no node geometry for the toggle to act on (the pre-registry
   // hardcoded chord fired in both places; the registry gating is the fix, not a regression).
   { id: 'view.focusMode', title: 'Toggle focus mode', group: 'General', scope: 'canvas',
-    defaultBindings: both('Cmd+Shift+F'), allowInTerminal: true },
+    defaultBindings: ['Ctrl+Shift+F'], allowInTerminal: true },
   { id: 'panel.explorer', title: 'Toggle explorer panel', group: 'General', scope: 'app',
-    defaultBindings: both('Cmd+Shift+E'), allowInTerminal: true },
+    defaultBindings: ['Ctrl+Shift+E'], allowInTerminal: true },
   { id: 'panel.sourceControl', title: 'Toggle source control panel', group: 'General', scope: 'app',
-    defaultBindings: both('Cmd+Shift+G'), allowInTerminal: true },
+    defaultBindings: ['Ctrl+Shift+G'], allowInTerminal: true },
   { id: 'panel.sessions', title: 'Pin sessions sidebar', group: 'General', scope: 'app',
-    defaultBindings: both('Cmd+Shift+L'), allowInTerminal: true },
+    defaultBindings: ['Ctrl+Shift+L'], allowInTerminal: true },
   { id: 'app.reopenLastClosed', title: 'Reopen last closed', group: 'General', scope: 'app',
-    defaultBindings: both('Cmd+Shift+T'), allowInTerminal: true },
+    defaultBindings: ['Ctrl+Shift+T'], allowInTerminal: true },
 
   // Canvas — inert while the kanban board is open (scope 'canvas'), blocked while typing.
   { id: 'canvas.undo', title: 'Undo', group: 'Canvas', scope: 'canvas',
-    defaultBindings: both('Cmd+Z') },
+    defaultBindings: ['Ctrl+Z'] },
   { id: 'canvas.redo', title: 'Redo', group: 'Canvas', scope: 'canvas',
     defaultBindings: ['Ctrl+Shift+Z', 'Ctrl+Y'] },
   // Camera history (breadcrumb trail), not node-array history: `[` / `]` are the literal keys
   // `e.key` reports, which is what the resolver compares against — `BracketLeft`/`BracketRight`
   // are `KeyboardEvent.code` values and would never match (shortcut.ts's KEY_ALIASES covers only
-  // Comma/Slash/Period, so brackets have no word-form spelling here). Off-mac the binding is
-  // Ctrl+[, which terminals read as ESC — safe here because scope 'canvas' without
+  // Comma/Slash/Period, so brackets have no word-form spelling here). Ctrl+[ is safe because
+  // terminals read it as ESC while scope 'canvas' without
   // allowWhileTyping means the resolver refuses it whenever a terminal or input has focus.
   { id: 'canvas.goBack', title: 'Go back', group: 'Canvas', scope: 'canvas',
-    defaultBindings: both('Cmd+[') },
+    defaultBindings: ['Ctrl+['] },
   { id: 'canvas.goForward', title: 'Go forward', group: 'Canvas', scope: 'canvas',
-    defaultBindings: both('Cmd+]') },
+    defaultBindings: ['Ctrl+]'] },
   { id: 'canvas.deleteSelection', title: 'Delete selection', group: 'Canvas', scope: 'canvas',
     // Mirrors the current platform-blind handler; the typing guard keeps Backspace safe.
-    defaultBindings: both('Delete', 'Backspace'),
+    defaultBindings: ['Delete', 'Backspace'],
     allowBareKey: true },
   { id: 'canvas.fitAll', title: 'Fit all nodes in view', group: 'Canvas', scope: 'canvas',
-    defaultBindings: both() },
+    defaultBindings: [] },
   { id: 'canvas.tidy', title: 'Tidy canvas', group: 'Canvas', scope: 'canvas',
-    // arrangeAllNodes self-guards (kanban open, <2 top-level nodes), same as the ⌘K/menu entries.
-    defaultBindings: both('Cmd+Shift+A') },
+    // arrangeAllNodes self-guards (kanban open, fewer than two top-level nodes).
+    defaultBindings: ['Ctrl+Shift+A'] },
   { id: 'canvas.groupSelection', title: 'Group selection', group: 'Canvas', scope: 'canvas',
-    defaultBindings: both() },
+    defaultBindings: [] },
 
   // Nodes
   { id: 'node.newTerminal', title: 'New terminal node', group: 'Nodes', scope: 'canvas',
-    defaultBindings: both('Cmd+T') },
+    defaultBindings: ['Ctrl+T'] },
   { id: 'node.newAgent', title: 'New agent node', group: 'Nodes', scope: 'canvas',
-    // Non-mac note: Ctrl+Shift+C is a common terminal-copy convention; kept for parity
-    // with current behavior, revisit with telemetry.
-    defaultBindings: both('Cmd+Shift+C') },
+    // Ctrl+Shift+C is a common terminal-copy convention; keep it for current behavior.
+    defaultBindings: ['Ctrl+Shift+C'] },
   // Every command below ships UNBOUND on purpose: they expand the remappable POOL, and a chord
   // nobody asked for would either shadow an existing default or steal a key from the terminal.
   // The user assigns them in Settings → Keyboard Shortcuts; titles come from AGENT_CONFIG so a
   // relabelled agent cannot drift from its row.
   { id: 'node.newAgent.claude', title: `New ${AGENT_CONFIG.claude.label} node`, group: 'Nodes',
-    scope: 'canvas', defaultBindings: both() },
+    scope: 'canvas', defaultBindings: [] },
   { id: 'node.newAgent.codex', title: `New ${AGENT_CONFIG.codex.label} node`, group: 'Nodes',
-    scope: 'canvas', defaultBindings: both() },
+    scope: 'canvas', defaultBindings: [] },
   { id: 'node.newAgent.gemini', title: `New ${AGENT_CONFIG.gemini.label} node`, group: 'Nodes',
-    scope: 'canvas', defaultBindings: both() },
+    scope: 'canvas', defaultBindings: [] },
   { id: 'node.newAgent.opencode', title: `New ${AGENT_CONFIG.opencode.label} node`, group: 'Nodes',
-    scope: 'canvas', defaultBindings: both() },
+    scope: 'canvas', defaultBindings: [] },
   { id: 'node.newAgent.grok', title: `New ${AGENT_CONFIG.grok.label} node`, group: 'Nodes',
-    scope: 'canvas', defaultBindings: both() },
+    scope: 'canvas', defaultBindings: [] },
   { id: 'node.newAgent.copilot', title: `New ${AGENT_CONFIG.copilot.label} node`, group: 'Nodes',
-    scope: 'canvas', defaultBindings: both() },
+    scope: 'canvas', defaultBindings: [] },
   { id: 'node.newSticky', title: 'New sticky note', group: 'Nodes', scope: 'canvas',
-    defaultBindings: both() },
+    defaultBindings: [] },
   { id: 'node.newBrowser', title: 'New browser node', group: 'Nodes', scope: 'canvas',
-    defaultBindings: both() },
+    defaultBindings: [] },
   { id: 'node.newWebView', title: 'New web view node', group: 'Nodes', scope: 'canvas',
-    defaultBindings: both() },
+    defaultBindings: [] },
   { id: 'node.newDino', title: 'New dino node', group: 'Nodes', scope: 'canvas',
-    defaultBindings: both() },
+    defaultBindings: [] },
   { id: 'node.newFile', title: 'New file…', group: 'Nodes', scope: 'canvas',
-    defaultBindings: both() },
+    defaultBindings: [] },
 
   // Directional focus, the multiplexer gesture (Ghostty goto_split, tmux select-pane -L). Two
   // flags carry the whole point: scope 'canvas' because there is no geometry to walk on the
   // board, and allowInTerminal because the hand that wants to move is already typing in a
   // terminal — without it the gesture only works from the one place you don't need it.
   //
-  // The non-mac default is NOT Ctrl+Arrow (what `both('Cmd+ArrowLeft')` would resolve to):
-  // Ctrl+Arrow is readline's word-jump, and allowInTerminal would steal it from every shell on
-  // Linux and Windows. Ctrl+Alt+Arrow is out for a different reason — the speech.dictation
-  // default is the modifier-only chord 'Cmd+Alt', which on those platforms is Ctrl+Alt held, so
+  // The default is not Ctrl+Arrow because that is readline's word jump, and allowInTerminal would
+  // steal it from every Windows shell. Ctrl+Alt+Arrow is out because the speech.dictation default
+  // is the modifier-only chord Ctrl+Alt, so
   // the hold listener would start recording on the way to an arrow. Ctrl+Shift+Arrow is what is
   // left that no shell and no other command already owns.
   { id: 'node.focusLeft', title: 'Focus node to the left', group: 'Nodes', scope: 'canvas',
@@ -204,15 +197,13 @@ export const COMMAND_DEFINITIONS: readonly CommandDefinition[] = [
   // The header maximize toggle's chord (issue #399): fill the viewport with the node under the
   // keyboard (else the single selected node), or restore it. allowInTerminal for focus-mode's
   // reason — the hand that wants more rows is already typing in the terminal being enlarged.
-  // ⌘⇧Enter is iTerm2's maximize-pane chord — the same gesture terminal users already know —
-  // and collides with nothing here (scm.commit's ⌘Enter is a different chord, scm scope).
+  // Ctrl+Shift+Enter follows the established terminal maximize gesture and does not collide with
+  // the source-control commit chord, which has a separate scope.
   { id: 'node.maximize', title: 'Maximize / restore node', group: 'Nodes', scope: 'canvas',
-    defaultBindings: both('Cmd+Shift+Enter'), allowInTerminal: true },
+    defaultBindings: ['Ctrl+Shift+Enter'], allowInTerminal: true },
   // Zone snap (issue #394 v1): send the node under the keyboard (else the single selected one)
-  // into a half of the visible canvas — the Rectangle/Magnet ⌃⌥arrow idiom, which is why the mac
-  // default is Ctrl+Alt (literal Control, not Cmd). Off-mac the halves ship UNBOUND: Ctrl+Alt+Arrow
-  // would trip the speech.dictation hold chord there ('Cmd+Alt' resolves to Ctrl+Alt held — the
-  // exact trap the node.focus* comment documents), and Ctrl+Shift+Arrow is those focus commands.
+  // into a half of the visible canvas. The halves ship unbound because Ctrl+Alt+Arrow would trip
+  // the Ctrl+Alt speech.dictation hold chord, and Ctrl+Shift+Arrow belongs to focus navigation.
   // Quarters and thirds have no commands — the node context menu's "Snap to zone" carries them.
   { id: 'node.zoneLeft', title: 'Snap node to left half', group: 'Nodes', scope: 'canvas',
     defaultBindings: [], allowInTerminal: true },
@@ -224,25 +215,25 @@ export const COMMAND_DEFINITIONS: readonly CommandDefinition[] = [
     defaultBindings: [], allowInTerminal: true },
   // Main-process intercepted today (unconditional): keep firing everywhere.
   { id: 'node.close', title: 'Close node / window', group: 'Nodes', scope: 'app',
-    defaultBindings: both('Cmd+W'), allowInTerminal: true, allowWhileTyping: true },
+    defaultBindings: ['Ctrl+W'], allowInTerminal: true, allowWhileTyping: true },
   { id: 'node.toggleMarkdown', title: 'Toggle markdown view', group: 'Nodes', scope: 'app',
-    defaultBindings: both('Cmd+M'), allowInTerminal: true, allowWhileTyping: true },
+    defaultBindings: ['Ctrl+M'], allowInTerminal: true, allowWhileTyping: true },
 
   // Terminal
   { id: 'terminal.find', title: 'Find in terminal', group: 'Terminal', scope: 'terminal',
-    defaultBindings: both('Cmd+F') },
+    defaultBindings: ['Ctrl+F'] },
   { id: 'terminal.copySelection', title: 'Copy terminal selection', group: 'Terminal',
     scope: 'terminal',
-    // Plain Ctrl+C stays SIGINT off-mac; Cmd+Shift+C resolves to Ctrl+Shift+C there.
+    // Plain Ctrl+C stays SIGINT; Ctrl+Shift+C and Ctrl+Insert copy the selection.
     defaultBindings: ['Ctrl+C', 'Ctrl+Shift+C', 'Ctrl+Insert'] },
 
   // Source control (local handler; registry supplies label + remap)
   { id: 'scm.commit', title: 'Commit', group: 'Source Control', scope: 'scm',
-    defaultBindings: both('Cmd+Enter'), allowWhileTyping: true },
+    defaultBindings: ['Ctrl+Enter'], allowWhileTyping: true },
 
   // Speech — the migrated dictation chord; hold-to-talk by default.
   { id: 'speech.dictation', title: 'Dictate', group: 'Speech', scope: 'app',
-    defaultBindings: both('Cmd+Alt'),
+    defaultBindings: ['Ctrl+Alt'],
     allowHoldChord: true, allowInTerminal: true, allowWhileTyping: true }
 ]
 
@@ -268,25 +259,21 @@ export type NormalizedBinding = { ok: true; value: string } | { ok: false; error
  *  test), Settings-recorder captures, and hand-edited settings.json overrides. */
 export function normalizeBindingForCommand(
   def: CommandDefinition,
-  raw: string,
-  useMetaPrimary: boolean
+  raw: string
 ): NormalizedBinding {
   const p = parseShortcut(raw)
-  const hasAnyToken = p.cmd || p.ctrl || p.alt || p.shift || p.key !== null
+  const hasAnyToken = p.ctrl || p.alt || p.shift || p.key !== null
   if (!hasAnyToken) return { ok: false, error: 'Use a shortcut like Ctrl+K or Ctrl+Shift+P.' }
-  if (p.cmd && p.ctrl) {
-    return { ok: false, error: 'Use Ctrl instead of combining legacy primary and Control modifiers.' }
-  }
   if (p.key === null) {
     if (!def.allowHoldChord) {
       return { ok: false, error: 'This command needs a key, not a modifier-only chord.' }
     }
-    if (!p.cmd && !p.ctrl && !p.alt) {
+    if (!p.ctrl && !p.alt) {
       return { ok: false, error: 'A hold chord needs at least one non-shift modifier.' }
     }
     return { ok: true, value: serializeShortcut(p) }
   }
-  const hasStrongModifier = p.cmd || p.ctrl || p.alt
+  const hasStrongModifier = p.ctrl || p.alt
   if (!hasStrongModifier) {
     if (p.shift) return { ok: false, error: 'Shift-only shortcuts would steal typed text.' }
     if (!def.allowBareKey || !SAFE_BARE_KEYS.has(p.key)) {
@@ -302,8 +289,7 @@ export type KeybindingOverrides = Partial<Record<CommandId, readonly string[]>>
 
 export function getEffectiveBindings(
   id: CommandId,
-  overrides: KeybindingOverrides,
-  useMetaPrimary: boolean
+  overrides: KeybindingOverrides
 ): readonly string[] {
   const override = overrides[id]
   if (override !== undefined) return override
@@ -312,14 +298,12 @@ export function getEffectiveBindings(
   return def.defaultBindings
 }
 
-/** Platform-resolved identity: two spellings that press the same physical modifiers + key get
- *  the same identity (`Cmd+K` === `Ctrl+K` on non-mac, but not on mac). The key segment runs
- *  through `serializeShortcut` so ALIAS spellings collapse too (`Cmd+Esc` === `Cmd+Escape`,
- *  `Cmd+Return` === `Cmd+Enter`) — without that a hand-edited `Cmd+Return` override would sit
- *  invisibly on top of the `Cmd+Enter` default. */
-export function bindingIdentity(binding: string, useMetaPrimary: boolean): string {
+/** Windows identity for the physical modifiers and key. The key segment runs through
+ *  `serializeShortcut` so alias spellings collapse too: `Ctrl+Esc` equals `Ctrl+Escape`, and
+ *  `Ctrl+Return` equals `Ctrl+Enter`. */
+export function bindingIdentity(binding: string): string {
   const p = parseShortcut(binding)
-  const m = resolvedModifiers(p, false)
+  const m = resolvedModifiers(p)
   return [
     m.meta ? 'M' : '',
     m.ctrl ? 'C' : '',
@@ -328,7 +312,7 @@ export function bindingIdentity(binding: string, useMetaPrimary: boolean): strin
     ':',
     p.key === null
       ? '(hold)'
-      : serializeShortcut({ cmd: false, ctrl: false, alt: false, shift: false, key: p.key })
+      : serializeShortcut({ ctrl: false, alt: false, shift: false, key: p.key })
   ].join('')
 }
 
@@ -356,7 +340,7 @@ export function bindingIdentity(binding: string, useMetaPrimary: boolean): strin
  *  this closes. The Settings UI REFUSES to create one (`commitCandidate`'s two dictation gates),
  *  because a user picking a chord interactively should be told about the precedence rather than
  *  discover it later. One case the permissive load path cannot rescue: a keyed dictation override
- *  on a MAIN-INTERCEPTED chord (⌘W / ⌘M) wins NOWHERE — main steals those in `before-input-event`
+ *  on a main-intercepted chord (Ctrl+W / Ctrl+M) wins nowhere because main consumes it in `before-input-event`
  *  before the page exists, so such a hand-edit survives sanitization as a permanently dead chord.
  *  The UI can never create it (`commitCandidate`'s reverse-shadow gate refuses it one step earlier
  *  than the dictation gates). */
@@ -380,15 +364,14 @@ export interface KeybindingConflict {
  *  stock bindings). */
 export function findKeybindingConflicts(
   overrides: KeybindingOverrides,
-  useMetaPrimary: boolean,
   opts: { includeDefaults?: boolean } = {}
 ): KeybindingConflict[] {
   const byBucketAndIdentity = new Map<string, { binding: string; ids: Set<CommandId> }>()
   for (const def of COMMAND_DEFINITIONS) {
-    for (const binding of getEffectiveBindings(def.id, overrides, useMetaPrimary)) {
-      const key = `${conflictBucket(def)} ${bindingIdentity(binding, useMetaPrimary)}`
+    for (const binding of getEffectiveBindings(def.id, overrides)) {
+      const key = `${conflictBucket(def)} ${bindingIdentity(binding)}`
       const entry = byBucketAndIdentity.get(key) ?? {
-        // Canonicalized, so a hand-edited `cmd+k` override is reported as `Cmd+K`.
+        // Canonicalized, so a hand-edited `ctrl+k` override is reported as `Ctrl+K`.
         binding: serializeShortcut(parseShortcut(binding)),
         ids: new Set<CommandId>()
       }
@@ -420,16 +403,15 @@ export const MAIN_INTERCEPTED_COMMAND_IDS: readonly CommandId[] = [
 export function findMainInterceptShadowing(
   id: CommandId,
   candidate: string,
-  overrides: KeybindingOverrides,
-  useMetaPrimary: boolean
+  overrides: KeybindingOverrides
 ): CommandId[] {
   if (!MAIN_INTERCEPTED_COMMAND_IDS.includes(id)) return []
-  const target = bindingIdentity(candidate, useMetaPrimary)
+  const target = bindingIdentity(candidate)
   const hits: CommandId[] = []
   for (const def of COMMAND_DEFINITIONS) {
     if (def.id === id) continue
-    for (const binding of getEffectiveBindings(def.id, overrides, useMetaPrimary)) {
-      if (bindingIdentity(binding, useMetaPrimary) === target) {
+    for (const binding of getEffectiveBindings(def.id, overrides)) {
+      if (bindingIdentity(binding) === target) {
         hits.push(def.id)
         break
       }
@@ -446,8 +428,7 @@ export function findMainInterceptShadowing(
  *  `normalizeBindingForCommand` (inside its recorder) and `findKeybindingConflicts` directly, per
  *  candidate binding: same detector, different surfacing (design.md D3). */
 export function sanitizeKeybindingOverrides(
-  raw: unknown,
-  useMetaPrimary: boolean
+  raw: unknown
 ): { overrides: KeybindingOverrides; warnings: string[] } {
   const warnings: string[] = []
   const overrides: Partial<Record<CommandId, string[]>> = {}
@@ -467,7 +448,7 @@ export function sanitizeKeybindingOverrides(
     const def = COMMANDS_BY_ID.get(id)!
     const normalized: string[] = []
     for (const s of value as string[]) {
-      const r = normalizeBindingForCommand(def, s, useMetaPrimary)
+      const r = normalizeBindingForCommand(def, s)
       if (r.ok) {
         if (!normalized.includes(r.value)) normalized.push(r.value)
       } else {
@@ -490,7 +471,7 @@ export function sanitizeKeybindingOverrides(
   // the map. A default-vs-default conflict has no deletable participant, so it would be reported
   // forever and the loop would spin.
   for (;;) {
-    const conflicts = findKeybindingConflicts(overrides, useMetaPrimary)
+    const conflicts = findKeybindingConflicts(overrides)
     if (conflicts.length === 0) break
     for (const conflict of conflicts) {
       const titles = conflict.commandIds
@@ -507,7 +488,7 @@ export function sanitizeKeybindingOverrides(
 
 /** Who wins while an xterm has focus. 'app-first' (default): allowInTerminal app commands still
  *  fire (today's behavior). 'terminal-first': ONLY scope:'terminal' commands fire; everything
- *  else — allowInTerminal app commands, the main-intercepted ⌘W/⌘M, the registry-less gestures —
+ *  else, including Ctrl+W, Ctrl+M, and registry-less gestures,
  *  reaches the PTY. NOTE: the naive reading "terminal-first = the existing allowInTerminal gate"
  *  is vacuous here — that gate IS app-first; this flag tightens past it. */
 export type TerminalShortcutPolicy = 'app-first' | 'terminal-first'
@@ -539,8 +520,7 @@ export interface KeyDispatchContext {
 export function resolveCommandForKeyEvent(
   e: ShortcutKeyEvent,
   ctx: KeyDispatchContext,
-  overrides: KeybindingOverrides,
-  useMetaPrimary: boolean
+  overrides: KeybindingOverrides
 ): CommandId | null {
   for (const def of COMMAND_DEFINITIONS) {
     // scm commands dispatch from their own focused composer (local onKeyDown), never from
@@ -552,7 +532,7 @@ export function resolveCommandForKeyEvent(
     // row here is display-only, for ShortcutsPanel and the Settings section. A hand-edited KEYED
     // override would otherwise RESOLVE, find no handler, and spend the chord: the dispatcher's
     // claim protocol stops a resolved command from reaching the trailing gestures, so
-    // `{"speech.dictation": ["Cmd+0"]}` would silently kill zoom-to-100%.
+    // `{"speech.dictation": ["Ctrl+0"]}` would silently kill zoom-to-100%.
     if (def.id === 'speech.dictation') continue
     if (ctx.typing && !def.allowWhileTyping) continue
     if (ctx.terminal) {
@@ -560,13 +540,13 @@ export function resolveCommandForKeyEvent(
     }
     if (!ctx.terminal && def.scope === 'terminal') continue
     if (ctx.kanbanOpen && def.scope === 'canvas') continue
-    for (const binding of getEffectiveBindings(def.id, overrides, useMetaPrimary)) {
+    for (const binding of getEffectiveBindings(def.id, overrides)) {
       // Hold chords belong to the dedicated hold listener, and this skip STATES that contract
       // rather than relying on it being unreachable: `matchesShortcut` also refuses a key-null
       // chord today (`parsed.key !== null`), so removing this line changes nothing — until the
       // day it does.
       if (isHoldChord(binding)) continue
-      if (matchesShortcut(e, binding, false)) return def.id
+      if (matchesShortcut(e, binding)) return def.id
     }
   }
   return null

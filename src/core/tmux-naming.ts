@@ -271,14 +271,14 @@ export function localPasteDelivery(
  * The framed-plan trio delivered the agent-messaging envelope as a payload that CARRIED its own
  * `ESC[200~ … ESC[201~ \r` frame, pasted with `paste-buffer -r` and no `-p` ("tmux must not
  * re-frame bytes that already carry their frame") and no separate Enter ("text and submit are one
- * write"). Both premises died with tmux 3.7 (issue #453, measured on 3.7b — the version the macOS
- * app bundles): `paste-buffer` now passes the buffer content through vis(3)
+ * write"). Both premises changed with tmux 3.7 (issue #453, measured on 3.7b): `paste-buffer` now
+ * passes the buffer content through vis(3)
  * (`utf8_stravisx(VIS_SAFE|VIS_NOSLASH)`, CHANGES: "Pass paste buffer through vis(3) when
  * pasting…"), which rewrites every ESC byte into the printable pair `^[` — so the hand-rolled
  * frame arrived as LITERAL TEXT (`^[[200~…^[[201~`) in the target's composer, and the `\r` riding
  * inside the now-frameless burst was absorbed as pasted content instead of a submit. On tmux ≤ 3.6
  * the same bytes passed through verbatim and worked, which is why every Linux CI run stayed green
- * while the bundled-tmux macOS build was broken.
+ * while the old bundled runtime path was broken.
  *
  * The envelope now rides the SAME plan as every other write (`localPasteDelivery` above, enter
  * always true — see `PtyManager.sendEnvelope`): tmux inserts the frame from the pane's real

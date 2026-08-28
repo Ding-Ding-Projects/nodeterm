@@ -276,7 +276,7 @@ describe('SessionMemoryPanel', () => {
     // sessionMemory api is the ws-bridge stub: a permanent `ok:false`. That is the honest STUB
     // value and the wrong user-facing story — there is nothing to retry.
     useProjects.setState({
-      projects: [project({ id: 'r1', name: 'Mac', remote: true })],
+      projects: [project({ id: 'r1', name: 'PC', remote: true })],
       activeProjectId: 'r1'
     })
     mount({ ok: false, rows: [], loadedScope: null })

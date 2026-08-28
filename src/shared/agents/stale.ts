@@ -2,11 +2,11 @@
 //
 // A session leaves `working` only when something says so — and some exits say nothing at all: Esc
 // during a tool call (Claude's Stop hook never runs), a killed CLI, a slept machine, a dropped SSH.
-// Whatever is watching then shows a session working forever: the node badge's RUNNING, the notch
-// capsule's walking mascot, and — worst, because it sits on a Lock Screen you aren't looking at —
+// Whatever is watching then shows a session working forever: the node badge's RUNNING state, the
+// Agent HUD mascot, and the phone activity on a Lock Screen the user may not be watching.
 // the phone's Live Activity.
 //
-// Each surface used to invent its own timeout (30 min in the renderer store, 20 in the notch, none
+// Each surface used to invent its own timeout (30 min in the renderer store, 20 in the Agent HUD, none
 // at all on the phone). This module is the single number, and `core/agent-status-mirror.ts` is the
 // single DECIDER: its sweep fires one synthetic end edge per stale node, which every consumer of
 // `onNodeStateChange` already knows how to handle.

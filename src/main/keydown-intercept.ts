@@ -49,10 +49,10 @@ export interface KeydownInterceptBindings {
 export function resolveInterceptBindings(
   rawOverrides: unknown
 ): KeydownInterceptBindings {
-  const { overrides } = sanitizeKeybindingOverrides(rawOverrides, false)
+  const { overrides } = sanitizeKeybindingOverrides(rawOverrides)
   return {
-    closeNode: getEffectiveBindings('node.close', overrides, false),
-    toggleMarkdown: getEffectiveBindings('node.toggleMarkdown', overrides, false)
+    closeNode: getEffectiveBindings('node.close', overrides),
+    toggleMarkdown: getEffectiveBindings('node.toggleMarkdown', overrides)
   }
 }
 
@@ -81,19 +81,18 @@ export function keydownIntercept(
   if (input.type !== 'keyDown') return null
   // Match the user's effective Control-first bindings exactly, including every modifier flag.
   const ev = toShortcutEvent(input)
-  if (bindings.toggleMarkdown.some((s) => matchesShortcut(ev, s, false))) {
+  if (bindings.toggleMarkdown.some((s) => matchesShortcut(ev, s))) {
     return { action: 'toggle-markdown' }
   }
   // Ctrl+W closes selected nodes; with none selected, the renderer asks main to close the window.
-  if (bindings.closeNode.some((s) => matchesShortcut(ev, s, false))) {
+  if (bindings.closeNode.some((s) => matchesShortcut(ev, s))) {
     return { action: 'close-node' }
   }
   // NOT remappable: this is the renderer's `zoomShortcutChord` half of a canvas gesture, not a
   // registry command. Matched on the physical `code`, like that half: on a non-US layout the zero
   // key's `key` is not necessarily "0". Alt is excluded because AltGr reports as ctrl+alt and must
-  // keep typing a real character; `meta || control` is the primary-modifier test it used to
-  // inherit from the shared guard, and without it every bare `0` in the app is swallowed (#193).
-  if (input.code === 'Digit0' && (input.meta || input.control) && !input.shift && !input.alt) {
+  // keep typing a real character. Control is required so every bare `0` remains untouched (#193).
+  if (input.code === 'Digit0' && input.control && !input.meta && !input.shift && !input.alt) {
     // Auto-repeat is dropped here rather than in the renderer, so a held chord cannot restart the
     // 200ms zoom tween — the same rule `zoomShortcutChord` applies to the keydown path. Still
     // claimed, so held Ctrl+0 does not fall through to page zoom on repeats.

@@ -274,12 +274,11 @@ describe('remoteTmuxConf', () => {
     expect(c).toContain('set -su terminal-overrides')
     expect(c).toContain('set -su terminal-features')
   })
-  it('copies mouse selections through tmux, with no pbcopy (it would run on the remote host)', () => {
+  it('copies mouse selections through tmux using OSC 52', () => {
     expect(c).toContain('bind -T copy-mode    MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel')
     expect(c).toContain('bind -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel')
     expect(c).toContain('DoubleClick1Pane send-keys -X select-word')
     expect(c).toContain('TripleClick1Pane send-keys -X select-line')
-    expect(c).not.toContain('pbcopy')
   })
   it('floors history-limit at 1000', () => {
     expect(remoteTmuxConf(10)).toContain('set -g history-limit 1000')

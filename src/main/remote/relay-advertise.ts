@@ -1,7 +1,7 @@
 // Relay advertisement — the cure for the LAN-only-pairing trap without re-pairing.
 //
 // `connection.relay` on the phone is otherwise written at exactly ONE moment (the pairing
-// exchange), so a phone paired while "Reach this Mac from anywhere" was OFF stayed LAN-only
+// exchange), so a phone paired while "Reach this PC from anywhere" was OFF stayed LAN-only
 // forever: flipping the toggle later changed nothing, and off-LAN every open died with a raw
 // connection error (field report). While the standing phone host is UP, we now advertise the
 // relay identity in ~/.nodeterm/relay.json. The phone reads it over the SAME TOFU-verified SSH

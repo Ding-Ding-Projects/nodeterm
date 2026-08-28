@@ -80,7 +80,7 @@ export class SettingsStore {
   }
 
   /** Subscribe to saves (fires after each successful `settings:save`). Additive; used by the
-   *  desktop shell to create/destroy runtime-toggled subsystems (e.g. the Notch HUD). Returns an
+   *  desktop shell to create/destroy runtime-toggled subsystems (e.g. the Agent HUD). Returns an
    *  unsubscribe. Never throws into a save. */
   onChange(cb: (s: Settings) => void): () => void {
     this.listeners.add(cb);

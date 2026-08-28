@@ -12,7 +12,7 @@ import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import { SearchAddon } from '@xterm/addon-search'
 import { WebglAddon } from '@xterm/addon-webgl'
-// ChatPanel (the ⌘M transcript view) is code-split with the markdown renderer it uses: neither is
+// ChatPanel (the Ctrl+M transcript view) is code-split with the markdown renderer it uses: neither is
 // on the path to painting a terminal, and both were in the startup chunk purely by being imported
 // here. `lazy` + a null fallback — the panel replaces the terminal body on a keypress, and a
 // one-frame spinner in that slot reads as a glitch.
@@ -180,15 +180,12 @@ import {
   terminalShortcutPolicy
 } from '../lib/keybindingOverrides'
 import { matchesShortcut } from '@shared/shortcut'
-import { hintLabel, isWindowsPlatform, usesMetaPrimary } from '@shared/platform-utils'
+import { isWindowsPlatform } from '@shared/platform-utils'
 import { ColumnPill } from '../components/kanban/ColumnPill'
 import { BoardLogPanel } from '../components/kanban/BoardLogPanel'
 import { AgentMascot } from './AgentMascot'
 import { MaximizeButton } from './MaximizeButton'
 import { connectHostAttachment } from '../lib/sshAttachments'
-
-/** Which physical modifier the registry's abstract `Cmd` resolves to for the find-bar chord. */
-const useMetaPrimary = usesMetaPrimary()
 
 /** How long a remote terminal waits for its project's ControlMaster before giving up and showing
  *  the offline overlay. Sized for the SLOW-but-fine case (a cold app load whose connect is still
@@ -942,8 +939,8 @@ function setCo(key: string, patch: Partial<CoState>): void {
 /**
  * A single terminal node: header (collapse + color + title + close), optional tag chips,
  * and a real xterm.js terminal. A hover guard delays entering the terminal so the canvas
- * can be panned across terminals without grabbing focus. Cmd/Ctrl+M (while hovered)
- * toggles a markdown view of the terminal's output. Files dropped from Finder are pasted
+ * can be panned across terminals without grabbing focus. Ctrl+M (while hovered)
+ * toggles a markdown view of the terminal's output. Files dropped from File Explorer are pasted
  * as their (escaped) paths, like a native terminal — so Claude can read dropped images.
  */
 export function TerminalNode({
@@ -1071,7 +1068,7 @@ export function TerminalNode({
   const rootRef = useRef<HTMLDivElement>(null)
   const termRef = useRef<Terminal | null>(null)
   // Copy feedback: the `Copied` pill (fed by the OSC 52 handler below, through `copySubs`) and the
-  // one-time "hold ⌥ to select" hint for a pane whose app captured the mouse.
+  // one-time "hold Alt to select" hint for a pane whose app captured the mouse.
   // The host is `bodyRef` (`.term-node__xterm`) and NOT the node body on purpose: the hover guard
   // (`.term-hover-guard`) is a SIBLING of that element, so pre-dwell drags — the ones that MOVE the
   // node — never reach this listener. Hosting it on `.term-node__body` would make every node-move
@@ -1199,7 +1196,7 @@ export function TerminalNode({
     // Shared mode: the grid teardown must land in THIS commit, before paint. The participation
     // effect below is passive (after paint), so without this a fullscreen frame paints while the
     // grid is still registered at the old on-canvas position and the node still wears the
-    // glyph-mode styling (transparent body, rows hidden) — one blank frame per ⌘⇧F. The passive
+    // glyph-mode styling (transparent body, rows hidden), which caused one blank frame per Ctrl+Shift+F. The passive
     // effect then re-runs with the same answer and no-ops. (Review finding on #267.)
     glyphSyncRef.current?.(false)
     const home = root.parentElement
@@ -1255,7 +1252,7 @@ export function TerminalNode({
    *  guess. */
   const sessionPersistentRef = useRef(true)
   // Selection is a live veto (`mayDisposeOffscreen`): a selected node is one the user is working
-  // with — it can be off-screen mid-drag or right after a ⌘K jump — so it is never taken down.
+  // with. It can be off-screen mid-drag or right after a Ctrl+K jump, so it is never taken down.
   const selectedRef = useRef(selected)
   selectedRef.current = selected
   // --- glyphgrid (experimental shared renderer) ---
@@ -1290,7 +1287,7 @@ export function TerminalNode({
   const collapsed = !!data.collapsed
   // "This node must NOT hold a grid on the shared canvas right now." Four states, two reasons:
   //
-  //  - NOT ON SCREEN — collapsed hides the body outright (`display: none`), the ⌘M view covers it
+  //  - NOT ON SCREEN: collapsed hides the body outright (`display: none`), the Ctrl+M view covers it
   //    with an opaque panel. A grid left registered through either would keep painting its last
   //    frame on the shared canvas at the node's world rect, with nothing of ours in front of it.
   //  - MUST BE OPAQUE — the node is stacked over another node (`glyphOpaque`), or it is being
@@ -1304,7 +1301,7 @@ export function TerminalNode({
   // `focused` is a MUST-BE-OPAQUE reason (issue #78): a focus-mode node is reparented out of the
   // React Flow viewport, so the shared layer's glyphs — positioned from on-canvas geometry —
   // would paint somewhere the node no longer is. Routes through the same setup/teardown the
-  // collapse/⌘M/stacking/drag reasons always used; v1 deliberately forces the DOM/WebGL path.
+  // collapse/Ctrl+M/stacking/drag reasons always used; v1 deliberately forces the DOM/WebGL path.
   const glyphOff = collapsed || mdMode || glyphOpaque || dragging || focused
   const glyphOffRef = useRef(glyphOff)
   glyphOffRef.current = glyphOff
@@ -1323,12 +1320,12 @@ export function TerminalNode({
   const showLoop = !!agentId && canRecur(agentId) // /loop · /schedule · /cron chrome
   const contextLinkCapable = !!agentId && canContextLink(agentId) // context-link tip wording only; handles render on all terminals
   const showUsage = !!agentId && hasUsage(agentId) // per-node context-window meter
-  const showChat = !!agentId && canChat(agentId) // Cmd+M opens a chat panel instead of markdown
+  const showChat = !!agentId && canChat(agentId) // Ctrl+M opens a chat panel instead of markdown
   // Everything that reads the conversation through CLAUDE's transcript readers (`context.ensure`'s
   // mount-time meter rehydration, the find bar's transcript index) — deliberately NOT `showUsage`,
   // which now spans three agents. See lib/transcriptGates.ts for what sharing that gate broke.
   const claudeTranscript = readsClaudeTranscript(agentId)
-  // The header 💬 now opens the board-log comments flyout (right side); ⌘M keeps the markdown/chat view.
+  // The header 💬 now opens the board-log comments flyout (right side); Ctrl+M keeps the markdown/chat view.
   const [commentsOpen, setCommentsOpen] = useState(false)
   const canRenameNode = !!agentId && canRename(agentId) // WRITE leg: push `/rename <name>` back
   // READ leg: adopt the agent's own session name into the title. A superset of canRenameNode —
@@ -1751,7 +1748,7 @@ export function TerminalNode({
     // same swallowed-refresh cases — and half a palette is the most visible way for one to fail.
     fullRepaintRef.current = fullRepaint
     // --- renderer-swap safety net ---------------------------------------------------------
-    // xterm treats a renderer swap as atomic; it is not. On macOS under GPU/canvas memory
+    // xterm treats a renderer swap as atomic; it is not. Under GPU or canvas memory
     // pressure, canvas allocation THROWS mid-swap (`throwIfFalsy(getContext('2d'))` in the
     // addon's atlas/layers), and both directions strand the terminal BLACK with zero
     // JS-visible events — which is why neither the repaint heals nor the zoom gate closed the
@@ -2250,7 +2247,7 @@ export function TerminalNode({
       if (disposed || glyphAttach || glyphGrid) return
       if (glyphOffRef.current) {
         // Held OFF the shared canvas — and which half of `glyphOff` it is decides the budget
-        // client. Covered up (collapsed / ⌘M): nothing to draw, so no client, exactly as before.
+        // client. Covered up (collapsed / Ctrl+M): nothing to draw, so no client, exactly as before.
         // Held OPAQUE (stacked over another node, or in a gesture): this terminal is fully visible
         // and painting its own pixels, so it is a WebGL client like any default-mode terminal.
         //
@@ -2262,7 +2259,7 @@ export function TerminalNode({
         // needs, and it is NOT yet invariant-complete: the paths that can still leave an opaque
         // terminal without a client are the generation-bump handler (it tears down and defers to
         // the participation effect, which lands here and now arms the client — covered), and the
-        // expand / ⌘M-exit transitions of a node that is ALSO opaque (collapsed→expanded while
+        // expand / Ctrl+M-exit transitions of a node that is ALSO opaque (collapsed→expanded while
         // stacked: `glyphHiddenRef` has already flipped by the time we run, so this arms it —
         // also covered), against the reverse order in a single commit where both flip at once,
         // which is not. Finishing it means moving the budget decision out of these two gates and
@@ -2410,7 +2407,7 @@ export function TerminalNode({
     }
 
     /** Re-evaluate participation: `on` is false while the node has no terminal on screen
-     *  (collapsed, or the ⌘M view). Also the generation-bump path's re-entry point. */
+     *  (collapsed, or the Ctrl+M view). Also the generation-bump path's re-entry point. */
     const syncGlyph = (on: boolean): void => {
       if (on) {
         setupGlyph()
@@ -2442,7 +2439,7 @@ export function TerminalNode({
       // user's behalf (`set-clipboard on` + `terminal-features ",*:clipboard"`), and this handler is
       // what receives it and writes the system clipboard — local and remote alike. Programs that
       // emit OSC 52 themselves (vim "+y, gh, yazi) reach the clipboard through this same handler.
-      // The emulator's own Cmd+C / Ctrl+Shift+C chords (below) stay for a selection xterm owns.
+      // The emulator's own Ctrl+C / Ctrl+Shift+C chords (below) stay for a selection xterm owns.
       // WRITE-ONLY — `parseOsc52` returns null for a `?` read query so a remote program can never
       // read the local clipboard. Returning true swallows the sequence (also the read query).
       term.parser.registerOscHandler(52, (data) => {
@@ -2454,7 +2451,7 @@ export function TerminalNode({
         }
         return true
       })
-      // Cmd (mac) / Ctrl+click link opening. URLs → default browser via createUrlLinkProvider
+      // Ctrl+click link opening. URLs go to the default browser via createUrlLinkProvider
       // (NOT the WebLinksAddon — the addon can't join the hard-wrapped rows a tmux repaint /
       // agent TUI paints, so a long OAuth URL matched only its first row's fragment); file
       // paths → editor node / Explorer reveal via the file provider. Both are modifier-gated
@@ -2510,7 +2507,7 @@ export function TerminalNode({
       )
       // Both providers above rely on xterm's own click handling, which
       // tmux/agent mouse-reporting swallows. This capture-phase mouse-up fallback restores
-      // Cmd/Ctrl+click for both URLs and file paths in that mode. Attached to `term.element` so
+      // Ctrl+click for both URLs and file paths in that mode. Attached to `term.element` so
       // it travels with the terminal across park/adopt; it dies with the terminal on dispose.
       if (term.element) {
         installLinkClickFallback(term, term.element, {
@@ -2524,7 +2521,7 @@ export function TerminalNode({
       }
     }
 
-    // Cmd+C (mac) / Ctrl+Shift+C (Linux, Windows) / Ctrl+Insert copy the terminal selection — xterm
+    // Ctrl+Shift+C and Ctrl+Insert copy the terminal selection. xterm
     // renders to a canvas, so the DOM-selection copy used elsewhere can't see it. Plain Ctrl+C is
     // left alone so it still sends SIGINT.
     // The chord is swallowed whether or not there is a selection (`copyKeyAction`): with no
@@ -2536,7 +2533,7 @@ export function TerminalNode({
     // NOT preventable by a page — hence Ctrl+Insert, which no browser reserves.
     // Shift+Enter is also intercepted here: xterm would send a plain \r (submit), so we remap it to
     // ESC+CR (`SHIFT_ENTER_SEQ`) — agent CLIs read that as "insert newline" (see terminal-config.ts).
-    // Cmd/Ctrl+1-9 (jump to the Nth project) must be swallowed before xterm turns Ctrl+2..Ctrl+8
+    // Ctrl+1-9 (jump to the Nth project) must be swallowed before xterm turns Ctrl+2..Ctrl+8
     // into control bytes — but ONLY when the app owns the key: desktop shell, digit addressing an
     // open project, AND app-first. Under terminal-first the user reserved every chord for the
     // shell, so the digit must reach the PTY: this handler runs inside xterm, ahead of the window
@@ -3961,10 +3958,10 @@ export function TerminalNode({
   // even if the two ever arrive in separate renders. Do not move this effect above the one above.
   //
   // It also owns every state in which this node must not be on the shared canvas although it is
-  // mounted — `glyphOff` names them all (collapsed, ⌘M, stacked over another node, being dragged)
+  // mounted. `glyphOff` names them all (collapsed, Ctrl+M, stacked over another node, being dragged)
   // and the ref beside it carries the same answer to `setupGlyph`'s own gate. Each drops the grid
   // and re-registers on the way back, through the SAME teardown/setup machinery that collapse and
-  // ⌘M have always used: `teardownGlyph` clears `glyphMounted` (so `term-node--glyphgrid` comes off
+  // Ctrl+M have always used: `teardownGlyph` clears `glyphMounted` (so `term-node--glyphgrid` comes off
   // the node root) and removes `glyphgrid-mode` from the xterm element, which is exactly what makes
   // the body opaque and the DOM rows visible again. Nothing here is a special case for stacking.
   //
@@ -4055,7 +4052,7 @@ export function TerminalNode({
   const onBodyEnter = () => {
     if (dwellRef.current) clearTimeout(dwellRef.current)
     const enter = () => {
-      // While Cmd/Ctrl is held the user is zooming the canvas — don't grab focus / enter the
+      // While Ctrl is held the user is zooming the canvas, so do not grab focus or enter the
       // terminal; just keep checking until the modifier is released.
       if (isZoomModifierHeld()) {
         dwellRef.current = setTimeout(enter, 200)
@@ -4124,7 +4121,7 @@ export function TerminalNode({
   /**
    * Files arriving by DROP or by PASTE become paths in the terminal — what a native terminal does
    * on a drop, and the only thing a shell (or an agent reading its prompt) can act on. Shared so
-   * Cmd/Ctrl+V behaves exactly like the drag, upload overlay included: the events differ only in
+   * Ctrl+V behaves exactly like the drag, upload overlay included: the events differ only in
    * how the files got here, and in whether our window needs raising afterwards.
    */
   const insertFiles = async (files: File[], opts: { raiseWindow: boolean }) => {
@@ -4178,7 +4175,7 @@ export function TerminalNode({
     // Enter the terminal and paste the path(s) like a real drop (trailing space to continue).
     if (dwellRef.current) clearTimeout(dwellRef.current)
     setArmed(false)
-    // A drag-drop from another OS app doesn't bring our window forward (esp. macOS), so raise it
+    // A drag-drop from another application does not bring our window forward, so raise it
     // FIRST — otherwise the drag-source keeps keyboard focus and the user types into the wrong app.
     // A paste came from THIS window, which already has it.
     if (opts.raiseWindow) window.nodeTerminal.focusWindow()
@@ -4197,7 +4194,7 @@ export function TerminalNode({
     await insertFiles(files, { raiseWindow: true })
   }
 
-  // Cmd/Ctrl+V of a FILE (copied in Finder/Explorer) or of raw image bytes (a screenshot). A paste
+  // Ctrl+V of a file copied in File Explorer, or of raw image bytes, enters this path. A paste
   // carrying neither is ordinary text and belongs to xterm — hence the early return, and hence the
   // CAPTURE phase: xterm listens on its own textarea below us, so stopping here is the only way to
   // keep it from also pasting whatever text the clipboard happened to carry alongside the file.
@@ -4302,7 +4299,7 @@ export function TerminalNode({
     }
   }, [id, canReadTitleNode, status?.sessionId, data.titleAuto, updateNodeData])
 
-  // Cmd/Ctrl+M toggles markdown view of this terminal's output (only when hovered).
+  // Ctrl+M toggles markdown view of this terminal's output (only when hovered).
   useEffect(() => {
     return window.nodeTerminal.onMarkdownToggle(() => {
       if (hoveredRef.current) updateNodeData(id, (n) => ({ mdMode: !n.data.mdMode }))
@@ -4320,11 +4317,11 @@ export function TerminalNode({
     sa.findNext(search.query, findOpts)
   }, [search.query, searchOpen])
 
-  // Cmd/Ctrl+F toggles the find-bar while this node is hovered. No main-process interception
-  // needed (the Electron renderer has no native find UI), unlike Cmd+M.
+  // Ctrl+F toggles the find-bar while this node is hovered. No main-process interception
+  // needed (the Electron renderer has no native find UI), unlike Ctrl+M.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (hoveredRef.current && effectiveBindings('terminal.find').some((s) => matchesShortcut(e, s, useMetaPrimary))) {
+      if (hoveredRef.current && effectiveBindings('terminal.find').some((s) => matchesShortcut(e, s))) {
         e.preventDefault()
         setSearchOpen((v) => !v)
       }
@@ -4341,7 +4338,7 @@ export function TerminalNode({
       // Full scrollback (not just the visible viewport) so the whole session renders.
       // `marked` + DOMPurify are imported HERE rather than at module scope: this node is on the
       // startup path (it is what the canvas is made of), the markdown renderer is not — it runs
-      // only after someone presses ⌘M. The capture is already a round trip to main, so the extra
+      // only after someone presses Ctrl+M. The capture is already a round trip to main, so the extra
       // chunk fetch is not even on a path the user can perceive.
       void Promise.all([api.pty.capture(id, true), import('../lib/markdown')]).then(
         ([text, md]) => setMdHtml(md.renderMarkdown(text))
@@ -4376,7 +4373,7 @@ export function TerminalNode({
       onMouseEnter={() => (hoveredRef.current = true)}
       onMouseLeave={() => (hoveredRef.current = false)}
     >
-      <NodeResizer minWidth={NODE_MIN_SIZES.terminal.width} minHeight={NODE_MIN_SIZES.terminal.height} isVisible={selected && !collapsed} color="#0a84ff" />
+      <NodeResizer minWidth={NODE_MIN_SIZES.terminal.width} minHeight={NODE_MIN_SIZES.terminal.height} isVisible={selected && !collapsed} color="#0078d4" />
       {/* Invisible source handle so edges to subagent/loop nodes can attach. */}
       <Handle
         id="flow-out"

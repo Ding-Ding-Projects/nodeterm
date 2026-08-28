@@ -94,7 +94,7 @@ export interface TermInternals {
   cursorStyle?(): { style?: string; inactiveStyle?: string }
   /** The canvas's blink clock, or undefined on a build that has none. See `CursorBlinkSeam`. */
   blink?: CursorBlinkSeam
-  /** The terminal's decorations — the cell colours a ⌘F hit paints — or undefined.
+  /** The terminal's decorations, including the cell colours a Ctrl+F hit paints, or undefined.
    *
    *  ALL THREE DECORATION MEMBERS ARE OPTIONAL, together: an xterm build whose decoration service
    *  is missing or reshaped must degrade to "this terminal has no highlights", never to a refused
@@ -107,7 +107,7 @@ export interface TermInternals {
    * The link the pointer is currently over, in VIEWPORT cell coordinates, or null.
    *
    * xterm reports a hovered link as a range and its own render layers answer by underlining it —
-   * the affordance that says ⌘-click will open this. Replacing xterm's renderer removes those
+   * the affordance that says Ctrl+click will open this. Replacing xterm's renderer removes those
    * layers, so this renderer has to draw it, or every link looks inert (reported 2026-08-05).
    *
    * OPTIONAL like the decorations, and for the same reason: a build whose linkifier is missing or
@@ -505,7 +505,7 @@ export class GlyphGridRendererAddonCore {
   }
 
   /**
-   * A decoration was registered or removed — a ⌘F search adding a hit, or the find bar closing and
+   * A decoration was registered or removed, such as a Ctrl+F search adding a hit or the find bar closing and
    * dropping all of them. Decorations change cell COLOURS, so the rows have to be re-fed; the ATLAS
    * is untouched (its slots are keyed by colour, and the ones this asks for next are simply
    * different keys), so nothing needs clearing.

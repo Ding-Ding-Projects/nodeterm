@@ -50,7 +50,7 @@ const SENTINEL_CMD = "printf 'NTDONE%s\\n' 42\r"
 const SENTINEL_OUT = 'NTDONE42'
 
 function findBash(): string | null {
-  for (const c of ['/bin/bash', '/usr/bin/bash', '/usr/local/bin/bash', '/opt/homebrew/bin/bash']) {
+  for (const c of ['/bin/bash', '/usr/bin/bash', '/usr/local/bin/bash']) {
     if (fs.existsSync(c)) return c
   }
   return null

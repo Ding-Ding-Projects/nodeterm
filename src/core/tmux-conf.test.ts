@@ -42,13 +42,11 @@ describe('tmuxConf', () => {
     expect(c).toContain('set -as terminal-features ",*:hyperlinks"')
   })
 
-  it('copies mouse selections through tmux (OSC 52), with no macOS-only pbcopy pipe', () => {
+  it('copies mouse selections through tmux using OSC 52', () => {
     expect(c).toContain('bind -T copy-mode    MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel')
     expect(c).toContain('bind -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel')
     expect(c).toContain('DoubleClick1Pane send-keys -X select-word')
     expect(c).toContain('TripleClick1Pane send-keys -X select-line')
-    // pbcopy is macOS-only — half of why copying never worked elsewhere or over SSH.
-    expect(c).not.toContain('pbcopy')
   })
 
   it('floors history-limit at 1000', () => {

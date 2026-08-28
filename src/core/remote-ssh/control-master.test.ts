@@ -460,11 +460,11 @@ describe('scpArgs', () => {
 
 describe('scpDownArgs', () => {
   it('pulls remote → local over the master, with the remote side after host: (never an option)', () => {
-    const j = scpDownArgs(conn, '/s.sock', '/srv/app/notes.md', '/Users/e/Downloads/notes.md.part').join(' ')
+    const j = scpDownArgs(conn, '/s.sock', '/srv/app/notes.md', 'C:/Users/e/Downloads/notes.md.part').join(' ')
     expect(j).toContain('-o ControlPath=/s.sock')
     expect(j).toContain('-o BatchMode=yes')
     expect(j).toContain('-P 2222')
-    expect(j).toContain('deploy@h.example.com:/srv/app/notes.md /Users/e/Downloads/notes.md.part')
+    expect(j).toContain('deploy@h.example.com:/srv/app/notes.md C:/Users/e/Downloads/notes.md.part')
     expect(j).not.toContain(' -r ')
   })
 

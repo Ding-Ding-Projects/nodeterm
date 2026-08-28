@@ -148,12 +148,12 @@ env either joins `ACCOUNT_SCOPE_UPDATE_ENV` / the gateway list, or rides `-e` �
 real-tmux test (`account-env.realtmux.test.ts` is the pattern).
 
 **A new keyboard chord has to survive the shells, not just the renderer.** The application menu is
-ours (`buildAppMenu` in `main/index.ts`), but its command-style accelerators — ⌘Q, ⌘M, ⌘W, ⌘0, ⌘⇧B,
-⌘, — are still handled above the page, so your `keydown` branch simply never runs: steal the chord
+ours (`buildAppMenu` in `main/index.ts`), but its command-style accelerators, including Ctrl+Q, Ctrl+M, Ctrl+W, Ctrl+0, Ctrl+Shift+B,
+Ctrl+,, are still handled above the page, so your `keydown` branch simply never runs: steal the chord
 back in `main/keydown-intercept.ts`'s `before-input-event` allowlist and forward it, like the three
 already there. Two legs stand the menu down instead of stealing — the terminal-first policy and an
 armed shortcut recorder (`menuStandsDown` → `menuItemIdsToSuspend`, since a disabled item suppresses
-its accelerator) — and Reload (⌘R / ⌘⇧R) is the named exception that always stays with the app,
+its accelerator), while Reload (Ctrl+R / Ctrl+Shift+R) is the named exception that always stays with the app,
 because it is the crash-recovery lever. Browsers own a different set. And any chord that reaches the canvas needs the two refusals every canvas shortcut
 here has: not while the kanban board covers it, not while the user is typing.
 
@@ -206,7 +206,7 @@ module is untestable because it imports `electron` at the top, that is the thing
 decision into a pure function next to it (`keydown-intercept.ts`, `main-window.ts`,
 `zoomShortcut.ts`) and press the keys.
 
-Where a behaviour can only be verified on hardware we do not have in CI (a Mac, a real SSH host, a
+Where a behaviour can only be verified on hardware we do not have locally (a real SSH host, a
 GPU), say so explicitly rather than implying coverage. Several docs carry numbered device
 checklists for exactly this.
 

@@ -35,7 +35,7 @@ describe('whisper model catalog', () => {
       engine: 'whisper',
       model: SPEECH_MODEL_NONE,
       language: 'auto',
-      shortcut: 'Cmd+Alt'
+      shortcut: 'Ctrl+Alt'
     })
   })
 

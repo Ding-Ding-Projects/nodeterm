@@ -20,7 +20,7 @@ const probed = (id: string): Project => ({
   id,
   name: 'shared-app',
   color: '#7aa2f7',
-  cwd: '/Users/me/dev/shared-app',
+  cwd: 'C:/Users/me/dev/shared-app',
   viewport: { x: 0, y: 0, zoom: 1 },
   nodes: [
     {
@@ -40,21 +40,21 @@ describe('registerProject — idempotent hit (spec B1)', () => {
     const active = useProjects.getState().addProject('elsewhere', '/tmp/elsewhere')
     useProjects.getState().setActive(active.id)
 
-    const first = useProjects.getState().registerProject({ resolvedCwd: '/Users/me/dev/my-app' })
+    const first = useProjects.getState().registerProject({ resolvedCwd: 'C:/Users/me/dev/my-app' })
     expect(first.created).toBe(true)
     expect(first.adopted).toBe(false)
-    const second = useProjects.getState().registerProject({ resolvedCwd: '/Users/me/dev/my-app' })
+    const second = useProjects.getState().registerProject({ resolvedCwd: 'C:/Users/me/dev/my-app' })
     expect(second.created).toBe(false)
     expect(second.adopted).toBe(false)
     expect(second.project.id).toBe(first.project.id)
-    expect(useProjects.getState().projects.filter((p) => p.cwd === '/Users/me/dev/my-app')).toHaveLength(1)
+    expect(useProjects.getState().projects.filter((p) => p.cwd === 'C:/Users/me/dev/my-app')).toHaveLength(1)
     // P6 — the visible tab never moved.
     expect(useProjects.getState().activeProjectId).toBe(active.id)
   })
 
   it('dedupes on the trailing-slash-normalized cwd', () => {
-    const first = useProjects.getState().registerProject({ resolvedCwd: '/Users/me/dev/my-app' })
-    const second = useProjects.getState().registerProject({ resolvedCwd: '/Users/me/dev/my-app/' })
+    const first = useProjects.getState().registerProject({ resolvedCwd: 'C:/Users/me/dev/my-app' })
+    const second = useProjects.getState().registerProject({ resolvedCwd: 'C:/Users/me/dev/my-app/' })
     expect(second.created).toBe(false)
     expect(second.project.id).toBe(first.project.id)
   })
@@ -62,10 +62,10 @@ describe('registerProject — idempotent hit (spec B1)', () => {
   it('un-closes a closed project WITHOUT activating it', () => {
     const active = useProjects.getState().addProject('elsewhere', '/tmp/elsewhere')
     useProjects.getState().setActive(active.id)
-    const closedOne = useProjects.getState().addProject('my-app', '/Users/me/dev/my-app')
+    const closedOne = useProjects.getState().addProject('my-app', 'C:/Users/me/dev/my-app')
     useProjects.getState().closeProject(closedOne.id)
 
-    const hit = useProjects.getState().registerProject({ resolvedCwd: '/Users/me/dev/my-app' })
+    const hit = useProjects.getState().registerProject({ resolvedCwd: 'C:/Users/me/dev/my-app' })
     expect(hit.created).toBe(false)
     expect(hit.project.id).toBe(closedOne.id)
     const s = useProjects.getState()
@@ -114,7 +114,7 @@ describe('registerProject — adopt (spec §2.1 step 3)', () => {
 
     const r = useProjects
       .getState()
-      .registerProject({ resolvedCwd: '/Users/me/dev/shared-app', probed: probed('project-minted') })
+      .registerProject({ resolvedCwd: 'C:/Users/me/dev/shared-app', probed: probed('project-minted') })
     expect(r.adopted).toBe(true)
     expect(r.created).toBe(false)
     expect(r.project.id).toBe('project-minted')
@@ -126,7 +126,7 @@ describe('registerProject — adopt (spec §2.1 step 3)', () => {
     const taken = useProjects.getState().addProject('other', '/tmp/other')
     const r = useProjects
       .getState()
-      .registerProject({ resolvedCwd: '/Users/me/dev/shared-app', probed: probed(taken.id) })
+      .registerProject({ resolvedCwd: 'C:/Users/me/dev/shared-app', probed: probed(taken.id) })
     expect(r.adopted).toBe(true)
     expect(r.project.id).not.toBe(taken.id)
     expect(r.project.nodes.map((n) => n.id)).toEqual(['term-a'])

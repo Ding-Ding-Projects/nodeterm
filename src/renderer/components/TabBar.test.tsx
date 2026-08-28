@@ -18,7 +18,7 @@ function project(over: Partial<Project> = {}): Project {
   return {
     id: 'p1',
     name: 'Alpha',
-    color: '#0a84ff',
+    color: '#0078d4',
     cwd: '/repo/alpha',
     viewport: { x: 0, y: 0, zoom: 1 },
     nodes: [],

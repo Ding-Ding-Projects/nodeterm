@@ -415,8 +415,8 @@ describe('xtermScrollback', () => {
 })
 
 describe('isCopyShortcut', () => {
-  it('copies on Cmd+C', () => {
-    expect(isCopyShortcut(ev({ metaKey: true }))).toBe(true)
+  it('rejects Windows-key+C', () => {
+    expect(isCopyShortcut(ev({ metaKey: true }))).toBe(false)
   })
 
   it('copies on Ctrl+Shift+C', () => {
@@ -440,7 +440,6 @@ describe('isCopyShortcut', () => {
 
   it('copies on a non-Latin layout, where e.key is not "c" (physical KeyC)', () => {
     // Cyrillic layout: the C key reports 'с' (U+0441), Greek reports 'ψ'.
-    expect(isCopyShortcut(ev({ metaKey: true, key: 'с', code: 'KeyC' }))).toBe(true)
     expect(isCopyShortcut(ev({ ctrlKey: true, shiftKey: true, key: 'с', code: 'KeyC' }))).toBe(true)
     expect(isCopyShortcut(ev({ ctrlKey: true, shiftKey: true, key: 'ψ', code: 'KeyC' }))).toBe(true)
     // Plain Ctrl on the same layout still reaches the pty as SIGINT.
@@ -451,8 +450,8 @@ describe('isCopyShortcut', () => {
     expect(isCopyShortcut(ev({ metaKey: true, key: 'ц', code: 'KeyW' }))).toBe(false)
   })
 
-  it('copies on Cmd+Shift+C too (no competing binding; asserted, not accidental)', () => {
-    expect(isCopyShortcut(ev({ metaKey: true, shiftKey: true }))).toBe(true)
+  it('rejects Windows-key+Shift+C', () => {
+    expect(isCopyShortcut(ev({ metaKey: true, shiftKey: true }))).toBe(false)
   })
 
   it('leaves AltGr combos alone (ctrl+alt+shift+C must not copy)', () => {
@@ -473,7 +472,6 @@ describe('isCopyShortcut', () => {
 
 describe('copyKeyAction', () => {
   it('copies a copy chord when there is a selection', () => {
-    expect(copyKeyAction(ev({ metaKey: true }), true)).toBe('copy')
     expect(copyKeyAction(ev({ ctrlKey: true, shiftKey: true }), true)).toBe('copy')
   })
 
@@ -482,7 +480,6 @@ describe('copyKeyAction', () => {
     // process, right after the user's selection was cleared by a click. We advertise the chord as
     // copy, so it can only ever copy or do nothing.
     expect(copyKeyAction(ev({ ctrlKey: true, shiftKey: true }), false)).toBe('swallow')
-    expect(copyKeyAction(ev({ metaKey: true }), false)).toBe('swallow')
     expect(copyKeyAction(ev({ ctrlKey: true, key: 'Insert', code: 'Insert' }), false)).toBe(
       'swallow'
     )
@@ -524,7 +521,6 @@ describe('terminalKeyAction', () => {
   })
 
   it('still resolves copy chords like copyKeyAction', () => {
-    expect(terminalKeyAction(ev({ metaKey: true }), true)).toBe('copy') // Cmd+C w/ selection (ev defaults key:'c')
     expect(terminalKeyAction(ev({ ctrlKey: true, shiftKey: true }), false)).toBe('swallow')
   })
 
@@ -551,7 +547,7 @@ describe('terminalKeyAction', () => {
       terminalKeyAction(ev({ key: 'Enter', code: 'Enter', shiftKey: true }), false, false, true)
     ).toBe('shift-enter')
     // project-jump swallow wins over bubble
-    expect(terminalKeyAction(ev({ key: '1', code: 'Digit1', metaKey: true }), false, true, true)).toBe(
+    expect(terminalKeyAction(ev({ key: '1', code: 'Digit1', ctrlKey: true }), false, true, true)).toBe(
       'swallow'
     )
     // keyup never bubbles — the dispatcher only acts on keydown
@@ -594,8 +590,8 @@ describe('terminalKeyAction', () => {
   })
 
   it('never lets the jump swallow shadow a copy chord', () => {
-    // Cmd+C with a selection still copies; the digit flag only ever applies to a digit keydown.
-    expect(terminalKeyAction(ev({ metaKey: true }), true, false)).toBe('copy')
+    // Ctrl+Shift+C with a selection still copies; the digit flag only applies to a digit keydown.
+    expect(terminalKeyAction(ev({ ctrlKey: true, shiftKey: true }), true, false)).toBe('copy')
   })
 })
 

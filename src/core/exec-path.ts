@@ -1,7 +1,7 @@
 // Executable resolution for a GUI process, without ever spawning a login shell SYNCHRONOUSLY.
 //
-// A GUI app launched from Finder/Dock inherits only a minimal PATH (`/usr/bin:/bin:…`) — it
-// never sees Homebrew, `~/.local/bin`, nvm, etc. The historical fix was a sync
+// A POSIX GUI process can inherit only a minimal PATH and miss `~/.local/bin`, nvm, and similar
+// user locations. The historical fix was a sync
 // `execFileSync($SHELL, ['-lc', 'command -v <bin>'])` per lookup, but sourcing the user's
 // profile routinely takes 100-800ms (nvm/conda init) and a synchronous spawn of it sits on the
 // MAIN thread — freezing every window, every PTY flush and all IPC for its duration (and the

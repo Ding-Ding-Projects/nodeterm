@@ -60,7 +60,7 @@ function makeClient(over: Partial<{ onOutput: (d: string) => void; onExit: () =>
   const out: string[] = []
   const exits: number[] = []
   const client = new ControlModeClient({
-    tmuxBin: '/opt/homebrew/bin/tmux',
+    tmuxBin: '/usr/local/bin/tmux',
     socket: 'node-terminal',
     sessionName: 'nt-term-1',
     onOutput: over.onOutput ?? ((d) => out.push(d)),
@@ -82,7 +82,7 @@ describe('ControlModeClient.start', () => {
     const { spawner } = makeClient()
     expect(spawner.calls).toEqual([
       {
-        bin: '/opt/homebrew/bin/tmux',
+        bin: '/usr/local/bin/tmux',
         args: ['-L', 'node-terminal', '-C', 'attach-session', '-t', 'nt-term-1']
       }
     ])

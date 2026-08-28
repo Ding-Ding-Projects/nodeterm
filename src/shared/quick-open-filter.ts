@@ -1,5 +1,5 @@
 /**
- * Pure Quick Open (⌘K file search) listing policy — no IO, no Electron. Provides
+ * Pure Quick Open (Ctrl+K file search) listing policy with no IO or Electron. Provides
  * a noise blocklist + rg/git arg builders + line normalization + the traversal guard.
  * Callers own process execution: fs-ops.listQuickOpenFiles runs the listers locally,
  * ssh-fs.sshQuickOpenArgs folds the same chain into one remote command.

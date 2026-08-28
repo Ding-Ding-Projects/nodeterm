@@ -149,14 +149,14 @@ the data dir and restarting. What that does:
 | SSH host | Per-node **tokens** only | `$HOME/.nodeterm/node-tokens/<nodeId>`, 0600 under a 0700 dir, written over the ControlMaster with the token on **stdin**. |
 | Phone | Nothing | No secret, no token, no change. |
 
-**The desktop's honest caveat.** `safeStorage` is the right call on macOS (Keychain) and Windows
-(DPAPI). On Linux it may resolve to the **`basic` backend, which encrypts with a hard-coded key** —
+**The desktop storage boundary.** Windows uses `safeStorage` with DPAPI. On Linux it may resolve to
+the **`basic` backend, which encrypts with a hard-coded key**,
 in that configuration the sealing is obfuscation, and the protection that actually holds is the
 **0600 file mode**. That is worth knowing before anyone reasons "it's encrypted at rest, therefore…".
 Two distinct file names (`.json` vs `.bin`) exist so a data dir moved between shells can never have
 one format misread as the other.
 
-**The Server Edition stores it raw, deliberately.** A headless Linux host has no keychain; there is
+**The Server Edition stores it raw, deliberately.** A headless Linux host has no OS credential vault; there is
 no `safeStorage` to reach. Inventing a passphrase prompt would make the app un-bootable
 unattended, which is the entire point of that edition. The in-repo precedents are the same
 decision made before: `src/server/auth.ts` keeps the login hash and live session tokens at 0600, and
@@ -500,8 +500,8 @@ parts that touch this secret and the invariants here:
 - **The codex identity secret is armed on both shells.** Desktop and Server Edition both call
   `setCodexThreadIdentityAuthSecret(loadOrCreateNodeAuthSecret())` at boot — the desktop in
   `src/main/index.ts`, the Server Edition in `src/server/node-identity-arm.ts` — so **managed records
-  sign on a headless host too** (raw `0600` `node-auth-key.bin`, no keychain). This is the both-shells
-  half of Decision 1; a keychain-only secret would regress Server Edition. With **no** secret armed, a
+  sign on a headless host too** (raw `0600` `node-auth-key.bin`, no credential vault). This is the both-shells
+  half of Decision 1; a credential-vault-only secret would regress Server Edition. With **no** secret armed, a
   record write **throws** rather than writing an unsigned record (fail-closed) — nothing is minted.
 - **The switch is owner-authorized, main-side.** Moving a running node's conversation to another
   account is a three-phase, TTL-bounded protocol keyed off `event.sender.id` — only the WebContents
@@ -551,7 +551,7 @@ fail-closed). Both, plus the live-daemon and real-WAN legs, are in
 
    | Failure | Direction |
    | --- | --- |
-   | No secret (no keychain, unwritable key file) | No gate at all — every route behaves pre-feature |
+   | No secret (no credential vault, unwritable key file) | No gate at all; every route behaves pre-feature |
    | Token file unwritable / unreadable | `legacy` — never a blocked terminal, never a throw into a pty spawn |
    | Remote write fails for one node | That node is `legacy`; the others keep their tokens |
    | Case-folding collision | The whole set is `legacy`, and their files are swept |

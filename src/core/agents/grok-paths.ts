@@ -45,7 +45,7 @@ type GrokEnv = { GROK_HOME?: string }
 /** grok's config directory: `$GROK_HOME`, else `~/.grok`. Hooks AND sessions live under it.
  *
  *  KNOWN TRAP — the env this reads is the APP's, not the user's shell. A desktop app launched from
- *  Finder/Dock/a `.desktop` entry inherits the launcher's environment, which never sourced
+ *  a desktop launcher inherits its own environment, which may never have sourced
  *  `.zshrc`/`.bashrc`; this repo already knows the class, which is why `findTmux()` resolves an
  *  absolute path "because GUI apps don't inherit the shell PATH". So for a user whose only
  *  `export GROK_HOME=…` lives in a shell rc file, the two sides disagree: nodeterm writes the hook

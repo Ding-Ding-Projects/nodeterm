@@ -65,8 +65,8 @@ function formatArg(a: unknown): string {
  * throw-on-unhandled behavior — so rejections are left alone here on purpose.
  *
  * **A dying stdio stream must not take the app with it** (issue #382: `write EIO` killed the
- * main process after the terminal a `npm start` was launched from went away — macOS `revoke()`s
- * the tty's fds, and every later `console.log` writes into a revoked descriptor). Two facts
+ * main process after the terminal used for `npm start` went away and every later `console.log`
+ * targeted a dead descriptor). Two facts
  * decide the shape of the guard, and the first one is counter-intuitive:
  *
  * 1. **The error does NOT arrive as a throw at the call site.** When stdout is a pipe or a tty

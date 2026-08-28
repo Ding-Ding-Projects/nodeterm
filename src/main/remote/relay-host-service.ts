@@ -5,7 +5,7 @@
 // shares the same offer format and pairing-token mint, but everything a bridged peer does afterwards
 // flows through `connectRelayHost` (→ `platform.dispatch`/`cast`), not the legacy phone RPC vocabulary.
 //
-// TEAM ACCESS — a POOL, not one listener. A paying host shares this Mac with up to `seats` devices
+// TEAM ACCESS uses a POOL, not one listener. A paying host shares this PC with up to `seats` devices
 // (one seat per connected device). This module manages a POOL of independent `RelayHostSession`s;
 // each seat still goes through the UNCHANGED per-session mutual-SAS + ConsentNotice gate in
 // relay-host.ts. `relay:host:invite` (and the legacy `relay:host:start`) ADD a seat (cap-checked, no

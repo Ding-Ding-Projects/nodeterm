@@ -405,7 +405,7 @@ export function buildStubApi(): Omit<
     shortcuts: {
       // Deliberate no-op (not a gap): the recording bit exists to stand the DESKTOP's
       // `before-input-event` intercepts down, and a browser tab has no application menu to steal
-      // ⌘W/⌘M/⌘0 back from — nothing intercepts here, so there is nothing to suspend. The
+      // Ctrl+W/Ctrl+M/Ctrl+0 back from. Nothing intercepts here, so there is nothing to suspend. The
       // recorder's own preventDefault/stopPropagation is the whole path in this shell.
       setRecording: noop,
       // Deliberate no-op for the same reason, one step further: the mirror exists so the DESKTOP's
@@ -416,7 +416,7 @@ export function buildStubApi(): Omit<
     },
     onMarkdownToggle: noopUnsub,
     onCloseNode: noopUnsub,
-    // Deliberate no-op (not a gap): a browser tab has no application menu to steal ⌘0, so the
+    // Deliberate no-op (not a gap): a browser tab has no application menu to steal Ctrl+0, so the
     // renderer's own keydown handler is the whole path there.
     onZoomActualSize: noopUnsub,
     // Native app-menu events (desktop-only — the Server Edition has no native menu). Stubs so the
@@ -437,7 +437,7 @@ export function buildStubApi(): Omit<
     },
     setBadgeCount: noop,
     // UI scale is page zoom, and a browser page cannot set its own — the browser already owns the
-    // identical mechanism (Cmd/Ctrl+±, persisted per site). Intentionally inert; the Settings row
+    // identical mechanism (Ctrl+±, persisted per site). Intentionally inert; the Settings row
     // is disabled with this reason on the Server Edition (AppearanceSection's browser branch).
     setUiZoomFactor: noop,
     getPathForFile: (): string => '',

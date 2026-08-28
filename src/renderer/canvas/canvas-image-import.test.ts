@@ -76,12 +76,12 @@ describe('guardedCanvasImagePlacements', () => {
 })
 
 describe('canvasImagePasteArmedAfterKey', () => {
-  it('preserves a real Cmd+V sequence but revokes arming for a keyboard-opened overlay', () => {
-    const meta = { key: 'Meta', metaKey: true, ctrlKey: false }
-    const paste = { key: 'v', metaKey: true, ctrlKey: false }
-    const openSettings = { key: ',', metaKey: true, ctrlKey: false }
+  it('preserves a real Ctrl+V sequence but revokes arming for a keyboard-opened overlay', () => {
+    const control = { key: 'Control', metaKey: false, ctrlKey: true }
+    const paste = { key: 'v', metaKey: false, ctrlKey: true }
+    const openSettings = { key: ',', metaKey: false, ctrlKey: true }
 
-    expect(canvasImagePasteArmedAfterKey(true, meta)).toBe(true)
+    expect(canvasImagePasteArmedAfterKey(true, control)).toBe(true)
     expect(canvasImagePasteArmedAfterKey(true, paste)).toBe(true)
     expect(canvasImagePasteArmedAfterKey(true, openSettings)).toBe(false)
     expect(canvasImagePasteArmedAfterKey(false, paste)).toBe(false)

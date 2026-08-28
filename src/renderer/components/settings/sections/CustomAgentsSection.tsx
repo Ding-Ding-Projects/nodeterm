@@ -39,7 +39,7 @@ export function CustomAgentsSection({ isActive }: { isActive: boolean }): React.
   const patchAgent = (id: string, patch: Partial<CustomAgent>) =>
     update({ customAgents: customAgents.map((a) => (a.id === id ? { ...a, ...patch } : a)) })
   // Through removeCustomAgent, never a bare filter: a removed agent that was the default (or
-  // disabled) would otherwise leave its dead id in `defaultAgent` / `disabledAgents`, and ⌘⇧C
+  // disabled) would otherwise leave its dead id in `defaultAgent` / `disabledAgents`, and Ctrl+Shift+C
   // would type the raw `custom:<uuid>` into a shell.
   const removeAgent = (id: string) => update(removeCustomAgent(useSettings.getState().settings, id))
   const addAgent = () =>

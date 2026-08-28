@@ -56,7 +56,7 @@ describe('makeLocalSetupRunner', () => {
   it('runs in the given cwd', async () => {
     const { promise, chunks } = run('pwd')
     await promise
-    // macOS temp dirs resolve through a /private symlink — compare realpaths.
+    // Temporary directories may resolve through links, so compare real paths.
     expect(chunks.join('').trim()).toBe(fs.realpathSync(tmpDir))
   })
 

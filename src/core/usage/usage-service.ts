@@ -161,7 +161,7 @@ export interface UsageServiceOptions {
    * Override the poll gate when the phone-facing MIRROR needs fresh data even though the shell's
    * own `shouldPoll` says no. On desktop `shouldPoll` is "is the window focused" — for the PILL —
    * but the phone reads the agent-status mirror's `usage` block with no window focused at all, so a
-   * focus-only gate froze that block into fossil bars whenever the Mac was in the background (the
+   * focus-only gate froze that block into fossil bars whenever the window was in the background (the
    * same "nobody connected ≠ nobody looking" bug the Server Edition already runs UNGATED to avoid).
    * When this returns true the background poll fires regardless of `shouldPoll`, at the same 15-min
    * cadence (4 req/hour/account — well inside the endpoint budget). Default: never (desktop wires it

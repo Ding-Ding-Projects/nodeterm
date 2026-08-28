@@ -876,7 +876,7 @@ In `Canvas.tsx`, immediately after `<div className="flow-wrap" ref={flowWrapRef}
           <div className="empty-canvas-hint" aria-hidden>
             <div>Right-click to add a terminal or agent</div>
             <div>
-              <span className="kbd">⌘K</span> command palette · <span className="kbd">+</span> in the dock below
+              <span className="kbd">Ctrl+K</span> command palette · <span className="kbd">+</span> in the dock below
             </div>
           </div>
         )}
@@ -917,7 +917,7 @@ Manual: new project → hint visible, right-click/box-select/pan all still work 
 
 ```bash
 git add src/renderer/canvas/Canvas.tsx src/renderer/styles.css
-git commit -m "feat(canvas): ghost hint on an empty canvas (right-click / ⌘K / dock)"
+git commit -m "feat(canvas): ghost hint on an empty canvas (right-click / Ctrl+K / dock)"
 ```
 
 ---

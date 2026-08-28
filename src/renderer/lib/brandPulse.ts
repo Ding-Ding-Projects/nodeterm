@@ -1,6 +1,6 @@
 // The brand marks, and the decision of when one of them IS an agent's working indicator.
 //
-// This module is deliberately REACT-FREE, like lib/grokMark.ts and lib/mascot.ts: the notch HUD
+// This module is deliberately REACT-FREE, like lib/grokMark.ts and lib/mascot.ts: the Agent HUD
 // (hud/main.ts) builds its DOM imperatively and must not pull React into its bundle, yet it needs
 // the exact same answer the canvas badge needs. So the decision lives here as a pure function, and
 // each surface keeps its own thin renderer on top of it (`BrandPulse` in agentIcons.tsx for React,
@@ -90,7 +90,7 @@ export function brandPulsePlan(agentId: AgentId | undefined, size: number): Bran
 
 /**
  * An asset mark as a CSS `background-image` value, for the surface that paints instead of using an
- * `<img>` (the notch HUD).
+ * `<img>` (the Agent HUD).
  *
  * The quotes are load-bearing, and measured: Vite INLINES these small brand SVGs as
  * `data:image/svg+xml,…` URIs, and the encoded markup carries literal `'` (every mark) and literal

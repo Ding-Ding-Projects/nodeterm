@@ -40,7 +40,7 @@ const SOCKET = `nt-paste-test-${process.pid}`
 const CONN = { host: 'h.example.com', user: 'deploy', port: 2222, identityFile: '/k/id' }
 
 function findTmux(): string | null {
-  for (const c of ['/usr/bin/tmux', '/usr/local/bin/tmux', '/opt/homebrew/bin/tmux', '/bin/tmux']) {
+  for (const c of ['/usr/bin/tmux', '/usr/local/bin/tmux', '/bin/tmux']) {
     if (fs.existsSync(c)) return c
   }
   return null

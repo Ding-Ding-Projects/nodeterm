@@ -121,7 +121,7 @@ export function allSectionIds(): SettingsSectionId[] {
 /**
  * The groups as the sidebar should render them for the supported desktop and browser surfaces.
  */
-export function visibleSettingsGroups(_usesMetaPrimary: boolean): SettingsGroup[] {
+export function visibleSettingsGroups(): SettingsGroup[] {
   return SETTINGS_GROUPS
 }
 

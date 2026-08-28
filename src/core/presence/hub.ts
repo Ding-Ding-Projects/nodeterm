@@ -43,7 +43,7 @@ export const TYPING_THROTTLE_MS = 500
  *   - project: one per tab switch. DELIBERATELY generous (see isClearingCast): a dropped project
  *     switch is not a lost frame but LOST STATE — the hub, and so every teammate's canvas, chips
  *     and facepile, would stay on the project you left, forever. A human input path cannot come
- *     near this: holding ⌘1 repeats the SAME id (the renderer dedups it, and the hub's setter
+ *     near this: holding Ctrl+1 repeats the SAME id (the renderer dedups it, and the hub's setter
  *     ignores an unchanged value anyway), so only DISTINCT switches spend a token.
  *   - hello: sent at connect (and once more when the user names themselves).
  * Excess casts are DROPPED silently. Never disconnect: an honest client that hits a burst edge
@@ -290,7 +290,7 @@ export class PresenceHub {
     if (peer.projectId === next) return
     peer.projectId = next
     const patch: Partial<Omit<PeerState, 'clientId'>> = { projectId: next }
-    // The cursor belonged to the OLD canvas. A project switch can be keyboard-driven (⌘1/⌘2, the
+    // The cursor belonged to the OLD canvas. A project switch can be keyboard-driven (Ctrl+1/Ctrl+2, the
     // palette) with the mouse parked, so no pointermove follows it and the renderer's sampler
     // never sends a new position — the stale coordinates would then be drawn on the NEW project's
     // canvas, forever, for everyone on it. Drop it HERE (the one place that knows the canvas

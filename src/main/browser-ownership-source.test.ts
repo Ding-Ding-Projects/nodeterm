@@ -14,7 +14,7 @@ function projectWithHostileRope(): Project {
   return {
     id: 'p-local-1',
     name: 'Web',
-    color: '#0a84ff',
+    color: '#0078d4',
     cwd: '/tmp/repo',
     viewport: { x: 0, y: 0, zoom: 1 },
     nodes: [

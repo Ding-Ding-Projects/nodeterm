@@ -226,8 +226,8 @@ describe('remoteSessionMemoryCommand under /bin/sh', () => {
     // The pane pid was resolved against the REAL process table: a live shell plus its children.
     // A 0 here would mean the rollup never found the pid, which is the failure worth catching.
     expect(r.rows[0].totalMb).toBeGreaterThan(0)
-    // Never assert `mem` unconditionally: this repo is maintained from macOS, which has no
-    // /proc/meminfo, so a bare `not.toBeNull()` turns `npm test` red there — and contradicts the
+    // Never assert `mem` unconditionally: hosts without /proc/meminfo legitimately report no
+    // reading, so a bare `not.toBeNull()` would contradict the
     // sibling test below, which asserts that exact absence is fine.
     //
     // The condition is what the SWEEP produced, not `fs.existsSync('/proc/meminfo')`: the test
@@ -240,14 +240,11 @@ describe('remoteSessionMemoryCommand under /bin/sh', () => {
     if (/Mem(Available|Total):/.test(memSection)) expect(r.mem).not.toBeNull()
   })
 
-  // A host with no /proc/meminfo (the macOS/BSD shape). Deliberately NO free/vm_stat/sysctl
-  // fallback: the sweep still answers with rows, and `mem` is null = "no signal", never a zero.
+  // A host with no /proc/meminfo. The sweep still answers with rows, and `mem` is null for no signal.
   //
   // COVERAGE LIMIT: the `cat` stub is what creates that condition on Linux. On a host that has no
-  // /proc/meminfo to begin with (macOS) the stub changes nothing, so there the test observes the
-  // NATIVE shape rather than a simulated one — the end state asserted is identical on both, but
-  // only the Linux run proves the stub-induced failure path. Making it strictly meaningful on
-  // macOS would need a `mem`-producing fallback, which is deliberately not implemented.
+  // /proc/meminfo to begin with, the stub changes nothing. The asserted end state is identical,
+  // while only the Linux run proves the stub-induced failure path.
   it('still reports rows with mem:null when /proc/meminfo is unreadable', async () => {
     // Stub `cat` so reading /proc/meminfo fails the way it does off Linux.
     const noproc = fakeHost('sessmem-nomem-', { tmux: FAKE_TMUX, cat: '#!/bin/sh\nexit 1\n' })

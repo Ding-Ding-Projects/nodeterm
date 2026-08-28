@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 /**
  * Rendered-markdown view of a sticky note body, shared by the canvas StickyNode and the kanban
- * card modal. The markdown lib (marked + DOMPurify) is lazy-loaded the way TerminalNode's Cmd+M
+ * card modal. The markdown lib (marked + DOMPurify) is lazy-loaded the way TerminalNode's Ctrl+M
  * overlay does it, so notes keep it out of the boot bundle. Rendered with `breaks`: sticky text
  * predates markdown, and a plain list of lines must not collapse into one paragraph.
  *

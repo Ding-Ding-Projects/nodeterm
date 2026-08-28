@@ -102,7 +102,7 @@ describe('ShortcutCaptureBanner', () => {
   })
 
   it('quotes the user’s own chord after a remap, never the registry default', () => {
-    setKb({ 'app.commandPalette': ['Cmd+Alt+P'] })
+    setKb({ 'app.commandPalette': ['Ctrl+Alt+P'] })
     render()
     capture('app.commandPalette')
     expect(body()).toContain('Ctrl+Alt+P')

@@ -17,7 +17,7 @@ const EmojiPicker = lazy(() => import('emoji-picker-react')) as React.LazyExotic
     theme?: 'dark' | 'light' | 'auto'
     // The library's `EmojiStyle` enum resolves to these plain strings at runtime; typed loosely
     // here (like `theme`) to avoid importing the enum at module scope. 'native' renders OS glyphs.
-    emojiStyle?: 'native' | 'apple' | 'twitter' | 'google' | 'facebook'
+    emojiStyle?: string
     lazyLoadEmojis?: boolean
     onEmojiClick?: (data: { emoji: string }) => void
     width?: string | number
@@ -37,10 +37,9 @@ export default function EmojiPickerLazy({ dark, onEmoji }: EmojiPickerLazyProps)
       <EmojiPicker
         autoFocusSearch={false}
         theme={dark ? 'dark' : 'light'}
-        // Render OS-native emoji glyphs. The library defaults to EmojiStyle.APPLE, which emits every
-        // emoji as an <img src="https://cdn.jsdelivr.net/…"> — blocked outright by the renderer CSP
-        // (img-src 'self' data: nt-media:), so the whole grid would be broken images + blocked CDN
-        // requests. 'native' (EmojiStyle.NATIVE) uses the font, offline-clean and CSP-safe.
+        // Render operating-system-native emoji glyphs. The library's image-backed default emits
+        // remote requests that the renderer CSP blocks. The native style uses the local font,
+        // works offline, and stays CSP-safe.
         emojiStyle="native"
         lazyLoadEmojis
         width="100%"

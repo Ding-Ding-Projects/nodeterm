@@ -79,7 +79,7 @@ describe('the session-memory panel is the one caller that fans a kill across soc
 })
 
 describe('the zoom chords go through their guarded decision, on both routes', () => {
-  // `lib/zoomShortcut.ts` owns when ⌘0 / Shift+1 may move the camera (not while the kanban board
+  // `lib/zoomShortcut.ts` owns when Ctrl+0 / Shift+1 may move the camera (not while the kanban board
   // covers the canvas, not while the user is typing). It is tested thoroughly on its own — what
   // nothing else can see is Canvas calling round it. Both failures are silent: a raw
   // `zoomShortcutChord` dispatch would fire under the board, and a bare `zoomTo100()` on the
@@ -89,7 +89,7 @@ describe('the zoom chords go through their guarded decision, on both routes', ()
     expect(CANVAS_SRC).toContain("if (action === 'zoom-100') zoomTo100()")
   })
 
-  it('re-asks the refusals on the ⌘0 route forwarded from main', () => {
+  it('re-asks the refusals on the Ctrl+0 route forwarded from main', () => {
     expect(CANVAS_SRC).toContain(
       'if (zoomShortcutAllowed(liveZoomShortcutContext())) zoomTo100()'
     )
@@ -101,7 +101,7 @@ describe('the trailing gestures are handed to the dispatcher', () => {
   // perfectly wired internally and simply never reach `dispatchGlobalKeydown`. Deleting
   // `zoom: zoomGesture,` from the gestures object keeps every assertion in this file — and in
   // globalKeybindings.test.ts, which supplies its own fakes — green while Shift+1 and the
-  // keydown ⌘0 route quietly stop moving the camera. Same shape for the other two: the project
+  // keydown Ctrl+0 route quietly stop moving the camera. Same shape for the other two: the project
   // jump and the file-reference copy have no other call site either.
   it('wires zoom, projectJump and copy into the dispatcher deps', () => {
     expect(CANVAS_SRC).toContain('zoom: zoomGesture')

@@ -187,15 +187,17 @@ section for details.
 
 ### Start on a fresh Windows installation
 
-The highlighted path needs no manually installed build tooling. Download this repository as a ZIP,
-extract it, and double-click `build.bat`. It automatically obtains the pinned Node.js runtime,
-Visual Studio C++ tools, Python, and project packages, requests administrator approval only for the
-toolchain installer when required, builds the runnable application, and asks whether to launch it
-after the build succeeds. No terminal preparation is required.
+**Nothing needs to be installed by hand.** On a completely fresh Windows installation, download
+this repository as a ZIP, extract it, and double-click `build.bat`. It requests administrator
+approval before any toolchain work, downloads and SHA-256-verifies the pinned Node.js, Python, and
+Visual Studio C++ bootstrap files, installs what is missing, restores project packages, builds the
+runnable application, and asks whether to launch it. No terminal preparation or separate setup
+guide is required.
 
-For unattended use, run `build.bat /s`. The equivalent installer path is `build-installer.bat /s`,
-which produces and validates the unsigned x64 Squirrel.Windows installer. Both scripts are safe to
-run from a super-fresh Windows machine and do not publish or modify GitHub releases.
+For unattended use, run `build.bat /s` from an elevated process on a completely fresh machine;
+silent mode never opens a UAC prompt. The equivalent installer path is `build-installer.bat /s`,
+which produces, hash-reports, and verifies the unsigned x64 Squirrel.Windows installer. Neither
+script publishes, tags, pushes, or modifies GitHub releases.
 
 Grab the latest build from **[nodeterm.dev](https://nodeterm.dev)** — the download button
 detects your platform. Everything is also listed at
@@ -212,7 +214,7 @@ directories too, or `uninstall.bat --dry-run` to inspect the exact plan without 
 Automation may use `uninstall.bat /s`, with `--purge` added only when data removal is intended.
 
 The Linux Server Edition keeps its separate systemd cleanup route in `scripts/uninstall.sh`; it is
-not the Deen No desktop uninstaller.
+not the Windows desktop uninstaller.
 
 The full inventory of what nodeterm writes where (and what the script keeps, like the
 `.nodeterm/` canvas folders inside your own repos) is documented in
@@ -223,7 +225,7 @@ The full inventory of what nodeterm writes where (and what the script keeps, lik
 The supported build path is Windows-first and requires no manual toolchain preparation. Download
 the repository ZIP, extract it, and double-click `build.bat`.
 
-```bash
+```bat
 build.bat /s             # bootstrap everything and build without prompts
 build-installer.bat /s  # bootstrap everything and build the unsigned installer
 npm run dev              # dev mode with renderer HMR

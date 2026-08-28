@@ -11,7 +11,7 @@ function project(breadcrumbs: NavStop[] = []): Project {
   return {
     id: 'p1',
     name: 'p',
-    color: '#0a84ff',
+    color: '#0078d4',
     viewport: { x: 0, y: 0, zoom: 1 },
     nodes: [],
     breadcrumbs

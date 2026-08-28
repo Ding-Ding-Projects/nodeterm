@@ -424,7 +424,7 @@ const DEFAULT_LIVE_BATCH_WINDOW_MS = 1000
 const DEFAULT_LIVE_COALESCE_MS = 20_000
 // Backend contract cap: updates[≤20] per call.
 const MAX_UPDATES_PER_CALL = 20
-// Live-activity field caps (Apple content-state stays small).
+// Live-activity field caps keep the mobile content state small.
 const LIVE_ACTIVITY_MAX = 80
 const LIVE_MESSAGE_MAX = 120
 // The `You: …` line. Same cap the mirror already applied — clipped again here because the field
@@ -442,7 +442,7 @@ export interface LiveUpdateItem {
   contextPercent?: number
   message?: string
   /** working START edge only: the first line of the user prompt that opened the turn — rendered as
-   *  `You: …`, the same line the notch capsule shows. Omitted on every other event. */
+   *  `You: …`, the same line the Agent HUD shows. Omitted on every other event. */
   prompt?: string
   /** needsYou only (spec: interactive-push-live-activities addendum): 'approval' | 'question'.
    *  Omitted otherwise — the backend also forces null on non-needsYou content-state. */
@@ -457,8 +457,8 @@ export interface LiveUpdateItem {
    *  finished. Omitted when false/absent, and never sent off a done edge — the backend also forces
    *  it null on non-done content-state. Without it the phone had only the `message` STRING
    *  ('Stopped' vs 'Finished') to tell the two apart, so a wording change silently altered
-   *  behaviour. A consumer that CELEBRATES a completion must skip this (same rule as the notch
-   *  HUD's `doneSeen`) — nothing was accomplished, so there is nothing to go and read. */
+   *  behaviour. A consumer that celebrates a completion must skip this, matching the Agent HUD's
+   *  `doneSeen` rule, because nothing was accomplished and there is nothing to read. */
   interrupted?: boolean
   /** done only: this end came from the stale-working SWEEP (nobody heard from the session for
    *  WORKING_STALE_MS, so it is presumed gone), NOT from the session itself. Same omission rules and
@@ -533,7 +533,7 @@ export function createLiveUpdatePush(deps: LiveUpdateDeps): LiveUpdateHandle {
   const pendingNow = new Map<string, NodeNowChange>()
   /**
    * The last STATE we told the phone about, per node. A now-tick carries no state of its own
-   * (`NodeNowChange` has none — the notch HUD, the other consumer of that seam, correctly never
+   * (`NodeNowChange` has none; the Agent HUD, the other consumer of that seam, correctly never
    * reads one), yet it has to send something, and it used to hardcode `working`. Two producers
    * fire a tick at exactly the wrong moment — the raw `Stop` hook clears the activity, and the
    * context tail's 1 s poll lands the turn's final usage record — so a tick would be parked for up

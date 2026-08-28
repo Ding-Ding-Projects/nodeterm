@@ -53,7 +53,7 @@ export function PresenceNamePrompt(): JSX.Element | null {
         onKeyDown={(e) => {
           if (e.key === 'Enter') submit()
           if (e.key === 'Escape') setDismissed(true)
-          e.stopPropagation() // never let canvas shortcuts (delete, ⌘K, "/") see this typing
+          e.stopPropagation() // never let canvas shortcuts (delete, Ctrl+K, "/") see this typing
         }}
       />
       <div className="presence-prompt__colors">

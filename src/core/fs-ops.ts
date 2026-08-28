@@ -203,7 +203,7 @@ async function rgAvailable(): Promise<boolean> {
 
 /**
  * Fuzzy-open file index for `rootPath`: root-relative `/`-paths. Two passes (tracked + ignored
- * so git-ignored build output like dist/*.dmg appears) minus a noise blocklist. rg →
+ * so git-ignored build output like dist/*-Setup.exe appears) minus a noise blocklist. rg →
  * git ls-files → capped readdir walk. Always resolves ([] if everything fails).
  */
 export async function listQuickOpenFiles(rootPath: string): Promise<string[]> {

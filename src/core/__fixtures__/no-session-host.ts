@@ -11,8 +11,7 @@
  * went from 78 passing in 2.8s to 73 failing in 355s purely because a build artifact appeared.
  *
  * A suite that cares which backend it exercises must therefore SAY SO rather than inherit whatever
- * the machine happens to have built — the same reasoning that makes `pty-bundled-tmux.test.ts` pin
- * `os.platform()` to darwin instead of trusting the host.
+ * the machine happens to have built. Backend selection must be explicit in every focused suite.
  *
  * This lives in one place on purpose: the mock has to name every export of
  * `./session-host-backend`, and four copies of that list would drift the first time an export is

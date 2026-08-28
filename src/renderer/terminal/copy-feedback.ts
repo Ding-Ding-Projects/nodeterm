@@ -5,7 +5,7 @@
 // a codex pane leaves the mouse to tmux, so a drag is a copy-mode selection that `copy-pipe-and-
 // cancel` copies via OSC 52 on RELEASE — clearing the highlight at the same instant, which reads
 // as "the copy failed". A claude pane captures the mouse, so a plain drag produces nothing at all
-// and only ⌥/Shift (xterm's own selection) works. Neither state had any on-screen evidence.
+// and only Shift (xterm's own selection) works. Neither state had any on-screen evidence.
 //
 // This module is the decision alone: no DOM, no React, no storage. `useCopyFeedback` is the glue.
 
@@ -57,11 +57,10 @@ export function decideDragOutcome(input: {
   sawOsc52: boolean
   hasXtermSelection: boolean
   hintSeen: boolean
-  useMetaPrimary: boolean
 }): { kind: 'hint'; label: string } | null {
-  const { movedPx, sawOsc52, hasXtermSelection, hintSeen, useMetaPrimary } = input
+  const { movedPx, sawOsc52, hasXtermSelection, hintSeen } = input
   if (movedPx < DRAG_MIN_PX) return null
   // A copy happened (tmux copy-mode) or the user already knows the modifier — nothing to teach.
   if (sawOsc52 || hasXtermSelection || hintSeen) return null
-  return { kind: 'hint', label: `Hold ${useMetaPrimary ? '⌥' : 'Shift'} to select text` }
+  return { kind: 'hint', label: 'Hold Shift to select text' }
 }

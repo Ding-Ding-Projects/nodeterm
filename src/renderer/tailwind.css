@@ -4,7 +4,7 @@
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities);
 
-/* Bridge Tailwind's theme to the existing macOS-dark :root tokens, so utilities
+/* Bridge Tailwind's theme to the existing Windows dark-theme root tokens, so utilities
    like bg-panel / text-muted / border-border resolve to the single source of truth. */
 @theme {
   --color-bg: var(--bg);
@@ -17,7 +17,7 @@
   --color-muted-2: var(--muted-2);
   --color-border: var(--border);
   /* Surface overlays and status hues, so components stop writing `bg-white/10` or
-     `text-[#ff9f0a]` — both of which break the moment the surface under them turns light. */
+     `text-[#f7630c]`; both break the moment the surface under them turns light. */
   --color-fill: rgba(var(--tint-rgb), 0.15);
   --color-fill-weak: rgba(var(--tint-rgb), 0.1);
   --color-danger: var(--danger);

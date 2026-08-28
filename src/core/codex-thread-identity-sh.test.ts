@@ -17,7 +17,7 @@ let root = ''
 let script = ''
 
 beforeAll(() => {
-  // A space in the path on purpose: the real one is macOS's "Application Support".
+  // A space in the path on purpose because the quoting contract must preserve it.
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'nodeterm codex prelude '))
   root = path.join(dir, 'codex-thread-nodes')
   fs.mkdirSync(root, { recursive: true })

@@ -1,10 +1,7 @@
 name: Windows Build
 
 on:
-  pull_request:
-    branches: [main]
   push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -17,17 +14,9 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - name: Install project dependencies
-        run: npm ci
-
-      - name: Build application outputs
-        run: npm run build
+      - name: Bootstrap and build application outputs
+        shell: cmd
+        run: build.bat /s
 
       - name: Verify required Windows outputs
         shell: pwsh
@@ -44,3 +33,18 @@ jobs:
               throw "Required build output is missing: $path"
             }
           }
+
+      - name: Upload safe build evidence
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-${{ github.run_id }}-${{ github.sha }}
+          path: |
+            out/main/index.js
+            out/preload/index.js
+            out/renderer/index.html
+            out/session-host/host.cjs
+            out/main/codex-relay.js
+          if-no-files-found: warn
+          retention-days: 7

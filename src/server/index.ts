@@ -406,7 +406,7 @@ export async function startServer(
   const installMeta = readInstallMeta(config.dataDir)
   setMirrorServerProvider(() => installMeta)
   const { contextTail, geminiContextTail } = wireAgentStatus(platform)
-  // The ⌘M chat view + the find-bar's transcript index. Registered HERE rather than with the rest
+  // The Ctrl+M chat view + the find-bar's transcript index. Registered HERE rather than with the rest
   // of the handlers because the hook-fed path authority is the tail created just above. No remote
   // leg: the Server Edition runs ON the host whose transcripts it reads, so local resolution is
   // the complete answer (an SSH-project node is a desktop-only concept here).
@@ -529,7 +529,7 @@ export async function startServer(
   hookServer.setControlHandler(serverEditionControlHandler)
 
   // ---- Node identity (src/core/agents/node-auth-secret.ts) ------------------------------------
-  // First time the Server Edition arms node identity. Headless Linux has no OS keychain, so the
+  // First time the Server Edition arms node identity. Headless Linux has no OS credential vault, so the
   // secret is stored as raw 0600 bytes (node-auth-key.bin); the loader handles the at-rest format.
   // FAIL OPEN and LOUD: if the secret can't be created/read, identity stays unavailable (legacy
   // mode) and the hook server keeps serving — a throw here must never block boot or the hooks.

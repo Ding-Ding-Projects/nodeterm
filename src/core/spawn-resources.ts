@@ -36,19 +36,20 @@ const NEAR_LIMIT = 16
  * These two numbers are the closest thing available, and they are cheap: a directory listing and a
  * field already inside Node's own report.
  *
- * `/dev/fd` is the descriptor list on macOS AND on Linux (where it is a symlink to
- * `/proc/self/fd`), which is why it is read directly rather than branched on platform. Note the
- * listing itself holds a descriptor while it runs, so the count is honest to within one.
+ * `/proc/self/fd` is available on Linux hosts. Windows reports this measurement as unavailable;
+ * the process and live-PTY evidence still remain.
  *
  * Fail-open in every direction: this runs INSIDE an error path, and a diagnostic that throws would
  * replace a bad error message with no error message at all.
  */
 export function readSpawnResources(): SpawnResources {
   let openFds: number | null = null
-  try {
-    openFds = fs.readdirSync('/dev/fd').length
-  } catch {
-    openFds = null
+  if (process.platform !== 'win32') {
+    try {
+      openFds = fs.readdirSync('/proc/self/fd').length
+    } catch {
+      openFds = null
+    }
   }
   let fdSoft: number | null = null
   let procSoft: number | null = null

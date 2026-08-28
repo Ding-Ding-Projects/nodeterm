@@ -19,7 +19,7 @@ function project(over: Partial<Project> = {}): Project {
   return {
     id: 'p1',
     name: 'Alpha',
-    color: '#0a84ff',
+    color: '#0078d4',
     cwd: '/repo/alpha',
     viewport: { x: 0, y: 0, zoom: 1 },
     nodes: [],
@@ -130,11 +130,11 @@ describe('ProjectSettingsSection', () => {
 
   it('picks a color and persists it', async () => {
     await mountSection()
-    const swatch = host.querySelector<HTMLButtonElement>('button[data-project-color="#32d74b"]')!
+    const swatch = host.querySelector<HTMLButtonElement>('button[data-project-color="#107c10"]')!
     await act(async () => {
       swatch.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     })
-    expect(useProjects.getState().getProject('p1')?.color).toBe('#32d74b')
+    expect(useProjects.getState().getProject('p1')?.color).toBe('#107c10')
     expect(dirty).toHaveBeenCalledTimes(1)
   })
 

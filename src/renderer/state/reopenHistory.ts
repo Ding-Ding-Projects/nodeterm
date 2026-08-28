@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { ReopenNodeSnapshot } from '@renderer/lib/reopenNode'
 
 /** A single "close" event this session recorded — a project tab close, or a batch of node
- *  deletions from one Delete/×/Cmd+W action. In-memory only: unlike closed-project state
+ *  deletions from one Delete/×/Ctrl+W action. In-memory only: unlike closed-project state
  *  (`project.closed`), which persists, this history resets on app restart — the same
  *  convention a browser's own "reopen closed tab" uses. */
 export type ReopenEntry =

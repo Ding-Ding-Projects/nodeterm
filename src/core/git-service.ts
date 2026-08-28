@@ -38,10 +38,9 @@ const GH_PATH = findBin(
     : ['/usr/bin/gh']
 )
 
-// GUI apps on macOS don't inherit the shell PATH, so a git credential helper installed by
-// Homebrew (e.g. `gh auth git-credential`, or osxkeychain shims) wouldn't be found by our
-// `git` subprocess — making push/pull fail even when the user is authed. Prepend the common
-// bin dirs. GIT_TERMINAL_PROMPT=0 makes auth failures error out fast instead of hanging on a
+// GUI processes may not inherit every user PATH addition, so a Git credential helper can be
+// missing from a child process even when the user is authenticated. Prepend supported locations.
+// GIT_TERMINAL_PROMPT=0 makes authentication failures return instead of hanging on a
 // username prompt (there's no TTY here).
 const GIT_ENV: NodeJS.ProcessEnv = {
   ...process.env,
@@ -55,7 +54,7 @@ const GIT_ENV: NodeJS.ProcessEnv = {
 }
 
 // Single-flight registry for the one clone the app runs at a time. Module-scoped so a
-// macOS window re-creation can't orphan it.
+// Windows window re-creation cannot orphan it.
 type ActiveClone = {
   child: import('child_process').ChildProcess | null
   clonePath: string
@@ -187,8 +186,8 @@ function parseNumstat(out: string): Map<string, { added: number; deleted: number
 }
 
 /**
- * Read the user's stored github.com HTTPS token from git's credential helper
- * (macOS keychain etc.) so we can hand it to `gh` as GH_TOKEN — letting someone
+ * Read the user's stored github.com HTTPS token from Git Credential Manager so we can hand it to
+ * `gh` as GH_TOKEN, letting someone
  * who can already push over HTTPS publish a new repo without a separate
  * `gh auth login`. Returns null if no HTTPS credential is stored (e.g. SSH-only).
  * Never logs the token. `git credential fill` reads the query from stdin.

@@ -158,7 +158,7 @@ describe('grok capabilities', () => {
   it('reports status through its own hooks', () => {
     // What had to be true first: a normalizer for grok's dialect (normalizeGrok) and an installer
     // that writes $GROK_HOME/hooks/nodeterm-status.json. Both exist now, so the badge, the unread
-    // dot, the completion notification, the notch capsule and the session-id capture all apply.
+    // dot, the completion notification, the Agent HUD and the session-id capture all apply.
     expect(hasHooks('grok')).toBe(true)
     expect(canResume('grok')).toBe(true)
   })

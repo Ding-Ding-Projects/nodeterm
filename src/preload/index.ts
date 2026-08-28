@@ -21,7 +21,7 @@ import type { ClientId, PeerDiff, PeerIdentity, PeerState } from '../shared/pres
 import type { ProjectConsentRequest, ProjectSetupEvent } from '../shared/project-settings'
 
 // Fan a single ipcRenderer listener per channel out to many renderer subscribers. Without
-// this, every node that subscribes (e.g. Cmd+M markdown toggle on each terminal/editor) adds
+// this, every node that subscribes (e.g. Ctrl+M markdown toggle on each terminal/editor) adds
 // its own ipcRenderer listener, tripping Node's MaxListeners (>10) warning. Returns unsubscribe.
 function subscribe<A extends unknown[] = []>(channel: string) {
   const listeners = new Set<(...args: A) => void>()
@@ -687,7 +687,7 @@ const api: NodeTerminalApi = {
   // ipcRenderer listeners and trip the MaxListeners warning.
   shortcuts: {
     // Fire-and-forget: nothing waits on the answer. Main clears the bit itself on the three ways
-    // this page can stop existing — window closed, renderer died, main-frame navigation (⌘R) —
+    // this page can stop existing because the window closed, renderer died, or main-frame navigation (Ctrl+R) ran;
     // but those are a backstop for a page that VANISHED, not a general safety net: an ordinary
     // disarm that never sends leaves the shortcuts suppressed until one of them happens.
     setRecording: (active: boolean) => ipcRenderer.send(IPC.uiShortcutRecording, active),

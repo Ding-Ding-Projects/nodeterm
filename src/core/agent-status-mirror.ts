@@ -343,7 +343,7 @@ export interface InboxNodeNow {
   contextPercent?: number
   /** ≤PROMPT_MAX — the first line of the user prompt that opened the CURRENT turn ("You: …").
    *  Set on a new turn, cleared with `activity` when the turn ends, so a phone poll (which has no
-   *  access to the push edges) can render the same line the push carries and the notch shows. */
+   *  access to the push edges) can render the same line the push carries and the Agent HUD shows. */
   prompt?: string
   updatedAt: number
 }
@@ -702,7 +702,7 @@ export interface NodeStateChange {
    *  event, letting an intent answer the held hook. Absent otherwise. */
   pendingId?: string
   /** working START edge only: the first line of the user prompt that opened this turn ("You: …"),
-   *  ≤PROMPT_MAX. The one line that says WHAT a session is working on — the notch capsule shows it,
+   *  ≤PROMPT_MAX. The one line that says WHAT a session is working on, which the Agent HUD shows,
    *  and it rides the Live Activity so the phone reads the same thing. Absent when the turn started
    *  without a prompt we saw (a resumed session, a tool-driven working edge). */
   prompt?: string
@@ -713,7 +713,7 @@ export interface NodeStateChange {
   /** done only: the turn ended because the user interrupted it (Esc/Ctrl-C) rather than
    *  finishing — or a session boundary (SessionStart/SessionEnd) reset the node while it was
    *  still `working`, which is the same story: the run stopped without producing anything.
-   *  Consumers that celebrate a completion (notification, the notch HUD's "finished, unseen"
+   *  Consumers that celebrate a completion (notification, the Agent HUD's "finished, unseen"
    *  highlight) skip it — nothing was accomplished, so there is nothing to go and read. */
   interrupted?: boolean
   /** done only: this 'end' was produced by an explicit desktop/browser READ of the finished
@@ -1550,7 +1550,7 @@ export function clearNode(nodeId: string): void {
   // A node deleted MID-TURN owes exactly one end edge, for the same reason the session-ended-
   // mid-turn branch in `produceInboxFromState` does: dropping the map entry only makes the mirror
   // FILE forget the node, while every LIVE surface is driven by this seam, not by the file. With
-  // no edge, deleting a working/blocked node left the notch HUD holding its needs-you/done row
+  // no edge, deleting a working/blocked node left the Agent HUD holding its needs-you/done row
   // until the 6 h prune — its title collapsing to the literal 'Session' once the entry behind it
   // was gone — and left the phone a Live Activity nothing would ever end.
   //
@@ -1677,7 +1677,7 @@ export function ackDone(nodeId: string): void {
  *
  * For each node that has been `working` with no event for `staleMs`: move the entry off working and
  * fire ONE synthetic end edge, marked `stale` so no consumer treats it as an achievement. Every
- * surface that already listens to `onNodeStateChange` inherits the fix — the notch drops the row,
+ * surface that already listens to `onNodeStateChange` inherits the fix: the Agent HUD drops the row,
  * the phone's Live Activity ENDS instead of sitting on the Lock Screen until iOS's 8 h staleness.
  *
  * Deliberately NOT done here: no inbox event is pushed (nothing finished, so there is nothing to

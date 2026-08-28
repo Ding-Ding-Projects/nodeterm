@@ -23,15 +23,15 @@ describe('Windows keybinding registry', () => {
     expect(COMMANDS_BY_ID.size).toBe(ids.length)
     for (const definition of COMMAND_DEFINITIONS) {
       expect(Array.isArray(definition.defaultBindings)).toBe(true)
-      expect(definition.defaultBindings.join(' ')).not.toMatch(/darwin|Cmd/i)
+      expect(definition.defaultBindings.join(' ')).not.toMatch(/Meta|Super/i)
     }
   })
 
   it('ships the expected Windows defaults', () => {
-    expect(getEffectiveBindings('app.commandPalette', {}, false)).toEqual(['Ctrl+K'])
-    expect(getEffectiveBindings('node.close', {}, false)).toEqual(['Ctrl+W'])
-    expect(getEffectiveBindings('canvas.redo', {}, false)).toEqual(['Ctrl+Shift+Z', 'Ctrl+Y'])
-    expect(getEffectiveBindings('terminal.copySelection', {}, false)).toEqual([
+    expect(getEffectiveBindings('app.commandPalette', {})).toEqual(['Ctrl+K'])
+    expect(getEffectiveBindings('node.close', {})).toEqual(['Ctrl+W'])
+    expect(getEffectiveBindings('canvas.redo', {})).toEqual(['Ctrl+Shift+Z', 'Ctrl+Y'])
+    expect(getEffectiveBindings('terminal.copySelection', {})).toEqual([
       'Ctrl+C',
       'Ctrl+Shift+C',
       'Ctrl+Insert'
@@ -39,25 +39,24 @@ describe('Windows keybinding registry', () => {
   })
 
   it('normalizes and validates Windows bindings', () => {
-    expect(normalizeBindingForCommand(command('node.newTerminal'), 'shift+t+ctrl', false)).toEqual({
+    expect(normalizeBindingForCommand(command('node.newTerminal'), 'shift+t+ctrl')).toEqual({
       ok: true,
       value: 'Ctrl+Shift+T'
     })
-    expect(normalizeBindingForCommand(command('node.newTerminal'), 'Cmd+Ctrl+T', false).ok).toBe(false)
-    expect(normalizeBindingForCommand(command('node.newTerminal'), 'Shift+T', false).ok).toBe(false)
-    expect(normalizeBindingForCommand(command('canvas.deleteSelection'), 'Delete', false)).toEqual({
+    expect(normalizeBindingForCommand(command('node.newTerminal'), 'Shift+T').ok).toBe(false)
+    expect(normalizeBindingForCommand(command('canvas.deleteSelection'), 'Delete')).toEqual({
       ok: true,
       value: 'Delete'
     })
   })
 
   it('keeps override sanitization and conflict identity deterministic', () => {
-    const result = sanitizeKeybindingOverrides(
-      { 'app.commandPalette': ['Ctrl+K'], 'node.newTerminal': ['Ctrl+K'] },
-      false
-    )
+    const result = sanitizeKeybindingOverrides({
+      'app.commandPalette': ['Ctrl+K'],
+      'node.newTerminal': ['Ctrl+K']
+    })
     expect(result.warnings.length).toBeGreaterThan(0)
-    expect(bindingIdentity('Ctrl+K', false)).toBe(bindingIdentity('Ctrl+K', true))
+    expect(bindingIdentity('Control+K')).toBe(bindingIdentity('Ctrl+K'))
   })
 
   it('resolves the command palette shortcut on Windows', () => {
@@ -65,8 +64,7 @@ describe('Windows keybinding registry', () => {
       resolveCommandForKeyEvent(
         { key: 'k', ctrlKey: true, metaKey: false, altKey: false, shiftKey: false },
         { typing: false, terminal: false, kanbanOpen: false, terminalFirst: false },
-        {},
-        false
+        {}
       )
     ).toBe('app.commandPalette')
   })

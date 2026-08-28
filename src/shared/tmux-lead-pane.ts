@@ -10,7 +10,7 @@
  * manual resize is clobbered seconds later. There is no CC setting for it, and nodeterm owns the
  * tmux server + generated conf, so this is the one place a user preference can live.
  *
- * The mechanism is the reporter's own tested pair of guarded hooks (tmux 3.6a, macOS; re-proven
+ * The mechanism is the reporter's own tested pair of guarded hooks (tmux 3.6a, re-proven
  * against this repo's tmux in tmux-lead-pane.realtmux.test.ts):
  *  - `after-resize-pane`: if the lead ({top-left}) has been squeezed below the guard threshold,
  *    resize it back to the target width. SELF-TERMINATING by construction: the hook's own

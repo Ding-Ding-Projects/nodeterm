@@ -66,7 +66,7 @@ export function sanitizePasteText(text: string): string {
  * "Pass paste buffer through vis(3) when pasting to prevent buffers containing for example the
  * bracket end sequence causing issues"): every pasted byte now goes through
  * `utf8_stravisx(VIS_SAFE|VIS_NOSLASH)`, which rewrites the ESC byte into the two PRINTABLE
- * characters `^[`. Measured on tmux 3.7b (the exact version the macOS app bundles): the pane's app
+ * characters `^[`. Measured on tmux 3.7b: the pane's application
  * received literal `^[[200~ … ^[[201~` TEXT — no frame, so the message sat unsubmitted in the
  * composer (issue #453). The `-S` flag that disables vis(3) is itself new in 3.7, so it cannot be
  * the fix on older servers.

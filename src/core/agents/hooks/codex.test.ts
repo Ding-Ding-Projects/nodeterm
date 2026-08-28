@@ -11,6 +11,16 @@ describe('buildManagedCommand', () => {
       "if [ -x '/a/b/codex.sh' ]; then /bin/sh '/a/b/codex.sh'; fi"
     )
   })
+  it('uses native PowerShell for a Windows hook script', () => {
+    const command = buildManagedCommand('C:\\Users\\x\\.nodeterm\\agent-hooks\\codex.ps1')
+    expect(command).toContain('powershell.exe')
+    const encoded = command.split(' ').at(-1)
+    expect(encoded).toBeTruthy()
+    const body = Buffer.from(encoded!, 'base64').toString('utf16le')
+    expect(body).toContain('codex.ps1')
+    expect(body).toContain('[Console]::In.ReadToEnd()')
+    expect(command).not.toContain('/bin/sh')
+  })
 })
 
 describe('buildCodexHooksAndTrust', () => {

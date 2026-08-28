@@ -47,7 +47,7 @@ export function setDefaultAgent(settings: Avail, id: AgentId): Avail {
 /**
  * Remove a custom agent WITHOUT leaving dangling references: its id is dropped from
  * `disabledAgents` (a dead id there is inert but would resurrect oddly if a same-id agent ever
- * reappeared), and a default pointing at it is reassigned — otherwise ⌘⇧C would type the raw
+ * reappeared), and a default pointing at it is reassigned; otherwise Ctrl+Shift+C would type the raw
  * `custom:<uuid>` into a shell (resolveAgent's unknown-id fallback launches the id itself).
  */
 export function removeCustomAgent(settings: Avail, id: AgentId): Avail {
@@ -63,7 +63,7 @@ export function removeCustomAgent(settings: Avail, id: AgentId): Avail {
 /**
  * The default agent as something that can actually LAUNCH: the setting itself when it names a
  * builtin or an existing custom agent, else the first enabled agent. Guards the launch sites
- * (⌘⇧C, the Add menu's default) against a persisted default whose custom agent was since
+ * (Ctrl+Shift+C, the Add menu's default) against a persisted default whose custom agent was since
  * removed — settings.json is hand-editable and older builds deleted custom agents without
  * reassigning the default, so the stale-id case exists in the wild, not only in theory.
  */

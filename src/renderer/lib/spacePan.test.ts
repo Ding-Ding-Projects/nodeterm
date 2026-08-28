@@ -29,7 +29,7 @@ describe('spacePanKeydown', () => {
   })
 
   it('ignores a MODIFIED space, which belongs to someone else', () => {
-    // ⌘Space is the OS switcher; Ctrl/Alt+Space are other people's bindings.
+    // Windows-key+Space changes input language; Ctrl/Alt+Space belong to other bindings.
     expect(spacePanKeydown({ key: ' ', metaKey: true }, null)).toBe('ignore')
     expect(spacePanKeydown({ key: ' ', ctrlKey: true }, null)).toBe('ignore')
     expect(spacePanKeydown({ key: ' ', altKey: true }, null)).toBe('ignore')
@@ -53,7 +53,7 @@ describe('isSpaceRelease', () => {
   })
 
   it('is modifier-BLIND, so a pan can always be released', () => {
-    // Tapping ⌘ mid-pan still delivers a keyup for space. Requiring an unmodified release would
+    // Tapping the Windows key mid-pan still delivers a keyup for space. Requiring an unmodified release would
     // strand the canvas in grab mode until the user pressed space again.
     expect(isSpaceRelease({ key: ' ', metaKey: true })).toBe(true)
   })

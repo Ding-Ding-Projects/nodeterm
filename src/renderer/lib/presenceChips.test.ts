@@ -19,10 +19,10 @@ describe('chipStrip (what a node header draws for the peers focused on it)', () 
   })
 
   it('draws one chip per peer (initial + color + name tooltip) when they all fit', () => {
-    const strip = chipStrip([face(8, { name: 'ada', color: '#ff9f0a' }), face(9, { name: 'Bo' })])
+    const strip = chipStrip([face(8, { name: 'ada', color: '#f7630c' }), face(9, { name: 'Bo' })])
     expect(strip.overflow).toBe(0)
     expect(strip.chips).toEqual([
-      { clientId: 8, letter: 'A', color: '#ff9f0a', title: 'ada is here', typing: false },
+      { clientId: 8, letter: 'A', color: '#f7630c', title: 'ada is here', typing: false },
       { clientId: 9, letter: 'B', color: '#5ac8fa', title: 'Bo is here', typing: false }
     ])
   })

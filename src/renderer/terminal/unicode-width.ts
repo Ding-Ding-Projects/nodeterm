@@ -38,7 +38,7 @@ import type { Terminal } from '@xterm/xterm'
  *
  * WHAT TO WATCH, because this cuts both ways. Agreement is the goal, not the number 11: if a host's
  * tmux were built WITHOUT utf8proc it would use a width-1 table and this would introduce the same
- * mismatch in the opposite direction. Homebrew and Debian both build tmux with utf8proc, so the
+ * mismatch in the opposite direction. Supported tmux builds use utf8proc, so the
  * realistic case is the one this fixes; a host that misaligns AFTER this change is the case to
  * report, and the fix there is that host's tmux, not a return to Unicode 6.
  *

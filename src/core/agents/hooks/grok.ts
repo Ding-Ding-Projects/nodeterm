@@ -8,7 +8,7 @@ import { GROK_HOOK_EVENTS } from '@shared/agents/hook-events'
 import { GROK_HOOK_FILE, grokHomeDir } from '../grok-paths'
 import { installHooksInto, removeHooksFrom } from './install-helper'
 
-const SCRIPT_FILE_NAME = 'grok.sh'
+const SCRIPT_FILE_NAME = process.platform === 'win32' ? 'grok.ps1' : 'grok.sh'
 
 /** Our hook file inside grok's hooks directory. Exported for tests and for the SSH installer,
  *  which must write the identical name on the host. */

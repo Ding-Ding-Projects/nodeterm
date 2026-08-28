@@ -26,7 +26,7 @@ export function SettingsSidebar({
 }): React.JSX.Element {
   const hasQuery = query.trim() !== ''
   const GROUPS = useMemo(
-    () => [...visibleSettingsGroups(false), ...(extraGroups ?? [])],
+    () => [...visibleSettingsGroups(), ...(extraGroups ?? [])],
     [extraGroups]
   )
   return (

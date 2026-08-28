@@ -598,7 +598,7 @@ describe('opaqueNodeIds', () => {
     expect(opaqueNodeIds([outside, group, child])).toEqual(['t'])
   })
 
-  it('ignores collapsed and ⌘M terminals — they hold no grid either way', () => {
+  it('ignores collapsed and Ctrl+M terminals because they hold no grid either way', () => {
     expect(opaqueNodeIds([at('a', 0, 0), at('b', 50, 50, { data: { collapsed: true } })])).toEqual(
       []
     )

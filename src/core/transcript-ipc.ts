@@ -1,4 +1,4 @@
-// The two transcript READ channels — the ⌘M chat view (`chat:read-transcript`) and the find-bar's
+// The two transcript READ channels, the Ctrl+M chat view (`chat:read-transcript`) and the find-bar's
 // full-transcript index (`claude:read-transcript`) — registered through the CorePlatform seam so
 // BOTH shells serve them.
 //

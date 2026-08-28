@@ -64,13 +64,13 @@ const REAL_HOMES = [
   '/home/enes',
   '/home/user.name',
   '/home/user-name',
-  '/Users/First Last',
-  '/Users/Enes Kırca',
+  '/home/First Last',
+  '/home/Enes Kırca',
   '/home/ünal',
   '/home/用户',
   '/home/josé',
   '/home/пользователь',
-  '/Users/山田',
+  '/home/山田',
   '/export/home/u',
   '/var/lib/jenkins',
   '/var/services/homes/user', // Synology DSM
@@ -80,7 +80,7 @@ const REAL_HOMES = [
   "/home/o'brien",
   '/data/homes/dept 3/u',
   '/home/u.d/nested',
-  '/System/Volumes/Data/Users/e',
+  '/srv/users/e',
   `/home/${'a'.repeat(4000)}`
 ]
 
@@ -109,7 +109,7 @@ describe('no false positives on values that really occur', () => {
 
 describe('isSafeRemoteHome', () => {
   it('accepts real absolute homes, including spaces and non-ASCII', () => {
-    for (const h of ['/home/u', '/Users/Enes Kırca', '/var/lib/deploy', '/'])
+    for (const h of ['/home/u', '/home/Enes Kırca', '/var/lib/deploy', '/'])
       expect(isSafeRemoteHome(h)).toBe(true)
   })
 

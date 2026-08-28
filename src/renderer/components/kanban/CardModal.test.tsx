@@ -71,7 +71,7 @@ describe('CardModal', () => {
     const session: KanbanSession = {
       id: 'node-sticky-1',
       title: 'First line',
-      color: '#ffd60a',
+      color: '#fce100',
       kind: 'sticky',
       text: 'First line',
       spawn: {}
@@ -154,7 +154,7 @@ describe('CardModal', () => {
     const session: KanbanSession = {
       id: 'node-sticky-enter',
       title: 'Press Enter Note',
-      color: '#ffd60a',
+      color: '#fce100',
       kind: 'sticky',
       text: 'Press Enter Note',
       spawn: {}
@@ -194,7 +194,7 @@ describe('CardModal', () => {
     const session: KanbanSession = {
       id: 'node-term-1',
       title: 'Original Title',
-      color: '#0a84ff',
+      color: '#0078d4',
       kind: 'terminal',
       spawn: {}
     }
@@ -268,7 +268,7 @@ describe('CardModal', () => {
     const session: KanbanSession = {
       id: 'node-sticky-close',
       title: 'Close Note',
-      color: '#ffd60a',
+      color: '#fce100',
       kind: 'sticky',
       text: 'Close Note',
       spawn: {}
@@ -322,7 +322,7 @@ describe('CardModal', () => {
     const session: KanbanSession = {
       id: 'node-sticky-sheet',
       title: 'Sheet Note',
-      color: '#ffd60a',
+      color: '#fce100',
       kind: 'sticky',
       text: 'Sheet Note',
       spawn: {}
@@ -363,7 +363,7 @@ describe('CardModal', () => {
     const session: KanbanSession = {
       id: 'node-sticky-dialog-stack',
       title: 'Dialog Stack Note',
-      color: '#ffd60a',
+      color: '#fce100',
       kind: 'sticky',
       text: 'Dialog Stack Note',
       spawn: {}
@@ -417,7 +417,7 @@ describe('CardModal', () => {
     const session: KanbanSession = {
       id: 'node-term-focused',
       title: 'Terminal Card',
-      color: '#0a84ff',
+      color: '#0078d4',
       kind: 'terminal',
       spawn: {}
     }

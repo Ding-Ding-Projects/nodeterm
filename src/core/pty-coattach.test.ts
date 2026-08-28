@@ -190,7 +190,7 @@ describe('terminal co-attach: one PTY, N subscribers', () => {
     expect(spawned).toHaveLength(1)
   })
 
-  // The agent-status mirror feeds the notch HUD, the phone's Live Activity and its Inbox. Deleting
+  // The agent-status mirror feeds the Agent HUD, the phone's Live Activity and its Inbox. Deleting
   // a node used to tell it NOTHING — `clearNode` had no production caller — so those surfaces kept
   // rendering a node that no longer exists. It is wired at the one core chokepoint both shells
   // share (`endSession`), and gated on the DELETE intent: a RECYCLE keeps the node, so clearing
@@ -846,7 +846,7 @@ describe('node destroyed while co-viewed', () => {
     await create(ALICE)
     await destroy(ALICE)
 
-    // ⌘Z restores the node on Alice's canvas: her own re-create must spawn, exactly as it always
+    // Ctrl+Z restores the node on Alice's canvas: her own re-create must spawn, exactly as it always
     // did (the single-user delete→undo path is untouched by the tombstone).
     const undone = await create(ALICE)
     expect(undone.closed).toBeUndefined()
@@ -1004,7 +1004,7 @@ describe('destroy/recycle: bounded, validated, rate-limited', () => {
     await create(ALICE, 'node-1')
     await destroy(ALICE, 'node-1')
 
-    const undone = await create(ALICE, 'node-1') // ⌘Z
+    const undone = await create(ALICE, 'node-1') // Ctrl+Z
     expect(undone.closed).toBeUndefined()
     expect(undone.fresh).toBe(true)
   })

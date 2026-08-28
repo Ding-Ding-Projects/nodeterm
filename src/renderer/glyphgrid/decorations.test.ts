@@ -24,7 +24,7 @@ describe('decorationAt', () => {
   })
 
   it('skips the per-cell walk entirely when the reader reports empty', () => {
-    // The common case by a wide margin — nobody has ⌘F open — and this runs per CELL, so the
+    // The common case by a wide margin is that nobody has Ctrl+F open, and this runs per CELL, so the
     // answer has to cost one boolean and nothing else.
     const r = reader([])
     decorationAt(r, 0, 0)

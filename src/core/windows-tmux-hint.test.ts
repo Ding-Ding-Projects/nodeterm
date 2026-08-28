@@ -6,11 +6,14 @@ describe('Windows tmux discovery boundary', () => {
     expect(tmuxInstall('win32', () => true)).toBeNull()
   })
 
-  it('keeps the POSIX fallback list free of Apple package-manager paths', () => {
+  it('uses only the supported Linux and Nix fallback paths', () => {
     const paths = tmuxCandidatePaths('/home/example', 'example')
-    expect(paths).toContain('/usr/bin/tmux')
-    expect(paths).toContain('/home/example/.nix-profile/bin/tmux')
-    expect(paths.join('\n')).not.toMatch(/homebrew|macports|opt\/local/i)
+    expect(paths).toEqual([
+      '/usr/bin/tmux',
+      '/bin/tmux',
+      '/home/example/.nix-profile/bin/tmux',
+      '/etc/profiles/per-user/example/bin/tmux'
+    ])
   })
 
   it('checks PATH before fixed Linux fallback directories', () => {

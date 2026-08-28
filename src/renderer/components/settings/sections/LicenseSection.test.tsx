@@ -235,7 +235,7 @@ describe('LicenseSection — the key field and the paste-elsewhere line', () => 
     const text = screenText()
     expect(text).toContain('All 3 devices are in use.')
     // The line used to render on `detail.key` alone — directly under that sentence. Following it
-    // lands the user on `seat_limit` on the other Mac, which is where this whole task started.
+    // lands the user on `seat_limit` on the other PC, which is where this whole task started.
     expect(text).not.toMatch(/paste this key/)
     // The key itself is still shown and copyable; it is the ADVICE that is wrong here.
     expect((document.querySelector('input[readonly]') as HTMLInputElement).value).toBe('NT-KEY-1')

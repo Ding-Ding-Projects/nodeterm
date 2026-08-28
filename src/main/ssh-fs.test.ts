@@ -143,7 +143,7 @@ describe('SshFs (injected runner)', () => {
   })
 })
 
-// ⌘K Quick Open over SSH: one remote round-trip that mirrors the local fallback chain
+// Ctrl+K Quick Open over SSH: one remote round-trip that mirrors the local fallback chain
 // (rg two passes → git ls-files two passes → find), parsed with the same shared filter.
 describe('sshQuickOpenArgs', () => {
   const cmd = (): string => sshQuickOpenArgs(conn, '/s.sock', '/re po').join(' ')

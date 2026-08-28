@@ -868,7 +868,7 @@ describe('GlyphGridRendererAddonCore atlas resets', () => {
   })
 })
 
-/** DECORATIONS. The terminal's decoration service colours cells (a ⌘F hit is one), and it changes
+/** DECORATIONS. The terminal's decoration service colours cells (a Ctrl+F hit is one), and it changes
  *  from OUTSIDE the render loop — the search addon registers a decoration per match while nothing
  *  is being packed. The addon's job is to hand the reader through to the feed keyed by the right
  *  row, and to get every row repacked when the set changes. */

@@ -7,9 +7,9 @@ import type { KanbanSession } from './KanbanView'
 
 const PRIO_COLOR: Record<KanbanPriority, string> = {
   low: '#8e8e93',
-  medium: '#ffd60a',
-  high: '#ff9f0a',
-  urgent: '#ff453a'
+  medium: '#fce100',
+  high: '#f7630c',
+  urgent: '#d13438'
 }
 
 interface SessionCardProps {

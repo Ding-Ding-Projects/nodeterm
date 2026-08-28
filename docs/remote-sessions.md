@@ -16,7 +16,7 @@ Edition as a tab) is future.
 
 Any remote nodeterm core opens as a **project tab** in the desktop app, with the full
 feature set — terminals, git, editor, presence, co-attach, canvas sync. The headline
-case: two desktops (e.g. two Macs) as **equal peers** on one shared canvas over the
+case: two Windows PCs as **equal peers** on one shared canvas over the
 E2EE relay. The same abstraction also opens a Server Edition box as a tab.
 
 Stages 1–3 built multiplayer for clients that share ONE core. Stage 4 does not change
@@ -34,10 +34,10 @@ Edition's core.
    Mixed-home canvases (a `home` field per node) were considered and rejected for v1.
 2. **Full trust, explicitly granted.** Inviting a peer grants shell access — the
    invite UI says so in plain words ("<name> will be able to run commands on this
-   Mac — the same as giving them SSH access"). No per-action approval, no directory
+   PC. This is equivalent to giving them SSH access."). No per-action approval, no directory
    jail: after the first shell both are theater. The boundary is *who you invite*.
 3. **A remote session is a project tab**, not a separate window and not a full-app
-   takeover. Your local projects stay in their tabs; "Ayşe's Mac" sits beside them.
+   takeover. Your local projects stay in their tabs; "Ayşe's PC" sits beside them.
 4. **The abstraction is source-agnostic.** A session's source is `local` (today's
    preload), `relay` (E2EE relay to another desktop), or `server` (WS to a Server
    Edition box). One refactor buys all three.
@@ -65,7 +65,7 @@ core's API:
 interface WorkspaceSession {
   id: string
   source: 'local' | 'relay' | 'server'
-  label: string                    // "Ayşe's Mac", "prod-box"
+  label: string                    // "Ayşe's PC", "prod-box"
   api: NodeTerminalApi             // preload (local) or a bridged RPC client
   status: 'connected' | 'connecting' | 'offline'
 }
@@ -276,7 +276,7 @@ the only edit to a pre-existing crypto file, additive.
 
 ```ts
 const SHELL_ACCESS_CONSENT: string
-function describeGrant(peerLabel: string): string       // "<name> will be able to run commands on this Mac — the same as giving them SSH access."
+function describeGrant(peerLabel: string): string       // "<name> will be able to run commands on this PC. This is equivalent to giving them SSH access."
 function ConsentNotice({ peerLabel }: { peerLabel: string }): JSX.Element
 ```
 
@@ -353,7 +353,7 @@ users before 4d is wired (it grants `pty.create` to peers).
   code (the relay offer is single-use — no silent/pinned reconnect in v1). Edits while disconnected
   are lost (v1, no corruption). User-close fully disposes + removes; the two paths are distinct.
 - **Consent at the grant moment** — the host approval dialog sources from `relayHost.onPeerPending`
-  and shows `<ConsentNotice>` ("<peer> will be able to run commands on this Mac") above the SAS;
+  and shows `<ConsentNotice>` ("<peer> will be able to run commands on this PC") above the SAS;
   confirm rides the encrypted tunnel; `enterConfirms={false}` so a stray Enter can't approve.
 - **The desktop-client legacy dialect is deleted** (`RemoteSessionView`, `RemoteTransport`,
   `client-service`/`remoteClient` preload+channels, `data.remote`, `remote-fs.ts`, and the old
@@ -444,7 +444,7 @@ the dialect deletion orphaned, blanking the phone; that flag is gone).
 
 ## Team Access — multi-seat relay (paid, device-seat + email invite)
 
-The single-peer relay host is now **Team Access**: the paying host shares this Mac with up to
+The single-peer relay host is now **Team Access**: the paying host shares this PC with up to
 `seats` teammates (one seat per connected device), $5/seat (Stripe, backend). The core
 (`CorePlatform.clientIds()`, presence, canvas-sync, dino, cursor-chat) was already N-client; this
 made the **host listener** multi-peer and packaged it.
@@ -559,7 +559,7 @@ session):
   co-attach), cable pull, revoke mid-session (peer is cut immediately), edits while
   disconnected (verify they are lost *and* nothing corrupts).
 - **4c two-instance acceptance checklist (run before merge — the live gate the vitest
-  suite can't reach, since the preload↔main relay IPC needs Electron):** on one Mac,
+  suite can't reach, since the preload↔main relay IPC needs Electron):** on one Windows PC,
   launch two instances (`NT_MULTI=1 NT_USER_DATA=/tmp/nt-A npm run dev` and a second with
   `/tmp/nt-B`). Then:
   1. On A, start a remote host (New Remote Connection → host), **pick which project to share**

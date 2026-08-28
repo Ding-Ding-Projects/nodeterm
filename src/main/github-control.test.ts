@@ -25,7 +25,7 @@ afterEach(async () => {
 function safeStorage(options: { available?: boolean; backend?: string } = {}): SafeStorageLike {
   return {
     isEncryptionAvailable: () => options.available ?? true,
-    getSelectedStorageBackend: () => options.backend ?? 'keychain',
+    getSelectedStorageBackend: () => options.backend ?? 'dpapi',
     encryptString: (value) => Buffer.from(`encrypted:${value}`, 'utf-8'),
     decryptString: (value) => value.toString('utf-8').replace(/^encrypted:/, '')
   }

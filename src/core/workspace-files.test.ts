@@ -19,8 +19,8 @@ const project = (over: Partial<Project> = {}): Project => ({
 
 describe('portable node cwds', () => {
   it('relativizes cwds under the root with a ./ prefix and resolves them back', () => {
-    const nodes = [node({ cwd: '/Users/enes/projects/foo/sub' })]
-    const portable = toPortableNodes(nodes, '/Users/enes/projects/foo')
+    const nodes = [node({ cwd: 'C:/Users/enes/projects/foo/sub' })]
+    const portable = toPortableNodes(nodes, 'C:/Users/enes/projects/foo')
     expect(portable[0].cwd).toBe('./sub')
     expect(resolveNodes(portable, '/mnt/other/foo')[0].cwd).toBe(path.join('/mnt/other/foo', 'sub'))
   })
@@ -434,11 +434,11 @@ describe('exec-enabling node fields never travel in the shared project file', ()
 describe('kanban board persistence', () => {
   const board = {
     columns: [
-      { id: 'kcol-a', title: 'To Do', color: '#0a84ff' },
-      { id: 'kcol-b', title: 'Done', color: '#32d74b' }
+      { id: 'kcol-a', title: 'To Do', color: '#0078d4' },
+      { id: 'kcol-b', title: 'Done', color: '#107c10' }
     ],
     assignments: [{ nodeId: 'term-abc', columnId: 'kcol-a' }],
-    meta: [{ nodeId: 'term-abc', assignees: [{ name: 'enes', color: '#0a84ff' }], dueAt: 1784500000000 }]
+    meta: [{ nodeId: 'term-abc', assignees: [{ name: 'enes', color: '#0078d4' }], dueAt: 1784500000000 }]
   }
   it('rides the project file round-trip', () => {
     const f = projectToFile(project({ kanban: board }), 1, '2026-07-18T00:00:00.000Z')

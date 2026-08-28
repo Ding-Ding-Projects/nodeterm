@@ -7,17 +7,17 @@ beforeEach(() => {
 
 describe('openFolderProject', () => {
   it('creates a new project named after the folder and activates it', () => {
-    const p = useProjects.getState().openFolderProject('/Users/me/dev/my-app')
+    const p = useProjects.getState().openFolderProject('C:/Users/me/dev/my-app')
     expect(p.name).toBe('my-app')
-    expect(p.cwd).toBe('/Users/me/dev/my-app')
+    expect(p.cwd).toBe('C:/Users/me/dev/my-app')
     const s = useProjects.getState()
     expect(s.activeProjectId).toBe(p.id)
     expect(s.projects.filter((q) => !q.closed)).toHaveLength(1)
   })
 
   it('reuses an existing open project with the same folder instead of duplicating', () => {
-    const first = useProjects.getState().addProject('my-app', '/Users/me/dev/my-app')
-    const p = useProjects.getState().openFolderProject('/Users/me/dev/my-app')
+    const first = useProjects.getState().addProject('my-app', 'C:/Users/me/dev/my-app')
+    const p = useProjects.getState().openFolderProject('C:/Users/me/dev/my-app')
     expect(p.id).toBe(first.id)
     expect(useProjects.getState().projects).toHaveLength(1)
     expect(useProjects.getState().activeProjectId).toBe(first.id)
@@ -27,11 +27,11 @@ describe('openFolderProject', () => {
   // activate the still-closed project — the canvas switched to it but the tab bar and
   // sidebar (which filter `closed`) showed nothing.
   it('reopens a closed project with the same folder so it is visible again', () => {
-    const first = useProjects.getState().addProject('my-app', '/Users/me/dev/my-app')
+    const first = useProjects.getState().addProject('my-app', 'C:/Users/me/dev/my-app')
     useProjects.getState().closeProject(first.id)
     expect(useProjects.getState().projects.filter((q) => !q.closed)).toHaveLength(0)
 
-    const p = useProjects.getState().openFolderProject('/Users/me/dev/my-app')
+    const p = useProjects.getState().openFolderProject('C:/Users/me/dev/my-app')
     expect(p.id).toBe(first.id)
     const s = useProjects.getState()
     expect(s.activeProjectId).toBe(first.id)
@@ -49,7 +49,7 @@ describe('adopting a folder whose canvas is shared (no id in the file)', () => {
   // same folder must therefore be answered by the CWD lookup, never by a second adoption — that
   // lookup is the only thing standing between "open my repo again" and a duplicate tab.
   const probed = (id: string) => ({
-    id, name: 'my-app', color: '#7aa2f7', cwd: '/Users/me/dev/my-app',
+    id, name: 'my-app', color: '#7aa2f7', cwd: 'C:/Users/me/dev/my-app',
     viewport: { x: 0, y: 0, zoom: 1 },
     nodes: [{
       id: 'term-a', kind: 'terminal' as const, position: { x: 0, y: 0 },
@@ -60,7 +60,7 @@ describe('adopting a folder whose canvas is shared (no id in the file)', () => {
   it('re-opening the same folder yields ONE project, keyed by cwd', () => {
     const first = useProjects.getState().adoptProject(probed('project-minted-1'))
     expect(first.id).toBe('project-minted-1')
-    const again = useProjects.getState().openFolderProject('/Users/me/dev/my-app')
+    const again = useProjects.getState().openFolderProject('C:/Users/me/dev/my-app')
     expect(again.id).toBe(first.id)
     expect(useProjects.getState().projects).toHaveLength(1)
     expect(useProjects.getState().projects[0].nodes.map((n) => n.id)).toEqual(['term-a'])
@@ -69,10 +69,10 @@ describe('adopting a folder whose canvas is shared (no id in the file)', () => {
   it('a SECOND folder holding the same canvas becomes its own project', () => {
     const a = useProjects.getState().adoptProject(probed('project-minted-1'))
     const b = useProjects.getState()
-      .adoptProject({ ...probed('project-minted-2'), cwd: '/Users/me/dev/my-app-worktree' })
+      .adoptProject({ ...probed('project-minted-2'), cwd: 'C:/Users/me/dev/my-app-worktree' })
     expect(b.id).not.toBe(a.id)
     expect(useProjects.getState().projects.map((p) => p.cwd))
-      .toEqual(['/Users/me/dev/my-app', '/Users/me/dev/my-app-worktree'])
+      .toEqual(['C:/Users/me/dev/my-app', 'C:/Users/me/dev/my-app-worktree'])
   })
 })
 
@@ -83,7 +83,7 @@ describe('toWorkspace', () => {
   // session id is meaningless anywhere but the machine that minted it. If this fails, someone
   // started persisting the session dimension; that is a design change, not a bug fix.
   it('toWorkspace does not persist any session dimension', () => {
-    useProjects.getState().addProject('my-app', '/Users/me/dev/my-app')
+    useProjects.getState().addProject('my-app', 'C:/Users/me/dev/my-app')
     const ws = useProjects.getState().toWorkspace()
     const json = JSON.stringify(ws)
     expect(json).not.toMatch(/"session/i)
@@ -93,7 +93,7 @@ describe('toWorkspace', () => {
   // disk. `project.remote` is runtime-only; toWorkspace must drop the whole project so it can
   // never be written into this client's workspace.json.
   it('excludes remote (relay) projects but keeps normal ones', () => {
-    const normal = useProjects.getState().addProject('my-app', '/Users/me/dev/my-app')
+    const normal = useProjects.getState().addProject('my-app', 'C:/Users/me/dev/my-app')
     const relay = useProjects.getState().addProject('shared')
     useProjects.setState((s) => ({
       projects: s.projects.map((p) => (p.id === relay.id ? { ...p, remote: true } : p))
@@ -120,7 +120,7 @@ describe('requestReload', () => {
   })
 
   it('leaves the active project (and the projects) untouched — it only nudges the effect', () => {
-    const p = useProjects.getState().openFolderProject('/Users/me/dev/my-app')
+    const p = useProjects.getState().openFolderProject('C:/Users/me/dev/my-app')
     useProjects.getState().requestReload()
     const s = useProjects.getState()
     expect(s.activeProjectId).toBe(p.id)
@@ -216,12 +216,12 @@ describe('openSshProject', () => {
 describe('setProjectColor', () => {
   it('updates the project color', () => {
     const p = useProjects.getState().addProject('demo', '/tmp/demo')
-    useProjects.getState().setProjectColor(p.id, '#ff453a')
-    expect(useProjects.getState().getProject(p.id)?.color).toBe('#ff453a')
+    useProjects.getState().setProjectColor(p.id, '#d13438')
+    expect(useProjects.getState().getProject(p.id)?.color).toBe('#d13438')
   })
 
   it('ignores unknown project ids', () => {
-    useProjects.getState().setProjectColor('nope', '#ff453a')
+    useProjects.getState().setProjectColor('nope', '#d13438')
     expect(useProjects.getState().projects).toHaveLength(0)
   })
 })
@@ -233,7 +233,7 @@ describe('setProjectColor', () => {
 describe('capability setters schedule a workspace save', () => {
   it('setProjectCapability rings the workspace-dirty seam (on and off)', async () => {
     const { registerWorkspaceDirty } = await import('./workspaceDirty')
-    const p = useProjects.getState().addProject('my-app', '/Users/me/dev/my-app')
+    const p = useProjects.getState().addProject('my-app', 'C:/Users/me/dev/my-app')
     let dirtied = 0
     const unregister = registerWorkspaceDirty(() => dirtied++)
     try {
@@ -248,7 +248,7 @@ describe('capability setters schedule a workspace save', () => {
 
   it('recordProjectCapabilityAck rings it too (the notice answer must survive restart)', async () => {
     const { registerWorkspaceDirty } = await import('./workspaceDirty')
-    const p = useProjects.getState().addProject('my-app', '/Users/me/dev/my-app')
+    const p = useProjects.getState().addProject('my-app', 'C:/Users/me/dev/my-app')
     let dirtied = 0
     const unregister = registerWorkspaceDirty(() => dirtied++)
     try {

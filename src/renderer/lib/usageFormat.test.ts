@@ -56,25 +56,25 @@ describe('barFillPercent', () => {
   // meaning when the mode flips: 92% used is red in both modes even though the fill inverts.
   it('does not carry the color — severity stays keyed to remaining quota', () => {
     const left = 100 - 92
-    expect(severityColor(null, left)).toBe('#ff453a')
+    expect(severityColor(null, left)).toBe('#d13438')
     expect(barFillPercent(92, 'used')).not.toBe(barFillPercent(92, 'remaining'))
   })
 })
 
-// One definition for every context surface — ContextMeter, the session-row chip and the notch
+// One definition for every context surface: ContextMeter, the session-row chip and the Agent HUD
 // HUD each carried their own copy of these thresholds before issue #78.
 describe('contextFillColor', () => {
   it('is keyed to USED context: green low, yellow from 60, red past 85', () => {
-    expect(contextFillColor(0)).toBe('#30d158')
-    expect(contextFillColor(59)).toBe('#30d158')
-    expect(contextFillColor(60)).toBe('#ffd60a')
-    expect(contextFillColor(85)).toBe('#ffd60a')
-    expect(contextFillColor(86)).toBe('#ff453a')
+    expect(contextFillColor(0)).toBe('#107c10')
+    expect(contextFillColor(59)).toBe('#107c10')
+    expect(contextFillColor(60)).toBe('#fce100')
+    expect(contextFillColor(85)).toBe('#fce100')
+    expect(contextFillColor(86)).toBe('#d13438')
   })
 
   it('is the inverse scale of the quota colors — the two must not be conflated', () => {
     // 90% USED context is red; 90% REMAINING quota is green. Same number, opposite meaning.
-    expect(contextFillColor(90)).toBe('#ff453a')
-    expect(severityColor(null, 90)).toBe('#30d158')
+    expect(contextFillColor(90)).toBe('#d13438')
+    expect(severityColor(null, 90)).toBe('#107c10')
   })
 })

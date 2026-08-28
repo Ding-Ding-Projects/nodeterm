@@ -196,7 +196,7 @@ body {
 /* Fallback when the pixel sprite couldn't be built (no DOM canvas): a plain round green blob. */
 .done-blob--fallback {
   border-radius: 50%;
-  background: #30d158;
+  background: #107c10;
   box-shadow: 0 0 6px 1px rgba(48, 209, 88, 0.7);
 }
 @keyframes hud-shimmer {
@@ -307,7 +307,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.3px;
   text-transform: uppercase;
-  color: #30d158;
+  color: #107c10;
   background: rgba(48, 209, 88, 0.16);
   border-radius: 5px;
   padding: 1px 5px;
@@ -322,13 +322,13 @@ body {
   opacity: 0.9;
 }
 .hud-row__tag--working {
-  color: #0a84ff;
+  color: #0078d4;
 }
 .hud-row__tag--needsYou {
-  color: #ff453a;
+  color: #d13438;
 }
 .hud-row__tag--done {
-  color: #30d158;
+  color: #107c10;
 }
 .hud-row__tag--idle {
   color: #8e8e93;
@@ -387,7 +387,7 @@ body {
   font-family: var(--hud-mono);
   font-size: 10px;
   font-weight: 600;
-  color: #0a84ff;
+  color: #0078d4;
   padding-left: 20px;
   cursor: pointer;
 }
@@ -412,10 +412,10 @@ body {
   flex-shrink: 0;
 }
 .hud-subs__dot--working {
-  background: #0a84ff;
+  background: #0078d4;
 }
 .hud-subs__dot--done {
-  background: #30d158;
+  background: #107c10;
 }
 
 .hud-row__go {
@@ -425,7 +425,7 @@ body {
   font-family: var(--hud-mono);
   font-size: 10px;
   font-weight: 600;
-  color: #0a84ff;
+  color: #0078d4;
   background: rgba(10, 132, 255, 0.15);
   border-radius: 6px;
   padding: 2px 8px;
@@ -437,7 +437,7 @@ body {
 }
 
 .check {
-  color: #30d158;
+  color: #107c10;
   font-size: 15px;
   line-height: 1;
 }
@@ -445,6 +445,6 @@ body {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #ff453a;
+  background: #d13438;
   animation: hud-pulse 1.1s ease-in-out infinite;
 }

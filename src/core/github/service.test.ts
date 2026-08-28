@@ -104,7 +104,7 @@ function context(client: FixtureClient, over: Partial<GitHubIssueServiceContext>
     credentialGeneration: 1,
     userId: 'user-1',
     client,
-    columnColors: { todo: '#0a84ff', doing: '#ffd60a', done: '#30d158' },
+    columnColors: { todo: '#0078d4', doing: '#fce100', done: '#107c10' },
     ...over
   }
 }
@@ -673,8 +673,8 @@ describe('GitHubIssueService', () => {
       remaining: []
     })
     expect(client.createdLabels).toEqual([
-      { name: 'status:doing', color: 'ffd60a' },
-      { name: 'status:done', color: '30d158' }
+      { name: 'status:doing', color: 'fce100' },
+      { name: 'status:done', color: '107c10' }
     ])
   })
 

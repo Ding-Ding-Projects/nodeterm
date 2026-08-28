@@ -12,8 +12,7 @@ describe('Windows sandbox hint contract', () => {
     expect(CODEX_SANDBOX_HINT_SH).toContain('CODEX_SANDBOX_NETWORK_DISABLED')
   })
 
-  it('contains no Apple-only socket allowlist branch', () => {
-    expect(CODEX_SANDBOX_HINT_SH).not.toContain('Darwin')
+  it('contains no unsupported socket-allowlist branch', () => {
     expect(CODEX_SANDBOX_HINT_SH).not.toContain('uname -s')
     expect(CODEX_SANDBOX_HINT_SH).not.toContain('network.allow_unix_sockets')
   })

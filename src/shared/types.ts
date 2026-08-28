@@ -718,7 +718,7 @@ export interface TmuxStatus {
   available: boolean
   /** One-shot install command for a terminal node; null = no known installer (text-only banner). */
   installCommand: string | null
-  /** Button caption for installCommand (e.g. "Install Homebrew + tmux" when brew must come first). */
+  /** Button caption for installCommand when a runtime tool must be obtained first. */
   installLabel: string | null
   /** `process.platform` of the core that owns the sessions/filesystem. `null` means the read
    *  failed; callers must not substitute the browser's platform for a server or relay core. */
@@ -1071,11 +1071,9 @@ export interface SpeechSettings {
   model: string
   /** BCP-47-ish hint or 'auto'. */
   language: string
-  /** Press-to-talk / hold-to-talk shortcut, canonical form e.g. "Cmd+Alt+D" (keyed = toggle) or
-   *  "Cmd+Alt" (v3, modifier-only = hold-to-talk — the new DEFAULT); see `shared/shortcut.ts`
-   *  (`isHoldChord` derives the mode from the string, not a separate setting). "Cmd" is
-   *  resolved through the supported Control-first shortcut contract. Drives the Canvas listener, the
-   *  Dock mic tooltip, and the ShortcutsPanel row. */
+  /** Press-to-talk / hold-to-talk shortcut, canonical form such as "Ctrl+Alt+D" for toggle or
+   *  "Ctrl+Alt" for hold-to-talk. `isHoldChord` derives the mode from the string. Drives the
+   *  Canvas listener, Dock microphone tooltip, and ShortcutsPanel row. */
   shortcut: string
 }
 
@@ -1100,11 +1098,11 @@ export interface Settings {
    *  terminal glyphs — all scale together: the terminal font-size setting stays in CSS px, so its
    *  effective size is fontSize × uiScale (the Settings row says so). Hand-editable; every reader
    *  resolves it through `resolveUiScale` (shared/ui-scale.ts), which clamps to [0.5, 2] and maps
-   *  garbage to 1. Server Edition: intentionally inert — the browser owns page zoom (Cmd/Ctrl+±). */
+   *  garbage to 1. Server Edition is intentionally inert because the browser owns page zoom (Ctrl+±). */
   uiScale: number
   /** Reflect the active session in the NATIVE window title ("<node> — <project> — node-terminal"),
    *  so window-title-based time trackers (ActivityWatch et al.) can tell sessions apart — the same
-   *  thing iTerm2 / Windows Terminal do per tab (issue #414). Opt-in and OFF by default: the title
+   *  behavior Windows Terminal provides per tab (issue #414). Opt-in and OFF by default: the title
    *  is OS-visible surface area (window switchers, screen sharing), so an update must not start
    *  broadcasting session names for users who never asked. Renderer-only (`document.title` —
    *  Electron mirrors page-title changes onto the BrowserWindow, and the Server Edition gets the
@@ -1302,7 +1300,7 @@ export interface Settings {
   hiddenHeaderButtons: string[]
   /** Whether project activation offers the "Resume where you left off" card (breadcrumb trail's
    *  once-per-app-run popup). OFF by default — it interrupts every project switch, so it is
-   *  opt-in. Cmd+[ / Cmd+] and the Dock buttons walk the trail regardless of this. */
+   *  opt-in. Ctrl+[ / Ctrl+] and the Dock buttons walk the trail regardless of this. */
   showResumeCard: boolean
   /** Whether usage percentages render as consumed ("32% used"), remaining ("68% left"), or raw
    *  token counts ("48k/200k tokens" — context-window surfaces only; provider quota surfaces
@@ -1366,7 +1364,7 @@ export interface Settings {
    *  survive an unattended laptop. Released when the last one stops (or goes stale). Cannot
    *  hold through a closed lid. Asked in the setup tour; Settings → Behavior. */
   keepAwakeWhileAgentsWork: boolean
-  /** Ask before the app actually quits (Ctrl+/Ctrl+Q, menu Quit, or the Windows/Linux title-bar ×).
+  /** Ask before the app actually quits (Ctrl+Q, menu Quit, or the Windows title-bar ×).
    *  The auto-update "Restart to update" flow never asks — that decision was already made.
    *  Settings → Behavior. */
   confirmBeforeQuit: boolean
@@ -1444,7 +1442,7 @@ export const DEFAULT_SETTINGS: Settings = {
   trackpadPan: true,
   canvasDragMode: 'select',
   browserMemorySaver: true,
-  accent: '#0a84ff',
+  accent: '#0078d4',
   tmuxEnabled: true,
   ptyShadowClients: true,
   terminalGpuRendering: 'auto',
@@ -1517,7 +1515,7 @@ export const DEFAULT_SETTINGS: Settings = {
   // user picks a model in onboarding or Settings → Speech. Existing installs keep whatever their
   // settings.json already says (the merge only fills ABSENT keys), so nobody's working dictation
   // is switched off by an upgrade.
-  speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Cmd+Alt' },
+  speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Ctrl+Alt' },
 }
 
 export interface SettingsApi {
@@ -2238,9 +2236,9 @@ export interface AccountSshCtx {
   projectId?: string
 }
 export interface ClaudeAccountsApi {
-  /** Mint a new managed account: create its config dir, install the hook, check the CLI version.
+  /** Mint a new managed account: create its config directory and install the hook.
    *  With an SSH `ctx` the dir + hook are created on the remote host instead of locally. */
-  add(ctx?: AccountSshCtx): Promise<{ id: string; configDir: string; versionSupported: boolean }>
+  add(ctx?: AccountSshCtx): Promise<{ id: string; configDir: string }>
   /** Poll the account's `.claude.json` for a completed login; null on timeout/cancel. With an SSH
    *  `ctx` the poll reads the remote host's copy over ssh. */
   waitLogin(id: string, ctx?: AccountSshCtx): Promise<{ email: string } | null>
@@ -2796,11 +2794,11 @@ export interface NodeTerminalApi {
   pairing: PairingApi
   presence: PresenceApi
   shortcuts: ShortcutsApi
-  /** Fires when the user presses Cmd/Ctrl+M (toggle markdown view). Returns unsubscribe. */
+  /** Fires when the user presses Ctrl+M (toggle markdown view). Returns unsubscribe. */
   onMarkdownToggle(listener: () => void): () => void
-  /** Fires when the user presses Cmd/Ctrl+W (close selected node). Returns unsubscribe. */
+  /** Fires when the user presses Ctrl+W (close selected node). Returns unsubscribe. */
   onCloseNode(listener: () => void): () => void
-  /** Fires when the user presses Cmd/Ctrl+0 (zoom the canvas back to 100%). Desktop only: the
+  /** Fires when the user presses Ctrl+0 (zoom the canvas back to 100%). Desktop only: the
    *  key is intercepted in main because Electron's default View menu owns the accelerator. In the
    *  Server Edition the renderer's own keydown handler sees the key and this is a no-op stub. */
   onZoomActualSize(listener: () => void): () => void
@@ -2812,7 +2810,7 @@ export interface NodeTerminalApi {
   onToggleKanban(listener: () => void): () => void
   /** Fires when the native app menu's Settings item is clicked. Returns unsubscribe. */
   onOpenSettings(listener: () => void): () => void
-  /** Close the application window (Cmd/Ctrl+W fallback when no node is selected). */
+  /** Close the application window (Ctrl+W fallback when no node is selected). */
   closeWindow(): void
   /** Bring the app window to the foreground after an external file drop. */
   focusWindow(): void
@@ -2822,7 +2820,7 @@ export interface NodeTerminalApi {
    *  The preload re-clamps through `resolveUiScale` — the value originates in hand-editable
    *  settings.json, and the boundary must not trust the caller to have done it. Server Edition:
    *  documented no-op — a browser page cannot set its own page zoom, and the browser already owns
-   *  the identical mechanism (Cmd/Ctrl+±). */
+   *  the identical mechanism (Ctrl+±). */
   setUiZoomFactor(factor: number): void
   /** Absolute filesystem path for a dropped/picked File (for drag-into-terminal). */
   getPathForFile(file: File): string

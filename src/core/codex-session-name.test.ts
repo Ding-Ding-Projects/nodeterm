@@ -61,7 +61,7 @@ function handle(ws: WebSocket): void {
 
 beforeAll(async () => {
   // Short prefix and short socket name ON PURPOSE. Unix socket paths are capped at `sun_path`
-  // (104 bytes on macOS), and macOS's `os.tmpdir()` is already ~49 of them
+  // (108 bytes on Linux), while a deep temporary path can consume most of that budget
   // (`/var/folders/ab/…/T/`); a descriptive prefix plus `app-server-control.sock` lands exactly on
   // the limit and fails to bind on a developer's machine while passing in CI. Everything still
   // lives inside the mkdtemp directory, so the path stays unpredictable.

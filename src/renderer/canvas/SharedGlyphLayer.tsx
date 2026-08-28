@@ -17,7 +17,7 @@
  *    the DOM renderer" signal that TerminalNode reads. A LOST CONTEXT is no longer one of those: it
  *    arrives as an event rather than a throw, and it is restored ONCE per context
  *    (`createContextLossPolicy` → `engine.suspendGpu` / `reviveGpu`), because a GPU reset is what
- *    macOS does on sleep/wake and the shared renderer is meant to be the default. A second loss
+ *    a GPU process can do on sleep/wake, while the shared renderer is meant to be the default. A second loss
  *    inside the cooldown, or a rebuild that throws, falls back through the same `failSharedGlyph`.
  *    **A GPU reset has a SECOND half**: it also blanks the OffscreenCanvas the atlas rasterizes
  *    into, and that one cannot be restored — its pixels are gone while `GlyphAtlas.slots` still
@@ -511,7 +511,7 @@ function isAncestorOf(node: StackedNode, ancestorId: string, byId: Map<string, S
  * documented above. Pure — Canvas owns WHEN to run it (see the settle gate there), this owns what
  * the answer is.
  *
- * Collapsed / ⌘M terminals are left out: they hold no grid either way, so naming them here would
+ * Collapsed / Ctrl+M terminals are left out: they hold no grid either way, so naming them here would
  * only churn the pushed signature. They still count as nodes something else can be stacked over —
  * a collapsed terminal is an opaque header strip, and covering one is a real overlap.
  */
@@ -1908,7 +1908,7 @@ export function createCursorBlinkClock(deps: CursorBlinkClockDeps): CursorBlinkC
  *
  * A minute, because the two cases it separates are that far apart. A sleep/wake or a driver reset
  * takes the context away once and the machine then works for hours — that one is worth restoring,
- * and it is the whole reason this path exists (a GPU reset is what macOS does on wake, and under
+ * and it is the whole reason this path exists (a GPU reset can happen on wake, and under
  * Phase 1b it silently dropped every user to the DOM renderer until they relaunched). A GPU that is
  * genuinely failing takes it away again almost immediately, and restoring THAT in a loop is how one
  * failure becomes a flicker — the exact trade Phase 1b made by never restoring at all.

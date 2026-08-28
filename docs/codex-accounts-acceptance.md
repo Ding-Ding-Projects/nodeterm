@@ -7,7 +7,7 @@ CI** — a live `codex app-server`, a second logged-in ChatGPT account, a real S
 curl-managed standalone Codex install, and the renderer's imperative pane-recycle sequencing. Those
 are the checklist below. **The code fails CLOSED on each**, so a false assumption is a *refused* op and
 a *rolled-back* copy, never a silent corruption — but "fails closed" is not "verified", and nobody may
-call S6 verified until a human runs these on a real Mac + real host.
+call S6 verified until a human runs these on a real Windows PC and real host.
 
 ## What CI already proves (no device needed)
 
@@ -27,7 +27,7 @@ app-server JSON-RPC is faked, and the rollout path it returns is a real on-disk 
 - a different existing rollout at the target is **never overwritten** (the local twin of remote
   `exit 17`);
 - usage stays **per-account** (each row stamped with its own id, `unavailable` included), never mixed;
-- the Server Edition arms the record secret **raw** (`node-auth-key.bin`, `0600`), no keychain
+- the Server Edition arms the record secret **raw** (`node-auth-key.bin`, `0600`), no credential-vault
   plaintext; with no secret armed a record write throws rather than writing unsigned;
 - **no credential rides any argv** (tmux env, the generated launcher, the auth-env strip).
 
@@ -36,7 +36,7 @@ ambiguity gate, M3 rollout never-overwrite, M4 usage attribution, M5 sh `matches
 
 ## Owed device verifications — a human MUST run these before S6 is called done
 
-Everything below needs **a real Mac desktop + a real SSH host** with a curl-managed **standalone**
+Everything below needs **a real Windows desktop + a real SSH host** with a curl-managed **standalone**
 Codex install + a **logged-in 2nd managed account**. Headless CI cannot run them.
 
 - [ ] **U1 — a running app-server discovers a hardlinked rollout without a reindex.** Load-bearing for
@@ -50,7 +50,7 @@ Codex install + a **logged-in 2nd managed account**. Headless CI cannot run them
       confirmed against Codex 0.146.0 via `app-server --listen`; the **curl-standalone `daemon start`**
       path is still owed. VERIFY the shapes against the daemon the app actually starts.
 - [ ] **Full desktop → host flow over real WAN.** Add account, remote **device-login**, **import** a
-      conversation to an SSH account, then **recycle** the node onto the host. Owed on Mac + real host.
+      conversation to an SSH account, then **recycle** the node onto the host. Owed on Windows and a real host.
 - [ ] **The imperative pane-recycle glue** (commit → rebind → restartShell → finish) + a **live SSH
       remote-account switch.** The pure logic + the main-side switch are unit-tested; the imperative
       renderer sequencing is only exercised against the running app.
@@ -60,7 +60,7 @@ Codex install + a **logged-in 2nd managed account**. Headless CI cannot run them
 
 ## Happy-path acceptance walk (the one a human runs end to end)
 
-On a real Mac with a real SSH host and a 2nd ChatGPT login available:
+On a real Windows PC with a real SSH host and a second ChatGPT login available:
 
 1. **Add account** — Settings → add a managed Codex account, complete the device login; the row shows
    its captured email and stops being `pending`.

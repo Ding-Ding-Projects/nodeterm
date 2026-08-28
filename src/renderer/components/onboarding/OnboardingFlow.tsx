@@ -4,7 +4,6 @@ import { DEFAULT_SETTINGS, type SpeechModelInfo } from '@shared/types'
 import { AGENT_CONFIG, BUILTIN_AGENT_IDS, type BuiltinAgentId } from '@shared/agents/config'
 import { isHoldChord, matchesShortcut, shortcutKeyParts } from '@shared/shortcut'
 import { hasSpeechModel, SPEECH_MODEL_NONE } from '@shared/speech'
-import { keyLabel } from '@shared/platform-utils'
 import {
   chipFor,
   commandKeys,
@@ -124,7 +123,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
     if (STEPS[step] !== 'kanban') return
     const onKey = (e: KeyboardEvent) => {
       // Read at event time, not at effect setup: a remap mid-tour takes effect immediately.
-      if (effectiveBindings('view.kanbanToggle').some((s) => matchesShortcut(e, s, false))) {
+      if (effectiveBindings('view.kanbanToggle').some((s) => matchesShortcut(e, s))) {
         e.preventDefault()
         e.stopPropagation()
         setKanbanTried(true)
@@ -169,7 +168,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
   // off" on a screen whose whole job is to introduce dictation would be a worse lie than the
   // chord being stale for the one user who re-opened the tour after unbinding it.
   const dictationChord = useSettings(() => dictationBinding()) || DEFAULT_SETTINGS.speech.shortcut
-  const dictKeys = shortcutKeyParts(dictationChord, false)
+  const dictKeys = shortcutKeyParts(dictationChord)
   const dictHold = isHoldChord(dictationChord)
   // Both read through the SAME `settings` subscription above (`useSettings((s) => s.settings)`
   // re-renders this component on every settings write, a remap included), so these plain calls
@@ -230,7 +229,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
         <div className="onb-card">
           <div className="onb-scene">
             {stepId === 'agents' && <SceneAgents agentId={agentId} label={agent.label} color={agent.color} />}
-            {stepId === 'dictation' && <SceneDictation keys={dictKeys.map((k) => keyLabel(k))} hold={dictHold} />}
+            {stepId === 'dictation' && <SceneDictation keys={dictKeys} hold={dictHold} />}
             {stepId === 'kanban' && <SceneKanban pulseKey={kanbanPulse} />}
             {stepId === 'notify' && <SceneNotify />}
             {stepId === 'keepawake' && (
@@ -280,7 +279,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                   {dictHold ? 'Hold' : 'Press'}{' '}
                   {dictKeys.map((k, i) => (
                     <kbd key={i} className="kbd">
-                      {keyLabel(k)}
+                      {k}
                     </kbd>
                   ))}{' '}
                   anywhere to dictate — on-device Whisper turns speech into text. Nothing is

@@ -10,7 +10,7 @@ const baseFile = (nodes: unknown[] = [], extra: Record<string, unknown> = {}): s
     savedAt: 'then',
     id: 'p1',
     name: 'proj',
-    color: '#ffd60a',
+    color: '#fce100',
     viewport: { x: 1, y: 2, zoom: 0.5 },
     nodes,
     ...extra

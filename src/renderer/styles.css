@@ -36,16 +36,15 @@
   --text: rgba(var(--tint-rgb), 0.85); /* label */
   --muted: rgba(var(--tint-rgb), 0.55); /* secondaryLabel */
   --muted-2: rgba(var(--tint-rgb), 0.25); /* tertiaryLabel */
-  --accent: #0a84ff; /* systemBlue */
-  --accent-hover: #3a9bff;
-  /* Accent as TEXT on a surface — lighter than the fill accent so it reads on a dark panel, and
-     the light theme has to go the other way. Was `#6cb0ff`/`#a9c0ff` at ~14 hover/link sites. */
-  --accent-text: #6cb0ff;
+  --accent: #0078d4; /* Windows blue */
+  --accent-hover: #2899f5;
+  /* Accent as text on a surface is lighter than the fill accent so it reads on a dark panel. */
+  --accent-text: #60cdff;
   /* Status hues, named so the light theme can darken them for a white field in one place. */
-  --danger: #ff453a;
-  --warn: #ff9f0a;
-  --caution: #ffd60a;
-  --success: #32d74b;
+  --danger: #d13438;
+  --warn: #f7630c;
+  --caution: #fce100;
+  --success: #107c10;
 
   /* THE CANVAS. Deliberately blacker than `--bg` in dark — the nodes are the content and the
      field behind them recedes. In light it has to go the other way, off-white and slightly
@@ -66,12 +65,12 @@
   --canvas-dot: #4a4a4a;
   --minimap-mask: rgba(10, 12, 18, 0.6);
   --git-graph-ref: var(--accent);
-  --git-graph-remote-ref: #bf5af2;
-  --git-graph-base-ref: #ff9f0a;
-  --git-graph-lane-1: #32d74b;
-  --git-graph-lane-2: #ffd60a;
-  --git-graph-lane-3: #6ac4dc;
-  --git-graph-lane-4: #ff453a;
+  --git-graph-remote-ref: #8764b8;
+  --git-graph-base-ref: #f7630c;
+  --git-graph-lane-1: #107c10;
+  --git-graph-lane-2: #fce100;
+  --git-graph-lane-3: #00b7c3;
+  --git-graph-lane-4: #d13438;
   --git-graph-lane-5: #ac8e68;
   --radius: 8px;
   --radius-sm: 6px;
@@ -127,14 +126,14 @@
   --surface-raised: #fdfbf7; /* …while raised surfaces come up, but never to pure white */
   --surface-overlay: #fdfbf7;
 
-  /* systemBlue's light-mode value — the dark one is deliberately lighter for a dark field and
-     loses contrast against a pale one. Kept BLUE on a warm field: the accent is the product's
+  /* The Windows blue light-mode value is darker because the dark-theme accent loses contrast
+     against a pale field. Kept blue on a warm field: the accent is the product's
      identity across both themes and is user-configurable (Settings → Appearance), so it is not
      the palette's job to change it. */
-  --accent: #007aff;
-  --accent-hover: #0a6ed1;
+  --accent: #005fb8;
+  --accent-hover: #004c8c;
   /* Accent as text has to DARKEN here, where the dark theme's lightened blue disappears. */
-  --accent-text: #0060df;
+  --accent-text: #005fb8;
 
   /* The canvas sits BELOW every node, so it is the one surface that must be darker than the
      panels — otherwise the nodes dissolve into the field and the layout loses its edges. */
@@ -313,7 +312,7 @@ body,
    fallback dot: a larger box (an emoji is ~13px and would overflow 9px, and a lucide/image glyph
    would be clipped) with NO baked-in tint background (that tint circle only belongs to the fallback
    dot). Applied by TabBar only when `p.icon` is set; the plain `.tab__dot` fallback is untouched.
-   16px matches the other project-glyph surfaces; the exact px wants a live Mac look, so it's tunable. */
+   16px matches the other project-glyph surfaces; the exact size is tunable. */
 .tab__dot--icon {
   width: 16px;
   height: 16px;
@@ -561,7 +560,7 @@ body,
 }
 
 .dock-add.active {
-  background: #0060df;
+  background: #005fb8;
   color: #fff;
 }
 
@@ -925,7 +924,7 @@ body,
   flex-shrink: 0;
   background: transparent;
   border: none;
-  color: #0a84ff;
+  color: #0078d4;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -1987,7 +1986,7 @@ body,
   animation: dictation-spin 0.8s linear infinite;
 }
 
-/* Drop-target hint while dragging a file from Finder into the terminal. */
+/* Drop-target hint while dragging a file from File Explorer into the terminal. */
 .term-node__body.dropping::after {
   content: 'Drop to insert path';
   position: absolute;
@@ -2041,7 +2040,7 @@ body,
    BODY's own rect — becomes the terminal body's background. That is precisely what the plate is
    for.
 
-   The class is on the root only while a grid is ACTUALLY attached, so collapse, the ⌘M view, a
+   The class is on the root only while a grid is ACTUALLY attached, so collapse, the Ctrl+M view, a
    failed attach and every default renderer mode leave the node opaque exactly as today.
 
    Every child that covers ground outside the plate must therefore paint its OWN background:
@@ -2211,7 +2210,7 @@ body,
   background: rgba(255, 255, 255, 0.22);
 }
 
-/* Markdown view overlay (Cmd/Ctrl+M) */
+/* Markdown view overlay (Ctrl+M) */
 .term-md {
   position: absolute;
   inset: 0;
@@ -2320,7 +2319,7 @@ body,
   padding: 4px 8px;
 }
 
-/* Chat panel — replaces the markdown overlay on chat-capable agent nodes (Cmd+M). */
+/* Chat panel replaces the markdown overlay on chat-capable agent nodes (Ctrl+M). */
 .term-chat {
   position: absolute;
   inset: 0;
@@ -2349,7 +2348,7 @@ body,
   display: flex;
   flex-direction: column;
   gap: 10px;
-  /* Allow text selection / Cmd+C (React Flow nodes are non-selectable by default). */
+  /* Allow text selection / Ctrl+C (React Flow nodes are non-selectable by default). */
   user-select: text;
   -webkit-user-select: text;
   cursor: auto;
@@ -2394,7 +2393,7 @@ body,
 }
 .term-chat__msg--user {
   align-self: flex-end;
-  background: var(--accent, #0a84ff);
+  background: var(--accent, #0078d4);
   color: #fff;
 }
 .term-chat__msg--assistant {
@@ -2434,7 +2433,7 @@ body,
 }
 .term-chat__tool-name {
   font-weight: 600;
-  color: var(--accent, #0a84ff);
+  color: var(--accent, #0078d4);
 }
 .term-chat__tool-arg {
   overflow: hidden;
@@ -2469,7 +2468,7 @@ body,
 }
 .term-chat__input:focus {
   outline: none;
-  border-color: var(--accent, #0a84ff);
+  border-color: var(--accent, #0078d4);
 }
 .term-chat__input:disabled {
   opacity: 0.5;
@@ -3627,7 +3626,7 @@ body,
   height: 18px;
 }
 
-/* Search button shows the ⌘K shortcut so its purpose is obvious */
+/* Search button shows the Ctrl+K shortcut so its purpose is obvious */
 .cluster-search {
   width: auto !important;
   gap: 7px;
@@ -4170,7 +4169,7 @@ body,
 }
 
 .scm-diff .d-hunk {
-  color: #6ac4dc;
+  color: #00b7c3;
 }
 
 .scm-diff .d-meta {
@@ -7499,7 +7498,7 @@ button.group-node__setup:disabled {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  /* Allow text selection / Cmd+C (React Flow nodes are non-selectable by default). */
+  /* Allow text selection / Ctrl+C (React Flow nodes are non-selectable by default). */
   user-select: text;
   -webkit-user-select: text;
   cursor: auto;
@@ -7605,7 +7604,7 @@ button.group-node__setup:disabled {
   padding: 10px;
   border-radius: 8px;
   background: rgba(var(--tint-rgb), 0.04);
-  border: 1px solid var(--accent, #0a84ff);
+  border: 1px solid var(--accent, #0078d4);
 }
 .chat-node__permission-title {
   font-size: 12px;
@@ -8215,7 +8214,7 @@ button.group-node__setup:disabled {
   border: none;
   padding: 0;
   font-size: 12px;
-  color: var(--accent, #0a84ff);
+  color: var(--accent, #0078d4);
   cursor: pointer;
 }
 .phone-pair__footer { align-self: flex-start; }
@@ -10425,7 +10424,7 @@ button.group-node__setup:disabled {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  color: #ff375f;
+  color: #e3008c;
 }
 .onb-mic__ring {
   position: absolute;

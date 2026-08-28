@@ -17,7 +17,7 @@ import type { NormalizedAgentEvent } from '../../../shared/agents/normalize'
 let tmp = ''
 beforeAll(async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'nt-oc-live-'))
-  // Spaced userDataDir — the "Application Support" shape the quoting exists for.
+  // Spaced userDataDir, which is why endpoint values are quoted.
   tmp = path.join(root, 'App Support', 'node-terminal')
   fs.mkdirSync(tmp, { recursive: true })
   resetPlatformForTests()

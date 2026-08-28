@@ -10,7 +10,7 @@ describe('hookSockPath — the SUN_LEN discipline', () => {
   })
 
   it('falls back to a digest-keyed homedir path when the data dir would blow sun_path', () => {
-    const long = '/Users/a-very-long-username/Library/Application Support/' + 'x'.repeat(80)
+    const long = '/home/a-very-long-username/.local/share/node-terminal/' + 'x'.repeat(80)
     const p = hookSockPath(long, home)
     expect(p.startsWith(path.join(home, '.nodeterm', 'sock') + path.sep)).toBe(true)
     expect(p).toMatch(/hook-[0-9a-f]{16}\.sock$/)
@@ -24,7 +24,7 @@ describe('hookSockPath — the SUN_LEN discipline', () => {
     expect(a).not.toBe(b)
   })
 
-  it('the budget sits under the tightest real limit (macOS: 104 bytes including the NUL)', () => {
-    expect(SUN_PATH_BUDGET).toBeLessThanOrEqual(103)
+  it('the budget leaves room for the Linux trailing NUL', () => {
+    expect(SUN_PATH_BUDGET).toBe(107)
   })
 })

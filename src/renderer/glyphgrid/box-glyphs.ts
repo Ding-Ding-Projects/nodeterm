@@ -296,7 +296,7 @@ function boxOps(code: number, cellW: number, cellH: number): PaintOp[] | null {
   const cx = cellW / 2
   const cy = cellH / 2
   // How far the PERPENDICULAR stem reaches across the junction. An arm must extend half of this
-  // past the centre or the far quadrant of the corner stays unfilled — the notch a naive
+  // past the centre or the far quadrant of the corner stays unfilled, which is the notch a naive
   // "draw each arm from the edge to the centre" produces on every ┐┘└┌.
   const vSpan = Math.max(t(up), t(down))
   const hSpan = Math.max(t(left), t(right))

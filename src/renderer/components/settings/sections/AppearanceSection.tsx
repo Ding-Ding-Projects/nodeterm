@@ -105,7 +105,7 @@ function VisibilityToggles({
 /** UI scale (issue #299) — page zoom for the whole app chrome; see shared/ui-scale.ts for the
  *  mechanism decision. The row stays visible but DISABLED on the Server Edition (a hidden row
  *  teaches nothing — the house rule the SSH-worktree affordances follow): a browser page cannot
- *  set its own page zoom, and the browser's Cmd/Ctrl+± already does the identical thing. */
+ *  set its own page zoom, and the browser's Ctrl+± already does the identical thing. */
 function UiScaleRow(): React.JSX.Element {
   const uiScale = useSettings((s) => s.settings.uiScale)
   const update = useSettings((s) => s.update)
@@ -128,7 +128,7 @@ function UiScaleRow(): React.JSX.Element {
       }
       note={
         inBrowser
-          ? "In the browser, use your browser's own page zoom (Cmd/Ctrl and + / −) — it does the same thing and the browser remembers it per site."
+          ? "In the browser, use your browser's own page zoom (Ctrl and + / −). It does the same thing and the browser remembers it per site."
           : undefined
       }
       control={
@@ -227,7 +227,7 @@ export function AppearanceSection({ isActive }: { isActive: boolean }): React.JS
       <SearchableRow {...ROWS.resumeCard}>
         <FieldRow
           label="Resume card"
-          description='Offer a "Resume where you left off" card when a project is activated, listing your last few node landings. Cmd+[ / Cmd+] and the Dock arrows walk the same trail either way.'
+          description='Offer a "Resume where you left off" card when a project is activated, listing your last few node landings. Ctrl+[ / Ctrl+] and the Dock arrows walk the same trail either way.'
           control={
             <Switch
               checked={showResumeCard}

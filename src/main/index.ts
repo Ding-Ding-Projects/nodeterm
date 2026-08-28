@@ -355,8 +355,8 @@ settingsStore.onChange((s) => {
 //    chord the user presses reaches the recorder. Without it, recording Ctrl+W CLOSES THE SELECTED
 //    NODES — a claimed chord never reaches the page, so the recorder's own preventDefault cannot
 //    save it. It ALSO drives the menu leg (`menuStandsDown` → `syncMenuForStandDown`, called from
-//    this bit's IPC receiver), which is what lets a menu-owned chord — Ctrl+M, Ctrl+Shift+B, Ctrl+,, Windows
-//    Ctrl+W — reach the recorder instead of the item that owns it.
+//    this bit's IPC receiver), which is what lets a menu-owned chord such as Ctrl+M,
+//    Ctrl+Shift+B, Ctrl+Comma, or Ctrl+W reach the recorder instead of the item that owns it.
 // 2. `terminalFocused` — an xterm holds keyboard focus, which under the `terminal-first` policy
 //    means the intercepts stand down so the terminal gets the chord. `before-input-event` fires
 //    before any renderer handler could answer, so the answer has to be sitting here in advance;
@@ -780,7 +780,7 @@ function buildAppMenu(win: BrowserWindow): void {
  * than not having the policy at all. Disabling the item suppresses its accelerator, so the chord
  * falls through: page → the renderer's dispatcher (terminal context under terminal-first, where
  * nothing matches) → xterm → the PTY. That is what makes "everything reaches the shell" true for
- * Ctrl+M and Ctrl+W too, not just for Ctrl+0 and Windows Ctrl+W.
+ * Ctrl+M and Ctrl+W too, not just for Ctrl+0.
  *
  * The list is `menuItemIdsToSuspend` and it also carries **Toggle Kanban Board (Ctrl+Shift+B)** and
  * **Settings (Ctrl+,)** on every platform. Those two are not intercepted chords at all — they are
@@ -1192,7 +1192,7 @@ app.whenReady().then(async () => {
     if (getMainWindow()?.webContents.id !== event.sender.id) return
     shortcutRecording = active === true
     // The menu leg follows recording too (`menuStandsDown`), so an arm/disarm owes a sync — that is
-    // what lets Ctrl+M, Ctrl+Shift+B, Ctrl+, and Windows Ctrl+W reach the recorder instead of the menu item that
+    // what lets Ctrl+M, Ctrl+Shift+B, Ctrl+Comma, and Ctrl+W reach the recorder instead of the menu item that
     // owns them. A recorder arms and disarms once per chord the user records, which is the right
     // cadence for a menu mutation; NEVER per keystroke (same rule as the focus mirror below). It
     // must be INSIDE the guard for the same reason as there: a rejected sender must not move the
@@ -1607,7 +1607,7 @@ app.whenReady().then(async () => {
   initAgentStatusMirror()
 
   /** The one display-title rule for everything the HOST sends out (push alerts, Live Activity
-   *  updates, the notch capsule): the live session name unless the node was hand-renamed. */
+   *  updates, the Agent HUD): the live session name unless the node was hand-renamed. */
   const displayTitleFor = (nodeId: string): string | undefined =>
     displayNodeTitle(nodeId, {
       sessionName: nodeSessionName,
@@ -1664,7 +1664,7 @@ app.whenReady().then(async () => {
   })
   // Keep awake while agents work (docs/superpowers/specs/2026-08-18-keep-awake-design.md): hold an
   // idle-sleep power assertion while a LOCAL agent node is working, released the moment the last
-  // one stops. Folds the same mirror edges the notch does; the stale sweep's synthetic end
+  // one stops. Folds the same mirror edges the Agent HUD does; the stale sweep's synthetic end
   // (WORKING_STALE_MS) is the leak backstop for exits that never send their own edge.
   keepAwake = initKeepAwake({
     enabled: () => settingsStore.get().keepAwakeWhileAgentsWork,
@@ -1905,7 +1905,7 @@ app.whenReady().then(async () => {
   /**
    * A tool RESULT landed in a tracked transcript. Only interesting while the node is still in
    * needs-you: an `AskUserQuestion` the user declined with Esc fires no PostToolUse and no Stop, so
-   * nothing ever moved the node off NEEDS YOU — badge, notch capsule and phone card all stuck until
+   * nothing ever moved the node off NEEDS YOU, so the badge, Agent HUD and phone card all stuck until
    * the next prompt. The result proves the ask settled; `working` is the honest next state (Claude
    * carries on with "User declined to answer questions"), and any real event corrects it anyway.
    */
@@ -1947,7 +1947,7 @@ app.whenReady().then(async () => {
   // and the phone's context ring identically whichever CLI produced the numbers.
   const pushContextUpdate = (payload: unknown): void => {
     if (!win.isDestroyed()) win.webContents.send(IPC.contextUpdate, payload)
-    // Feed the Windows Agent HUD the model name (keyed by sessionId; no-op off/non-darwin).
+    // Feed the Windows Agent HUD the model name, keyed by sessionId. It no-ops when disabled.
     agentHudOnContextUpdate(payload as { sessionId?: string; model?: string; usedPercent?: number })
     // Feed the mirror's per-node context ring (mobile-usage-inbox). The context tail keys by
     // sessionId; map it back to the node via the raw-listener's nodeId↔sessionId association.
@@ -2208,7 +2208,7 @@ app.whenReady().then(async () => {
     // the same single source of truth as the mirror/phone. Then broadcast the enriched event.
     const enriched = recordAgentEvent(e) ?? e
     sendToMain(IPC.agentStatus, enriched)
-    // Feed the Windows Agent HUD its prompt (ev.task on newTurn) + subagent grouping (no-op off/non-darwin).
+    // Feed the Windows Agent HUD its prompt and subagent grouping. It no-ops when disabled.
     agentHudOnAgentEvent(enriched)
     // Agent messaging taps the SAME stream: the sender's newTurn resets its fan-out budget, and
     // an open delivery receipt watch is satisfied by the target's verified advance.
@@ -3419,7 +3419,7 @@ app.on('window-all-closed', () => {
 // the quit just long enough for them to land, capped so a hung tmux can never block quit.
 let quitFlushed = false
 app.on('before-quit', (e) => {
-  // Menu Quit / Cmd+Q / Ctrl+Q reach here directly (no window-close event first), so the confirm
+  // Menu Quit / Ctrl+Q reach here directly (no window-close event first), so the confirm
   // gate is repeated here for that path. quitConfirmed short-circuits this on the re-issued
   // app.quit() below once the user has answered, and on the win.close() gate's own re-issue.
   if (!quitConfirmed && !skipQuitConfirmation) {
@@ -3464,7 +3464,7 @@ app.on('before-quit', (e) => {
     // termination the first pass preventDefault'ed: both passes run, but will-quit never
     // fires and the process lingers as a windowless shell. Everything that must land has
     // landed by this point, so give Electron a moment to finish on its own, then force the
-    // exit. A normal Cmd+Q exits well inside the fuse and never reaches it.
+    // exit. A normal Ctrl+Q exits well inside the fuse and never reaches it.
     setTimeout(() => app.exit(0), 1500)
     return
   }

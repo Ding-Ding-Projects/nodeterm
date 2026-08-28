@@ -23,7 +23,7 @@ import {
  * Remote hook scripts get NO Codex thread-identity root.
  *
  * The default root is THIS machine's data dir, and baking it into a script written to someone
- * else's host puts a path like `/Users/<you>/Library/Application Support/…` on that host — inert
+ * else's host puts a local-only data path on that host, which is inert
  * (nothing there can read it) but a needless leak of the desktop's layout. Shared identity for SSH
  * hosts is a later slice; when it lands, this becomes the REMOTE host's root, not null.
  */

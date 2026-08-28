@@ -244,17 +244,17 @@ describe('RemoteHooks.setup — a hostile remote $HOME', () => {
   })
 
   it('quotes every path it builds from $HOME, so a home with a space still installs', async () => {
-    const { rh, conn, runs } = harness({ responses: { $HOME: '/Users/Enes K' } })
+    const { rh, conn, runs } = harness({ responses: { $HOME: '/home/Enes K' } })
     const res = await rh.setup('p1', conn, '/s.sock', { port: 51234, token: 'tok', version: '1' })
-    expect(res?.endpointPath).toBe('/Users/Enes K/.nodeterm/hook-endpoint-p1.env')
+    expect(res?.endpointPath).toBe('/home/Enes K/.nodeterm/hook-endpoint-p1.env')
     const joined = runs.map((r) => r.cmd)
-    expect(joined.some((j) => j.includes(`mkdir -p '/Users/Enes K/.nodeterm'`))).toBe(true)
+    expect(joined.some((j) => j.includes(`mkdir -p '/home/Enes K/.nodeterm'`))).toBe(true)
     expect(
       joined.some(
-        (j) => j.includes('cat > ') && j.includes("/Users/Enes K/.nodeterm/hook-endpoint-p1.env'")
+        (j) => j.includes('cat > ') && j.includes("/home/Enes K/.nodeterm/hook-endpoint-p1.env'")
       )
     ).toBe(true)
-    expect(joined.some((j) => j.includes(`cat > '/Users/Enes K/.claude/settings.json'`))).toBe(true)
+    expect(joined.some((j) => j.includes(`cat > '/home/Enes K/.claude/settings.json'`))).toBe(true)
     // No path derived from $HOME survives UNQUOTED in any remote SHELL LINE (the last argv element
     // of an ssh child is the command the remote shell parses; the `-R` forward spec is an ssh
     // OPTION, not a shell word, so it is excluded by construction).
@@ -321,20 +321,20 @@ describe('RemoteHooks — the opencode XDG path expression', () => {
 
 describe('RemoteHooks.ensureFullscreenTui — the fourth $(dirname …) site', () => {
   it('quotes the substitution, so a home with a space gets ONE mkdir argument', async () => {
-    // Unquoted, `$(dirname '/Users/Enes Kirca/.claude/settings.json')` word-splits into two mkdir
+    // Unquoted, `$(dirname '/home/Enes Kirca/.claude/settings.json')` word-splits into two mkdir
     // args (measured ARGC=2): junk directories, then the quoted `cat >` fails and the catch
     // swallows it, so the fullscreen TUI setting is never written for a spaced home.
     const { rh, conn: c, runs } = harness({ responses: { 'settings.json': '{}' } })
     await rh.ensureFullscreenTui(c, '/s.sock', '/home/Enes Kirca')
     const write = runs.map((r) => r.args[r.args.length - 1]).find((l) => l.includes('mkdir -p'))
     expect(write).toBeTruthy()
-    expect(write).toContain(`mkdir -p "$(dirname '/Users/Enes Kirca/.claude/settings.json')"`)
+    expect(write).toContain(`mkdir -p "$(dirname '/home/Enes Kirca/.claude/settings.json')"`)
     const argc = execFileSync(
       '/bin/sh',
-      ['-c', `set -- "$(dirname '/Users/Enes Kirca/.claude/settings.json')"; echo "ARGC=$#|$1"`],
+      ['-c', `set -- "$(dirname '/home/Enes Kirca/.claude/settings.json')"; echo "ARGC=$#|$1"`],
       { encoding: 'utf8' }
     ).trim()
-    expect(argc).toBe('ARGC=1|/Users/Enes Kirca/.claude')
+    expect(argc).toBe('ARGC=1|/home/Enes Kirca/.claude')
   })
 })
 

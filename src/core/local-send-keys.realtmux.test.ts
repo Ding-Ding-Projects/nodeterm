@@ -41,7 +41,7 @@ const SESSION = 'nt-probe'
  * makes `afterAll`'s `rm -rf` the one cleanup path for everything this file created.
  *
  * `makeTmuxTmpdir` picks the dir, because private is not the only constraint — the bound socket
- * path also has to fit `sun_path`, and under the macOS per-user temp root this file's own name
+ * path also has to fit `sun_path`, and under a long per-user temp root this file's own name
  * came to 106 of the 103 characters available. See `tmux-test-socket.ts`.
  */
 function tmuxEnv(): NodeJS.ProcessEnv {
@@ -49,7 +49,7 @@ function tmuxEnv(): NodeJS.ProcessEnv {
 }
 
 function findTmux(): string | null {
-  for (const c of ['/usr/bin/tmux', '/usr/local/bin/tmux', '/opt/homebrew/bin/tmux', '/bin/tmux']) {
+  for (const c of ['/usr/bin/tmux', '/usr/local/bin/tmux', '/bin/tmux']) {
     if (fs.existsSync(c)) return c
   }
   return null

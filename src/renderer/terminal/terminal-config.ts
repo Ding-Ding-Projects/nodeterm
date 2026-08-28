@@ -717,9 +717,8 @@ export interface CopyShortcutEvent {
 }
 
 /**
- * True for the keydowns that should copy the terminal selection: Cmd+C (mac), Ctrl+Shift+C
- * (Linux, Windows) and Ctrl+Insert (the traditional terminal binding — the only one of the three
- * that no browser reserves). Plain Ctrl+C is deliberately NOT one of them — it must keep reaching
+ * True for the keydowns that should copy the terminal selection: Ctrl+Shift+C and Ctrl+Insert.
+ * Plain Ctrl+C is deliberately not one of them because it must keep reaching
  * the pty as SIGINT.
  *
  * The letter is matched on the printed key (`e.key`, so Dvorak/AZERTY follow the letter the user
@@ -728,8 +727,8 @@ export interface CopyShortcutEvent {
  * would have no keyboard copy at all (the OS Edit menu only copies the DOM selection, not
  * xterm's canvas one).
  *
- * Cmd+Shift+C is deliberately allowed as well: nothing else binds it and it is a harmless
- * near-miss of Cmd+C. AltGr combos (which report ctrl+alt) never copy.
+ * Ctrl+Shift+C is deliberately allowed as well: nothing else binds it and it is a harmless
+ * near-miss of Ctrl+C. AltGr combos (which report ctrl+alt) never copy.
  */
 export function isCopyShortcut(e: CopyShortcutEvent): boolean {
   if (e.type !== 'keydown') return false
@@ -740,9 +739,8 @@ export function isCopyShortcut(e: CopyShortcutEvent): boolean {
     // Ctrl+Insert = copy (Shift+Insert is paste — not ours). No meta/alt.
     return e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey
   }
-  const cmdC = e.metaKey && !e.ctrlKey && !e.altKey
   const ctrlShiftC = e.ctrlKey && e.shiftKey && !e.metaKey && !e.altKey
-  return cmdC || ctrlShiftC
+  return ctrlShiftC
 }
 
 /**
@@ -776,7 +774,7 @@ export type TerminalKeyAction = CopyKeyAction | 'shift-enter' | 'bubble'
 /**
  * Superset of `copyKeyAction` used by the terminal's custom key handler.
  *
- * `ownsProjectJump` is the Cmd/Ctrl+1-9 "jump to the Nth project" decision, made by the caller
+ * `ownsProjectJump` is the Ctrl+1-9 "jump to the Nth project" decision, made by the caller
  * (`liveProjectJumpTarget` in `lib/projectJump.ts`) and passed in — this module deliberately does
  * NOT re-derive it. There is exactly one matcher for that chord, because it has to agree with the
  * Canvas handler that performs the switch. When it is true the key must be swallowed HERE: xterm's

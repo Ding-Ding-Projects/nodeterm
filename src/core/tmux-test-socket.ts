@@ -6,9 +6,8 @@
 //    the server but never unlinks the socket file, so a per-pid name in the SHARED `/tmp/tmux-<uid>/`
 //    leaves one dead entry behind per run, forever — measured at 14 stale `nt-envtest-*` sockets on
 //    one dev machine before this module existed.
-// 2. **It must be SHORT.** A unix socket path is bound into a fixed `sockaddr_un.sun_path`, and the
-//    macOS per-user temp root is already 56 characters before anything is added to it. This is not
-//    theoretical: `local-send-keys.realtmux.test.ts` came to 106 and every test in it failed with
+// 2. **It must be SHORT.** A unix socket path is bound into a fixed `sockaddr_un.sun_path`. This is
+//    not theoretical: `local-send-keys.realtmux.test.ts` came to 106 and every test in it failed with
 //    `error connecting to …: File name too long`, which reads like a broken test rather than a
 //    path-length limit. Its sibling passed at 97 — six characters from the same failure.
 //
@@ -21,11 +20,9 @@ import path from 'path'
 /**
  * The longest socket path that can be bound.
  *
- * macOS `sys/un.h` declares `sun_path[104]` — 103 characters plus the NUL. Linux allows 107. The
- * smaller number is the one to hold everywhere: a limit that only bites on a contributor's Mac is
- * worse than one that bites in CI, because it looks like the test is broken.
+ * Linux allows 107 characters plus the trailing NUL.
  */
-export const SUN_PATH_MAX = 103
+export const SUN_PATH_MAX = 107
 
 /** `mkdtemp` replaces a trailing `XXXXXX`, so the directory is always six characters longer. */
 export const MKDTEMP_SUFFIX_LEN = 6
@@ -55,8 +52,7 @@ export function pickTmuxTmpdirBase(
 
 /**
  * Create a private `TMUX_TMPDIR` that `-L <socket>` fits inside, and return it. Prefers the
- * platform temp dir and falls back to `/tmp`, which is what makes the difference on macOS: the
- * former resolves to `/private/var/folders/…` (56 characters), the latter to `/private/tmp` (12).
+ * platform temp directory and falls back to `/tmp` when the first candidate is too long.
  *
  * Both candidates are resolved BEFORE they are measured — tmux resolves the symlink itself before
  * binding, so measuring the unresolved `/var/folders/…` under-counts by exactly the 8 characters

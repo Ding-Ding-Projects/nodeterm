@@ -2,7 +2,7 @@ import type { GitFileChange } from '@shared/types'
 import { formatGitHistoryTimestamp } from './git-history-format'
 
 const STATUS_COLOR: Record<string, string> = {
-  M: '#ffd60a', A: '#32d74b', D: '#ff453a', R: '#bf5af2', U: '#6ac4dc'
+  M: '#fce100', A: '#107c10', D: '#d13438', R: '#8764b8', U: '#00b7c3'
 }
 
 export type GitHistoryCommitFilesState =
@@ -26,7 +26,7 @@ export function GitHistoryCommitFiles({
     <div className="scm-history__files">
       {meta && <div className="scm-history__meta">{meta}</div>}
       {state.status === 'loading' && <div className="scm-history__meta">Loading files…</div>}
-      {state.status === 'error' && <div className="scm-history__meta" style={{ color: '#ff453a' }} title={state.error}>{state.error}</div>}
+      {state.status === 'error' && <div className="scm-history__meta" style={{ color: '#d13438' }} title={state.error}>{state.error}</div>}
       {state.status === 'ready' && state.entries.length === 0 && (
         <div className="scm-history__meta">No file changes in this commit</div>
       )}

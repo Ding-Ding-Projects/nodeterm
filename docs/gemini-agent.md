@@ -36,7 +36,7 @@ is the price of adding the next agent to the same list.
 | `CONTEXT_LINK_CAPABLE` | **joined** (pre-branch) | A parser for gemini's event-sourced chat format plus a locator by sessionId (`handoff/locate.ts`'s `locateGemini`), and a discovery route — the marker block merged into `~/.gemini/GEMINI.md`. |
 | `TRANSFER_SOURCE_CAPABLE` | **joined** (pre-branch) | The same native-transcript reader cross-agent transfer needs. |
 | `CANVAS_CONTROL_CAPABLE` | **joined** (pre-branch) | The marker block in `~/.gemini/GEMINI.md` (gemini gets no skill — that is claude's discovery mechanism, which grok borrows). Membership is what sets `NODETERM_CANVAS_CONTROL` in the session env. |
-| `CHAT_CAPABLE` | not joined | The ⌘M `ChatPanel` renders **claude's** transcript `.jsonl`. Gemini's transcript is a different, event-sourced shape; the panel would need its own renderer. This list doubles as the "we can read and render this agent's transcript ourselves" fact — see the warning below. |
+| `CHAT_CAPABLE` | not joined | The Ctrl+M `ChatPanel` renders **claude's** transcript `.jsonl`. Gemini's transcript is a different, event-sourced shape; the panel would need its own renderer. This list doubles as the "we can read and render this agent's transcript ourselves" fact; see the warning below. |
 | `SUBAGENT_CAPABLE` | not joined | Subagent cards are driven by claude's `Agent`/`Task` tool correlation; gemini's equivalent vocabulary is not mapped. |
 | `BRANCH_CAPABLE` | not joined | Branch sends claude's `/branch` and resumes by claude's session id; gemini has no counterpart. |
 | `RECURRING_CAPABLE` | not joined | `/loop`, `/schedule`, `/cron` are detected from claude's `Skill` / `CronCreate` / `ScheduleWakeup` tool names. |
@@ -399,11 +399,11 @@ one stray keystroke.
 | Hook installation | `installGeminiHooks()` at launch, plus the `AGENT_TARGETS` loop per SSH connect | same core installer (`core/agents/hooks/*` is Electron-free) | N/A — the phone installs nothing |
 | Context meter | yes — `geminiContextTail` + the widened jail | **yes**, wired identically in `src/server/agent-status.ts` (a rare case where the server got the feature in the same change) | the mirror's per-node context ring gets it for free — `pushContextUpdate` feeds `recordContextUsage` in both shells |
 | `context.ensure` mount-time rehydration | **claude only, deliberately** (`readsClaudeTranscript`) — a gemini node's meter fills on its first hook event after mount instead of instantly | it has no server handler at all, so this was never reachable there | N/A |
-| Session title read | yes | **no — pre-existing gap, not a gemini one.** `ws-bridge.readSessionName` returns `''` (`src/renderer/bridge/ws-bridge.ts:240`): `IPC.ptyReadSessionName` has never been registered server-side, so **claude's** read leg is equally stubbed. The fix is to move the routing into core and register it from both shells, exactly as `core/transcript-ipc.ts` did for the ⌘M channels | the mirror's session-name **sweep** runs in both shells and routes per agent (`supportsTitleRead`), so a gemini name reaches the phone |
+| Session title read | yes | **no, a pre-existing gap rather than a gemini one.** `ws-bridge.readSessionName` returns `''` (`src/renderer/bridge/ws-bridge.ts:240`): `IPC.ptyReadSessionName` has never been registered server-side, so **claude's** read leg is equally stubbed. The fix is to move the routing into core and register it from both shells, exactly as `core/transcript-ipc.ts` did for the Ctrl+M channels | the mirror's session-name **sweep** runs in both shells and routes per agent (`supportsTitleRead`), so a gemini name reaches the phone |
 | Rename write | **N/A** — gemini has no rename command (§6) | idem | idem |
 | Permission mode | yes | yes (pure renderer + the flag) | **follow-up owed** — see §8 |
 | In-place restart + cold-restore resume | yes | yes | N/A |
-| ⌘M transcript view (`ChatPanel`) | **not implemented for gemini** — `CHAT_CAPABLE` is claude-only; the panel parses claude's JSONL | idem | idem |
+| Ctrl+M transcript view (`ChatPanel`) | **not implemented for gemini**; `CHAT_CAPABLE` is claude-only and the panel parses claude's JSONL | idem | idem |
 | Find bar's transcript index | **claude only** (`readsClaudeTranscript`); the terminal-buffer search works normally | idem | N/A |
 | Context links | yes (`CONTEXT_LINK_CAPABLE`), marker block in `~/.gemini/GEMINI.md` | **not wired at all** — `initContextLink` is never called from `src/server` | N/A |
 | Canvas control | yes, marker block + the sh+curl shim | **not wired** — `agent:control` has no server handler; pre-existing | N/A — no canvas |
@@ -541,7 +541,7 @@ SSH + surfaces
     title will NOT adopt gemini's name (readSessionName is stubbed server-side, §7).
 20. Phone: does a gemini node show the right state and a context ring? Its permission-mode flag is
     missing on phone-side launches (§8).
-21. macOS notch + canvas badge: does the gemini mark pulse and bloom, in BOTH themes? Its mark is a
+21. Windows Agent HUD + canvas badge: does the gemini mark pulse and bloom in both themes? Its mark is a
     gradient, so the `currentColor` bloom is the LABEL colour, not its own ink — the light theme is
     where that will look worst if it looks bad anywhere.
 22. Kanban card + card modal: badges, the meter row and the 💬 comments panel on a gemini card.

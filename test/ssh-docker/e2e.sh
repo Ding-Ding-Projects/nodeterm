@@ -9,7 +9,7 @@
 #   ./run.sh up && ./e2e.sh
 #
 # The container gets its own node_modules (an anonymous volume shadows the bind-mounted one, whose
-# native builds are macOS ABI), installed with --ignore-scripts: nothing here needs node-pty or a
+# native builds are host-ABI-specific), installed with --ignore-scripts: nothing here needs node-pty or a
 # real Electron binary. The test hardcodes 127.0.0.1:22022, which is the HOST's published port, so
 # socat re-creates that address inside the container.
 set -e

@@ -142,12 +142,12 @@ export function TeamAccessSection({
                 <p className="text-sm text-muted">All seats in use — add a seat.</p>
               ) : null}
               {atCap ? (
-                <p className="text-sm" style={{ color: '#ff9f0a' }}>
+                <p className="text-sm" style={{ color: '#f7630c' }}>
                   All seats in use — add a seat.
                 </p>
               ) : null}
               {error ? (
-                <p className="text-sm" style={{ color: '#ff9f0a' }}>
+                <p className="text-sm" style={{ color: '#f7630c' }}>
                   {error}
                 </p>
               ) : null}

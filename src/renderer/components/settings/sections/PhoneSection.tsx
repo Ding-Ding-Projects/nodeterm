@@ -201,7 +201,7 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
                 // sshd installs a key the phone can never use — the scan must wait, not the fix.
                 // The live probe (usePhonePairing) flips sshOpen and the QR appears by itself.
                 <div className="space-y-2">
-                  <p className="text-sm" style={{ color: '#ff9f0a' }}>
+                  <p className="text-sm" style={{ color: '#f7630c' }}>
                     <strong>OpenSSH Server</strong> is off, so your phone would not be able to
                     connect after pairing. Turn it on — the QR appears here the moment it is
                     .
@@ -221,20 +221,20 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
                   />
                   <p className="text-sm text-muted">Waiting for your phone… (10 min)</p>
                   {relayPlan === 'dev' ? (
-                    <p className="text-sm" style={{ color: '#ff9f0a' }}>
+                    <p className="text-sm" style={{ color: '#f7630c' }}>
                       Dev build: the relay is off regardless of the toggle, so this code pairs
                       LAN-only. Run a packaged build — or set NODETERM_RELAY_URL — for remote
                       access.
                     </p>
                   ) : !phoneAccessEnabled ? (
-                    <p className="text-sm" style={{ color: '#ff9f0a' }}>
+                    <p className="text-sm" style={{ color: '#f7630c' }}>
                       LAN-only code: the phone will reach this machine only on this network. Turn
                       on <strong>Remote access from your phone</strong> above first to also
                       connect from cellular — the QR refreshes by itself.
                     </p>
                   ) : null}
                   {sshHealed ? (
-                    <p className="text-sm" style={{ color: '#30d158' }}>
+                    <p className="text-sm" style={{ color: '#107c10' }}>
                       ✓ OpenSSH Server is reachable. Scan away.
                     </p>
                   ) : null}
@@ -246,15 +246,15 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
 
           {phase === 'paired' ? (
             <div className="space-y-3">
-              <p className="text-sm font-medium" style={{ color: '#30d158' }}>
+              <p className="text-sm font-medium" style={{ color: '#107c10' }}>
                 ✓ Paired. Your phone can now connect with its own key.
               </p>
               {relayResult === 'ok' ? (
-                <p className="text-sm" style={{ color: '#30d158' }}>
+                <p className="text-sm" style={{ color: '#107c10' }}>
                   Remote access is set up — the phone can reach this machine from anywhere.
                 </p>
               ) : relayResult === 'failed' ? (
-                <p className="text-sm" style={{ color: '#ff9f0a' }}>
+                <p className="text-sm" style={{ color: '#f7630c' }}>
                   ⚠ Remote-access setup failed, so this pairing is LAN-only for now. Check this
                   machine&apos;s internet connection and pair again to retry — or the phone will
                   pick it up by itself next time it connects on this network.
@@ -275,7 +275,7 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
           ) : null}
 
           {error ? (
-            <p className="text-sm" style={{ color: '#ff9f0a' }}>
+            <p className="text-sm" style={{ color: '#f7630c' }}>
               {error}
             </p>
           ) : null}
@@ -310,7 +310,7 @@ export function PhoneSection({ isActive }: { isActive: boolean }): React.JSX.Ele
           {revokeNote ? (
             <p
               className={revokeNote.warn ? 'text-sm' : 'text-sm text-muted'}
-              style={revokeNote.warn ? { color: '#ff9f0a' } : undefined}
+              style={revokeNote.warn ? { color: '#f7630c' } : undefined}
             >
               {revokeNote.text}
             </p>

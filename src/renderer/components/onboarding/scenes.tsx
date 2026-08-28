@@ -191,7 +191,7 @@ export function SceneKanban({ pulseKey }: { pulseKey?: number }) {
     const t = setInterval(() => setBoard((b) => !b), 2600)
     return () => clearInterval(t)
   }, [])
-  // an external pulse (the user pressing ⌘⇧B for real) flips the scene too — the animation
+  // an external pulse (the user pressing Ctrl+Shift+B for real) flips the scene too. The animation
   // answers their keystroke, which is the whole point of the try-it interaction
   const lastPulse = useRef(pulseKey)
   useEffect(() => {

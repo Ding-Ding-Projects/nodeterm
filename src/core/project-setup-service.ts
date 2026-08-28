@@ -474,7 +474,7 @@ export class ProjectSetupService {
     script: string,
     target: ProjectSetupTarget
   ): Promise<void> {
-    // For an ssh run every path the script sees is the REMOTE one — a local Mac path in these env
+    // For an SSH run every path the script sees is the remote one. A local Windows path in these env
     // vars would name a directory that does not exist on the host.
     const cwd = target.ssh ? target.ssh.remoteCwd : target.worktreePath ?? target.rootPath
     const rootPath = target.ssh ? target.ssh.remoteCwd : target.rootPath

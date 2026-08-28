@@ -11,9 +11,8 @@
 // hooks.json merge instead of using install-helper. It writes into the user's
 // REAL ~/.codex (default CODEX_HOME) — no managed home, no auth/config mirror.
 //
-// Adapted for the REAL ~/.codex (local install path only):
-// dropped the managed CODEX_HOME, system-hook mirroring, project-trust, legacy
-// cleanup, and Windows/remote paths. POSIX (macOS) is the target.
+// Adapted for the real ~/.codex local install path. Windows uses a native PowerShell hook, while
+// POSIX Server Edition and SSH hosts retain the shell-script form.
 import { homedir } from 'os'
 import path from 'path'
 import {
@@ -27,6 +26,7 @@ import {
 import { randomUUID } from 'crypto'
 import { renameAtomicSync } from '../../fs-atomic'
 import { buildManagedScript } from './managed-script'
+import { buildManagedWindowsScript, buildWindowsManagedHookCommand } from './managed-script-windows'
 import {
   computeTrustedHash,
   getCodexCanonicalTrustPath,
@@ -69,7 +69,7 @@ export const CODEX_EVENT_LABEL: Record<(typeof CODEX_EVENTS)[number], CodexEvent
   Stop: 'stop'
 }
 
-const SCRIPT_FILE_NAME = 'codex.sh'
+const SCRIPT_FILE_NAME = process.platform === 'win32' ? 'codex.ps1' : 'codex.sh'
 
 // hooks.json shape Codex expects: { hooks: { <EventName>: HookDefinition[] } }
 // where each HookDefinition has a `hooks` array of command handlers.
@@ -95,13 +95,13 @@ function scriptPath(): string {
   return path.join(homedir(), '.nodeterm', 'agent-hooks', SCRIPT_FILE_NAME)
 }
 
-// Why: match managed entries by the `agent-hooks/codex.sh` path segment (not
+// Why: match managed entries by the `agent-hooks/codex` path segment (not
 // the exact command string) so a fresh install also sweeps stale entries from
 // an older build or a different userData path. The managed-command matcher
 // keys off the path segment, not the exact command string.
 function isManagedCommand(command: string | undefined): boolean {
   if (!command) return false
-  return command.replaceAll('\\', '/').includes(`agent-hooks/${SCRIPT_FILE_NAME}`)
+  return /agent-hooks\/codex\.(?:sh|ps1)/i.test(command.replaceAll('\\', '/'))
 }
 
 function definitionHasManagedCommand(def: HookDefinition): boolean {
@@ -130,6 +130,7 @@ function removeManagedFromDefinitions(defs: HookDefinition[]): HookDefinition[] 
 // `[ -x ... ]` guard makes a missing/non-executable script a silent no-op so a
 // broken install never poisons the session with exit-127 noise.
 export function buildManagedCommand(script: string): string {
+  if (script.toLowerCase().endsWith('.ps1')) return buildWindowsManagedHookCommand(script)
   // POSIX single-quote escape so $, `, ", \ in the path are taken literally.
   const quoted = `'${script.replaceAll("'", "'\\''")}'`
   return `if [ -x ${quoted} ]; then /bin/sh ${quoted}; fi`
@@ -229,17 +230,21 @@ function writeHooksJson(file: string, config: HooksConfig): void {
 function writeManagedScript(file: string): void {
   const dir = path.dirname(file)
   mkdirSync(dir, { recursive: true })
-  const content = buildManagedScript('codex')
+  const content = SCRIPT_FILE_NAME.endsWith('.ps1')
+    ? buildManagedWindowsScript('codex')
+    : buildManagedScript('codex')
   const tmp = path.join(dir, `.${Date.now()}-${randomUUID()}.tmp`)
   let renamed = false
   try {
     writeFileSync(tmp, content, 'utf8')
-    try {
-      // chmod before rename so the canonical path is never visible
-      // non-executable (the `[ -x ]` guard would skip the hook in that window).
-      chmodSync(tmp, 0o755)
-    } catch {
-      /* fail open */
+    if (!SCRIPT_FILE_NAME.endsWith('.ps1')) {
+      try {
+        // chmod before rename so the canonical path is never visible
+        // non-executable (the `[ -x ]` guard would skip the hook in that window).
+        chmodSync(tmp, 0o755)
+      } catch {
+        /* fail open */
+      }
     }
     renameAtomicSync(tmp, file)
     renamed = true

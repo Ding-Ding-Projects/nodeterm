@@ -67,8 +67,7 @@ retrying delays a clearer error and then reports the same thing. `ENOSPC` will n
 waiting.
 
 **Does not branch on platform.** The retry is a no-op on POSIX, where these codes do not arise from
-this operation. Branching would mean the behaviour under test on a developer's Mac was not the
-behaviour shipped to a user on Windows.
+this operation. Branching would mean the behavior under test was not the behavior shipped on Windows.
 
 **Never swallows the final failure.** The last error is rethrown with its original `code`.
 
@@ -149,6 +148,6 @@ reports clean, which is the same class of silent failure as the bug.
 
 | Surface | Status |
 |---|---|
-| **Desktop** (Electron) | Covered. Windows is the platform this exists for; on macOS/Linux the retry is inert and behaviour is unchanged. |
+| **Desktop** (Electron) | Covered. Windows is the supported desktop and the retry handles transient destination sharing. |
 | **Server Edition** | Covered for core stores — the helper is in `src/core`, so both shells get it. Its usual host is Linux, where the retry is inert, but a Windows-hosted server gets the same protection. The ControlMaster/scp manager is desktop-only. |
 | **Mobile companion** | No client change. It holds no local stores of its own, but the agent-status mirror it reads from an SSH host now arrives through the unique remote temp path. The transport shape is unchanged. |

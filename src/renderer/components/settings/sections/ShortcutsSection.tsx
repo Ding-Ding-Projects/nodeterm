@@ -25,8 +25,8 @@
  *      keyed gesture has a focus gate, so a terminal- or scm-scope command never competes with it
  *      (see the block itself for why).
  * (2) returns early, so a candidate that trips both detectors (a main-intercepted command taking
- * a chord another GLOBAL command already holds — `node.close` ← `Cmd+K`) produces exactly ONE
- * message. The shadow message is reserved for what only it can see: `node.close` ← `Cmd+F`, where
+ * a chord another GLOBAL command already holds, such as `node.close` ← `Ctrl+K`) produces exactly ONE
+ * message. The shadow message is reserved for what only it can see: `node.close` ← `Ctrl+F`, where
  * the two commands live in different buckets and nothing collides, yet main swallows the key
  * before the terminal surface is ever offered it.
  *
@@ -49,7 +49,6 @@ import {
   type TerminalShortcutPolicy
 } from '@shared/keybindings'
 import { formatShortcut } from '@shared/shortcut'
-import { usesMetaPrimary, keyLabel } from '@shared/platform-utils'
 import {
   activeKeybindingOverrides,
   commandKeysFor,
@@ -91,7 +90,7 @@ const NOTES: Partial<Record<CommandId, string>> = {
  *  knows about commands) decide whether a *setting* is on screen. */
 const POLICY_LABEL = 'While a terminal has focus'
 const POLICY_DESCRIPTION =
-  "App shortcuts first (the default): shared shortcuts like ⌘K keep working over a focused terminal, and the first time one is captured that way the terminal says so — once per chord, ever. Terminal first: every chord but the terminal's own reaches the shell or TUI, including Close (⌘W / Ctrl+W), Minimize (⌘M / Ctrl+M), actual size (⌘0), the kanban board (⌘⇧B), Settings (⌘,) and the ⌘1–9 project jumps — the matching application-menu entries grey out while a terminal is focused, so those chords can reach it. Reload (⌘R / ⌘⇧R) is the one exception and always stays with the app, so a stuck window can still be recovered."
+  "App shortcuts first (the default): shared shortcuts like Ctrl+K keep working over a focused terminal, and the first time one is captured that way the terminal says so once. Terminal first: every chord except the terminal's own reaches the shell or TUI, including Close (Ctrl+W), Minimize (Ctrl+M), actual size (Ctrl+0), the kanban board (Ctrl+Shift+B), Settings (Ctrl+Comma), and Ctrl+1–9 project jumps. The matching application-menu entries are disabled while a terminal is focused so those chords can reach it. Reload (Ctrl+R / Ctrl+Shift+R) always stays with the app so a stuck window can still be recovered."
 const POLICY_ROW: SettingsSearchEntry = {
   title: POLICY_LABEL,
   description: POLICY_DESCRIPTION,
@@ -176,16 +175,15 @@ export function commitCandidate(
   combo: string,
   mode: 'replace' | 'add'
 ): { ok: true } | { ok: false; error: string } {
-  const useMetaPrimary = usesMetaPrimary()
   const current = activeKeybindingOverrides()
   const existing = effectiveBindings(id)
   const nextList = mode === 'add' ? [...existing.filter((b) => b !== combo), combo] : [combo]
-  const chord = formatShortcut(combo, useMetaPrimary)
-  // The candidate's platform identity, computed ONCE: the reverse-shadow block and both dictation
+  const chord = formatShortcut(combo)
+  // The candidate's Windows identity, computed ONCE: the reverse-shadow block and both dictation
   // gates all ask the same question of it, and three copies of one call is three chances to drift.
-  const identity = bindingIdentity(combo, useMetaPrimary)
+  const identity = bindingIdentity(combo)
 
-  const conflicts = findKeybindingConflicts({ ...current, [id]: nextList }, useMetaPrimary).filter((c) =>
+  const conflicts = findKeybindingConflicts({ ...current, [id]: nextList }).filter((c) =>
     c.commandIds.includes(id)
   )
   if (conflicts.length) {
@@ -200,7 +198,7 @@ export function commitCandidate(
     return { ok: false, error: `${chord} is already used by ${titles.join(', ')}.` }
   }
 
-  const shadowed = findMainInterceptShadowing(id, combo, current, useMetaPrimary)
+  const shadowed = findMainInterceptShadowing(id, combo, current)
   if (shadowed.length) {
     const titles = shadowed.map((cid) => COMMANDS_BY_ID.get(cid)?.title ?? cid).join(', ')
     return { ok: false, error: `${chord} would be swallowed app-wide before ${titles} could see it.` }
@@ -208,12 +206,12 @@ export function commitCandidate(
 
   // REVERSE shadowing — the same collision seen from the other side, and neither gate above can
   // see it. `findMainInterceptShadowing` answers only for an INTERCEPTED id, and a bucket conflict
-  // needs both commands in one bucket; binding `terminal.find` to `Cmd+W` is neither, so it passed
+  // needs both commands in one bucket; binding `terminal.find` to `Ctrl+W` is neither, so it passed
   // every check and produced a permanently dead shortcut with no warning — main swallows the chord
   // in `before-input-event` and the terminal surface is never offered it.
   if (!MAIN_INTERCEPTED_COMMAND_IDS.includes(id)) {
     for (const cid of MAIN_INTERCEPTED_COMMAND_IDS) {
-      const hit = effectiveBindings(cid).some((b) => bindingIdentity(b, useMetaPrimary) === identity)
+      const hit = effectiveBindings(cid).some((b) => bindingIdentity(b) === identity)
       if (!hit) continue
       const title = COMMANDS_BY_ID.get(cid)?.title ?? cid
       const own = COMMANDS_BY_ID.get(id)?.title ?? id
@@ -234,14 +232,14 @@ export function commitCandidate(
   //
   // Both gates are keyed-only WITHOUT an explicit hold guard: `bindingIdentity` renders a
   // modifier-only chord as `…:(hold)`, which no keyed identity can ever equal — so the default
-  // `Cmd+Alt` hold chord blocks nothing, and a hold candidate trips nothing.
+  // `Ctrl+Alt` hold chord blocks nothing, and a hold candidate trips nothing.
   //
   // Both are also SCOPED to `app`/`canvas`, because the gesture has a FOCUS GATE: the keyed
   // dictation listener runs only in plain app focus (`dispatchGlobalKeydown` in
   // `renderer/lib/globalKeybindings.ts` — `!ctx.typing && !ctx.terminal && !ctx.kanbanOpen`). A
   // `terminal`- or `scm`-scope command dispatches ONLY where that gate is already shut, so it
   // never competes with dictation for its chord; refusing the overlap would forbid a binding that
-  // was legal before this branch and still works at dispatch (⌘⌥D on Find in terminal, say).
+  // was legal before this change and still works at dispatch (Ctrl+Alt+D on Find in terminal, say).
   const dictationId: CommandId = 'speech.dictation'
   const dictationTitle = COMMANDS_BY_ID.get(dictationId)?.title ?? dictationId
   const candidateScope = COMMANDS_BY_ID.get(id)?.scope
@@ -249,7 +247,7 @@ export function commitCandidate(
     // "rarely", not "never": dictation's keyed listener only claims the chord where it listens.
     // An app-scope command flagged `allowInTerminal` still fires in terminal focus under
     // app-first — the message must not overclaim a chord that is merely usually lost.
-    const taken = effectiveBindings(dictationId).some((b) => bindingIdentity(b, useMetaPrimary) === identity)
+    const taken = effectiveBindings(dictationId).some((b) => bindingIdentity(b) === identity)
     if (taken) {
       const own = COMMANDS_BY_ID.get(id)?.title ?? id
       return {
@@ -263,7 +261,7 @@ export function commitCandidate(
       // The same focus gate, read from the other side: a focused-surface command cannot be hidden
       // by a gesture that is never offered on that surface.
       if (def.scope === 'terminal' || def.scope === 'scm') continue
-      const hit = effectiveBindings(def.id).some((b) => bindingIdentity(b, useMetaPrimary) === identity)
+      const hit = effectiveBindings(def.id).some((b) => bindingIdentity(b) === identity)
       if (!hit) continue
       return {
         ok: false,
@@ -298,7 +296,6 @@ function Chips({
   title: string
   onRemove?: (index: number) => void
 }): React.JSX.Element {
-  const useMetaPrimary = usesMetaPrimary()
   const keys = limit === undefined ? chords : chords.slice(0, limit)
   if (keys.length === 0) return <></>
   return (
@@ -308,7 +305,7 @@ function Chips({
           {i > 0 ? <span className="text-[11px] text-muted">or</span> : null}
           {parts.map((p, j) => (
             <kbd key={j} className="kbd">
-              {keyLabel(p)}
+              {p}
             </kbd>
           ))}
           {onRemove ? (
@@ -316,7 +313,7 @@ function Chips({
               type="button"
               // The chord is named in the label because a row can hold several: "Remove" alone
               // would leave a screen reader with N identical buttons.
-              aria-label={`Remove ${useMetaPrimary ? parts.join('') : parts.join('+')} from ${title}`}
+              aria-label={`Remove ${parts.join('+')} from ${title}`}
               title="Remove this shortcut"
               onClick={() => onRemove(i)}
               className="cursor-pointer border-0 bg-transparent px-0.5 text-[12px] leading-none text-muted opacity-0 group-hover/row:opacity-60 hover:!opacity-100 focus-visible:opacity-100"
@@ -587,15 +584,15 @@ export function ShortcutsSection({ isActive }: { isActive: boolean }): React.JSX
     <SettingsSection
       id="shortcuts"
       title="Keyboard Shortcuts"
-      // The one remaining limitation is the application MENU's, not macOS's: its accelerators are
-      // handled above the page on every platform. While a recorder is armed main now suspends the
-      // items in `menuItemIdsToSuspend` (Minimize, Toggle Kanban Board, Settings, off-mac Close),
-      // so those chords reach the recorder — but RELOAD is deliberately never suspended, because it
+      // The remaining limitation belongs to the Windows application menu: its accelerators are
+      // handled above the page. While a recorder is armed main suspends the items in
+      // `menuItemIdsToSuspend` (Minimize, Toggle Kanban Board, Settings, and Close), so those
+      // chords reach the recorder. Reload is deliberately never suspended because it
       // is the crash-recovery lever. See `src/main/keydown-intercept.ts`.
       // The residual clause is the KNOWN GAP `menuItemIdsToSuspend` documents: one list drives
       // both stand-downs, so the always-on app roles are deliberately left unsuspended and still
       // act while recording. The ruling stands; the user is simply told.
-      description="Remap any command. Overrides are stored in settings.json under `keybindings`; Disable turns a command's shortcut off, Reset restores its default. Reload (⌘R / ⌘⇧R) cannot be recorded — it always stays with the app; the system-level chords the menu keeps — ⌘Q (Quit), ⌘H (Hide) and the developer roles — also act while recording, so don't try to bind them."
+      description="Remap any command. Overrides are stored in settings.json under `keybindings`; Disable turns a command's shortcut off, Reset restores its default. Reload (Ctrl+R / Ctrl+Shift+R), Quit (Ctrl+Q), and developer-tool menu commands remain active while recording, so they cannot be bound here."
       isActive={isActive}
       searchEntries={entries}
     >

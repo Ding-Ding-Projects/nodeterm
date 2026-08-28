@@ -12,8 +12,8 @@ import type { Project } from '@shared/types'
 
 const board = (): ProjectKanban => ({
   columns: [
-    { id: 'a', title: 'To Do', color: '#0a84ff' },
-    { id: 'b', title: 'Doing', color: '#ffd60a' }
+    { id: 'a', title: 'To Do', color: '#0078d4' },
+    { id: 'b', title: 'Doing', color: '#fce100' }
   ],
   assignments: [
     { nodeId: 'n1', columnId: 'a' },
@@ -151,8 +151,8 @@ describe('columnForNode', () => {
 })
 
 describe('card meta', () => {
-  const enes = { name: 'enes', color: '#0a84ff' }
-  const mehmet = { name: 'mehmet', color: '#bf5af2' }
+  const enes = { name: 'enes', color: '#0078d4' }
+  const mehmet = { name: 'mehmet', color: '#8764b8' }
   it('cardMeta tolerates absent/malformed meta', () => {
     expect(cardMeta(board(), 'n1')).toBeUndefined()
     const bad = { ...board(), meta: 42 } as unknown as ProjectKanban
@@ -187,7 +187,7 @@ describe('card meta', () => {
 })
 
 describe('card priority', () => {
-  const enes = { name: 'enes', color: '#0a84ff' }
+  const enes = { name: 'enes', color: '#0078d4' }
   it('setCardPriority sets, changes and clears; clearing the only field drops the entry', () => {
     const k1 = setCardPriority(board(), 'n1', 'high')
     expect(cardMeta(k1, 'n1')?.priority).toBe('high')

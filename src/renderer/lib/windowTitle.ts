@@ -2,7 +2,7 @@
  * Reflect the active session in the native window title (issue #414).
  *
  * Window-title-based time trackers (ActivityWatch is the reporter's) read whatever title the OS
- * shows for the focused window — that is how they tell "which iTerm2 tab / VS Code file" apart.
+ * shows for the focused window, which is how Windows Terminal and VS Code identify the active tab or file.
  * nodeterm keeps everything inside ONE OS window, so those tools only ever saw the static app
  * title. With `settings.windowTitleActiveSession` on, the title becomes
  * `<node title> — <project name> — <base title>` for whichever node was last active.
@@ -24,7 +24,7 @@
  * existed (including the NT_MULTI "(test instance)" label in dev sandboxes).
  */
 
-/** Title separator — the em-dash convention window titles already use (VS Code, iTerm2). */
+/** Title separator used by Windows desktop applications such as VS Code. */
 const SEP = ' — '
 
 export interface WindowTitleParts {

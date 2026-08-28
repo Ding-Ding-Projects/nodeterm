@@ -33,7 +33,7 @@ export interface InitClaudeUsageOpts {
 export function initClaudeUsage(win: BrowserWindow, opts: InitClaudeUsageOpts = {}): UsageService {
   // Poll while the window is focused (for the pill) OR while a phone may be reading the mirror (for
   // the phone's `usage` block) — a focus-only gate froze the phone's bars into fossils whenever the
-  // Mac was backgrounded, the same starvation the Server Edition avoids by polling ungated. The
+  // window was backgrounded, the same starvation the Server Edition avoids by polling ungated. The
   // usage endpoint has a tight budget, so a pure-desktop user with no phone still only polls on focus.
   const service = startUsageService({
     shouldPoll: () => win.isFocused(),

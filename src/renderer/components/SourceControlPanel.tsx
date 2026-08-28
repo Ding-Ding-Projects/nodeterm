@@ -18,7 +18,6 @@ import { PublishDialog } from './PublishDialog'
 import { defaultScmScope, type ScmScope } from '@shared/scm-scope'
 import { chipFor, effectiveBindings } from '../lib/keybindingOverrides'
 import { matchesShortcut } from '@shared/shortcut'
-import { usesMetaPrimary } from '@shared/platform-utils'
 
 export interface SourceControlPanelProps {
   onClose: () => void
@@ -39,15 +38,12 @@ export interface SourceControlPanelProps {
 
 const AUTO_FETCH_MS = 180_000
 
-/** Which physical modifier the registry's abstract `Cmd` resolves to for the commit chord. */
-const useMetaPrimary = usesMetaPrimary()
-
 const STATUS_COLOR: Record<string, string> = {
-  M: '#ffd60a',
-  A: '#32d74b',
-  D: '#ff453a',
-  R: '#bf5af2',
-  U: '#6ac4dc'
+  M: '#fce100',
+  A: '#107c10',
+  D: '#d13438',
+  R: '#8764b8',
+  U: '#00b7c3'
 }
 
 function DiffStat({ added, deleted }: { added: number; deleted: number }) {
@@ -519,9 +515,8 @@ export function SourceControlPanel({
                     onKeyDown={(e) => {
                       // Registry-driven (L2: a local listener reads its binding from the registry),
                       // so a remapped scm.commit changes the KEY as well as the placeholder above.
-                      // Matching is exact on all four modifiers, unlike the old
-                      // `metaKey || ctrlKey` — see the named losses in the keybindings notes.
-                      if (effectiveBindings('scm.commit').some((s) => matchesShortcut(e, s, useMetaPrimary))) {
+                      // Matching is exact on all four modifiers through the shared Windows engine.
+                      if (effectiveBindings('scm.commit').some((s) => matchesShortcut(e, s))) {
                         commitAndPush()
                       }
                     }}

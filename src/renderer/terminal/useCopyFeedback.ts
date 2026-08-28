@@ -3,7 +3,6 @@
 // The decisions live in ./copy-feedback; this file owns the listeners, the timers, the one-time
 // storage flag, and the browser-honesty rule.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { usesMetaPrimary } from '@shared/platform-utils'
 import {
   COPIED_DWELL_MS,
   ERROR_TOAST_SUPPRESS_MS,
@@ -37,7 +36,7 @@ export interface CopyFeedbackApi {
 export function useCopyFeedback(opts: {
   /** The element xterm was `open()`ed into. */
   hostRef: React.RefObject<HTMLElement | null>
-  /** Does xterm hold a selection of its own right now? (⌥/Shift drag.) */
+  /** Does xterm hold a selection of its own right now? (Shift drag.) */
   hasSelection: () => boolean
   /** Off for a terminal whose own CLI already reports its copies (`reportsOwnCopy`) — then this
    *  hook binds no listeners, keeps no timers and never raises a pill, so that terminal behaves
@@ -70,7 +69,7 @@ export function useCopyFeedback(opts: {
     (text: string): void => {
       if (!enabledRef.current) return
       // The gesture itself succeeded (tmux copy-mode ran), so the drag decision is told either way:
-      // whatever the clipboard did, "hold ⌥ to select text" is not the advice this drag needs.
+      // whatever the clipboard did, "hold Shift to select text" is not the advice this drag needs.
       lastCopyAt.current = Date.now()
       // A failure toast that lands AFTER this call retracts the pill (the effect below); one
       // dispatched SYNCHRONOUSLY just before it — the plain-http execCommand path, where the shim
@@ -105,8 +104,7 @@ export function useCopyFeedback(opts: {
           movedPx,
           sawOsc52: lastCopyAt.current >= from.t,
           hasXtermSelection: hasSelectionRef.current(),
-          hintSeen: hintSeen(),
-          useMetaPrimary: usesMetaPrimary()
+          hintSeen: hintSeen()
         })
         if (!out) return
         markHintSeen()

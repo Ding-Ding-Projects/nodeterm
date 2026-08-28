@@ -1,4 +1,4 @@
-// The read channels both shells now serve. What these pin down is the DISTINCTION the ⌘M panel
+// The read channels both shells now serve. What these pin down is the DISTINCTION the Ctrl+M panel
 // depends on: "resolved, and the session has said nothing" vs "nothing resolved at all" — the two
 // used to be the same empty array, which is how a failed resolution reached the user as an empty
 // conversation.

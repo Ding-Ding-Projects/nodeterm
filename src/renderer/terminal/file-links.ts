@@ -1,4 +1,4 @@
-// Cmd/Ctrl+click links in terminal output. `createUrlLinkProvider` handles http(s) URLs;
+// Ctrl+click links in terminal output. `createUrlLinkProvider` handles http(s) URLs;
 // `createFileLinkProvider` handles path-like tokens: absolute (`/x/y`), dot-relative
 // (`./x`, `../x`) and bare relatives with at least one slash (`src/a.ts`), with optional
 // `:line[:col]` suffixes (compiler/grep output). `~` paths are skipped in v1 (no home
@@ -181,7 +181,7 @@ function isHttpUrl(text: string): boolean {
 export function createOsc8LinkHandler(openUrl: (url: string) => void): ILinkHandler {
   return {
     activate: (event: MouseEvent, text: string): void => {
-      if (!(event.metaKey || event.ctrlKey)) return
+      if (!event.ctrlKey || event.metaKey) return
       if (isHttpUrl(text)) openUrl(text)
     }
   }
@@ -388,7 +388,7 @@ export function createFileLinkProvider(term: Terminal, deps: FileLinkDeps): ILin
             text: t.text,
             range: tokenRange(logical.startRow, cols, t.startIndex, t.text.length),
             activate: (event: MouseEvent) => {
-              if (!(event.metaKey || event.ctrlKey)) return
+              if (!event.ctrlKey || event.metaKey) return
               deps.activate(abs, found.dir)
             }
           }
@@ -420,7 +420,7 @@ export function createUrlLinkProvider(term: Terminal, openUrl: (url: string) => 
           text: u.text,
           range: tokenRange(logical.startRow, term.cols, u.startIndex, u.text.length),
           activate: (event: MouseEvent) => {
-            if (event.metaKey || event.ctrlKey) openUrl(u.url)
+            if (event.ctrlKey && !event.metaKey) openUrl(u.url)
           }
         })
       )
@@ -501,7 +501,7 @@ export interface LinkClickDeps {
 }
 
 /**
- * Cmd/Ctrl+click link opening that works INSIDE tmux / an agent's fullscreen TUI. There, the
+ * Ctrl+click link opening that works INSIDE tmux / an agent's fullscreen TUI. There, the
  * app has mouse-reporting on, so xterm consumes a click as a mouse escape and never runs the
  * registered link provider's `activate` (xterm: `areMouseEventsActive && !shouldForceSelection`
  * ⇒ early return). This capture-phase `mouseup` listener runs BEFORE xterm's mouse handler:
@@ -516,7 +516,7 @@ export function installLinkClickFallback(
   deps: LinkClickDeps
 ): { dispose(): void } {
   const onMouseUp = (ev: MouseEvent): void => {
-    if (ev.button !== 0 || !(ev.metaKey || ev.ctrlKey)) return
+    if (ev.button !== 0 || !ev.ctrlKey || ev.metaKey) return
     // Only take over when the app has mouse-reporting on (tmux mouse / agent TUI) — that is the
     // exact case where xterm's own link `activate` never fires. With reporting OFF (a plain shell
     // when tmux is unavailable) the registered providers handle the click, so stepping in
@@ -555,7 +555,7 @@ export function installLinkClickFallback(
         const abs = resolveFileToken(t.path, deps.getCwd(), convention)
         if (!abs) return
         // Swallow the click NOW so tmux never gets the mouse report; existence is async and a
-        // Cmd/Ctrl+click on a path-shaped token is a deliberate open regardless of the outcome.
+        // Ctrl+click on a path-shaped token is a deliberate open regardless of the outcome.
         ev.preventDefault()
         ev.stopPropagation()
         term.clearSelection()

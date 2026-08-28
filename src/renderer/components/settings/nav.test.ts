@@ -11,11 +11,10 @@ describe('SETTINGS_GROUPS', () => {
     expect(allSectionIds()).toContain(FIRST_SECTION_ID)
   })
   it('exposes the complete Windows settings set on every renderer host', () => {
-    const off = visibleSettingsGroups(false).flatMap((g) => g.sections.map((s) => s.id))
-    expect(off).toContain('agent-hud')
-    expect(off).toHaveLength(25)
-    expect(visibleSettingsGroups(true)).toEqual(SETTINGS_GROUPS)
-    expect(visibleSettingsGroups(false)).toEqual(SETTINGS_GROUPS)
+    const sections = visibleSettingsGroups().flatMap((g) => g.sections.map((s) => s.id))
+    expect(sections).toContain('agent-hud')
+    expect(sections).toHaveLength(25)
+    expect(visibleSettingsGroups()).toEqual(SETTINGS_GROUPS)
   })
 })
 

@@ -44,7 +44,7 @@ export function legacyCodexAccountHome(userDataDir: string, accountId: string): 
 /**
  * A managed account's local home, `~/.nodeterm/cx/<sha256(userDataDir\0accountId)[0..16]>`, mode
  * `0o700`. The digest is deliberately SHORT: the app-server control socket lives two levels below
- * it (`<home>/app-server-control/app-server-control.sock`) and must stay under macOS `SUN_LEN` —
+ * it (`<home>/app-server-control/app-server-control.sock`) and must stay under Linux `SUN_LEN`.
  * the normal Electron userData path plus a UUID already overshoots. `userDataDir` is folded into
  * the digest so separate NodeTerm profiles never collide, without a global static account root.
  */

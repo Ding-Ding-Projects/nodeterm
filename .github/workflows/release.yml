@@ -2,6 +2,7 @@ name: Windows Release
 
 on:
   push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -14,23 +15,15 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - name: Install project dependencies
-        run: npm ci
-
-      - name: Build unsigned Squirrel.Windows package
-        run: npm run dist:win
+      - name: Bootstrap and build unsigned Squirrel.Windows package
+        shell: cmd
+        run: build-installer.bat /s
 
       - name: Verify package outputs
         shell: pwsh
         run: |
           $dir = Join-Path $env:GITHUB_WORKSPACE 'dist/squirrel-windows'
-          $setup = @(Get-ChildItem -LiteralPath $dir -Filter '*-Setup.exe' -File)
+          $setup = @(Get-ChildItem -LiteralPath $dir -Filter '*-Setup-*.exe' -File)
           $full = @(Get-ChildItem -LiteralPath $dir -Filter '*-full.nupkg' -File)
           $releases = Join-Path $dir 'RELEASES'
           if ($setup.Count -ne 1) { throw 'Expected exactly one Squirrel.Windows Setup.exe.' }
@@ -43,6 +36,16 @@ jobs:
           }
           Get-FileHash -LiteralPath $setup[0].FullName -Algorithm SHA256
           Get-FileHash -LiteralPath $full[0].FullName -Algorithm SHA256
+
+      - name: Upload safe package evidence
+        if: ${{ always() }}
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-package-${{ github.run_id }}-${{ github.sha }}
+          path: dist/squirrel-windows/
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Create unique release
         shell: pwsh

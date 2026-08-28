@@ -206,13 +206,4 @@ describe('idle reap of unwatched client PTYs', () => {
     expect(spawnArgs[1].args.slice(-2)).toEqual(['-s', sessionName('node-1')])
   })
 
-  it('sweeps the same way off darwin — the pty ceiling is macOS, running out of them is not', async () => {
-    vi.spyOn(os, 'platform').mockReturnValue('linux')
-    await tmuxManager()
-    await create(ALICE)
-
-    idle()
-
-    expect(spawned[0].killed).toBe(true)
-  })
 })

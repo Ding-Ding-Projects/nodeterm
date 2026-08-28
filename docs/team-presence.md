@@ -315,7 +315,7 @@ and spawn a brand-new one: the deleted terminal, resurrected as a fresh shell.
 `PtyManager.tombstones` closes that: a destroyed `persistKey` is remembered, and a later `create`
 for it by **another** client is refused (`PtyCreateResult.closed = { by }`) instead of spawning —
 the renderer lands in the same "closed by <name>" state. The destroying client is **exempt**, so its
-own ⌘Z (undo of a delete) still restores the node, and the single-user path is untouched. A
+own Ctrl+Z (undo of a delete) still restores the node, and the single-user path is untouched. A
 `recycle` clears the tombstone (nothing was deleted).
 
 Its limits are real (see Known risks): the tombstone is in-memory, so it lives exactly as long as
@@ -525,7 +525,7 @@ collected here so the delta is legible.
    not one — yet the node is still on its canvas, and its next `create` would spawn a fresh
    `nt-<nodeId>`: the deleted terminal, resurrected as an empty shell. `PtyManager.tombstones`
    refuses that create (`PtyCreateResult.closed = {by}`), exempting the destroying client so its own
-   ⌘Z still works.
+   Ctrl+Z still works.
    **The limit is real and is not papered over: the tombstone is in-memory.** It lives exactly as
    long as the core process. Restart the core — the Server Edition process, or the desktop app
    hosting the relay — and the tombstones are gone; a client whose canvas still carries the deleted
@@ -615,7 +615,7 @@ here so the delta is legible.
      longer has.
    Removing the tombstone would trade a bounded in-memory LRU for a resurrected terminal on those two
    paths, so it stays. It is unchanged by this stage: still in-memory, still an LRU
-   (`TOMBSTONE_MAX` / `TOMBSTONE_TTL_MS`), still exempting the destroyer so their own ⌘Z works.
+   (`TOMBSTONE_MAX` / `TOMBSTONE_TTL_MS`), still exempting the destroyer so their own Ctrl+Z works.
 
 5. **What canvas sync does NOT cover** (all deliberate; none of it is fixed by this stage):
    - **Edges are NOT in the mutation vocabulary** — only nodes are, and edges (`edges`, `bridges`,
@@ -631,7 +631,7 @@ here so the delta is legible.
      session itself is already dead (the *deleting* client's `transport.destroy` killed it), so
      nothing leaks server-side; what remains on the peer is a stale `agentStatus` entry for a node id
      that no longer exists. Disposing the co-state matters because the delete is undoable: if the
-     owner hits ⌘Z, the node comes back **alive**, and a peer that had kept the stale co-state would
+     owner hits Ctrl+Z, the node comes back **alive**, and a peer that had kept the stale co-state would
      be looking at a node stuck in "closed by another user" whose only obvious cure (clicking `×`)
      would kill the owner's live session for real.
    - **Project lifecycle** (create / rename / close / delete / folder change) is **not** synced.
@@ -908,7 +908,7 @@ logged in, named, and on the **same project**.
     each of A's ~20 Hz mutations wiped it). Likewise, B's relay-remote terminal nodes (if any) must
     not vanish while A edits.
 12. **Your undo is not eaten.** In B, move a node, and within a moment have A move a *different* node
-    (so a peer mutation lands during B's undo debounce). Now press ⌘Z in **B**: it must undo **B's**
+    (so a peer mutation lands during B's undo debounce). Now press Ctrl+Z in **B**: it must undo **B's**
     move — not skip past it to an older state (which would also revert A's edit).
 
 ## Known risks

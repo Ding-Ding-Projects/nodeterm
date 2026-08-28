@@ -98,10 +98,11 @@ const RUNNER_VERBS = new Set(['exec', 'run', 'dlx', 'x', '--'])
  */
 const INTERPRETERS = new Set(['node', 'nodejs', 'bun', 'deno', 'python', 'python3', 'ruby', 'perl'])
 
-/** basename, with a login shell's leading `-` stripped (`-zsh` → `zsh`). */
+/** Cross-platform basename with a login-shell dash and Windows launcher suffix removed. */
 function baseName(token: string): string {
   const noDash = token.replace(/^-/, '')
-  return noDash.split('/').pop() ?? ''
+  const leaf = noDash.split(/[\\/]/).pop() ?? ''
+  return leaf.replace(/\.(?:cmd|bat|exe)$/i, '')
 }
 
 /**

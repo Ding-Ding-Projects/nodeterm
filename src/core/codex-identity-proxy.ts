@@ -114,7 +114,7 @@ export function isSafeThreadId(id: string): boolean {
 
 let identityAuthSecret: Buffer | null = null
 
-/** Injected by the shell once, from the same keychain-backed secret the hook server signs with. */
+/** Injected by the shell once, from the same credential vault-backed secret the hook server signs with. */
 export function setCodexThreadIdentityAuthSecret(secret: Uint8Array): void {
   if (secret.byteLength < 32) throw new Error('Invalid NodeTerm Codex identity-auth secret')
   identityAuthSecret = Buffer.from(secret)
@@ -540,7 +540,7 @@ if [ -n "\${NODETERM_HOOK_SOCK-}" ]; then
 fi
 
 # A path we are willing to source. Written with tr rather than a case bracket class because the
-# endpoint lives under the app's data dir, which on macOS contains a space ("Application Support")
+# endpoint paths can contain spaces, so every value is quoted before the shell sources this file
 # — escaping a space inside a case pattern's bracket expression is exactly the kind of quoting
 # that reads fine and matches nothing.
 nt_safe_path() {

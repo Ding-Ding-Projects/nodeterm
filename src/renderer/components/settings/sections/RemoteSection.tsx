@@ -174,7 +174,7 @@ export function RemoteSection({
             )}
           </Button>
           {remoteError ? (
-            <p className="text-sm" style={{ color: '#ff9f0a' }}>
+            <p className="text-sm" style={{ color: '#f7630c' }}>
               {remoteError}
             </p>
           ) : null}

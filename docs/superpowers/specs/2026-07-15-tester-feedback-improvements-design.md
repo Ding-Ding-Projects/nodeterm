@@ -81,7 +81,7 @@ is idempotent and cheap-fails (probe result memoized per call, not cached-foreve
 ## P4 — empty-canvas hint + toolbar polish
 
 - **Ghost hint:** when the active project's canvas has 0 nodes, render a centered,
-  low-opacity, non-interactive block: "Right-click to add a terminal · ⌘K for commands ·
+  low-opacity, non-interactive block: "Right-click to add a terminal · Ctrl+K for commands ·
   + in the dock below". Disappears as soon as any node exists. Pure renderer, no persisted
   state, shown on every empty canvas (not first-run-only — YAGNI).
 - **Toolbar icons:** replace the 🗂 emoji with an SVG file-tree icon in

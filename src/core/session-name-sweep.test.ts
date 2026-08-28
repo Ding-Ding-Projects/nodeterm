@@ -36,10 +36,10 @@ function deps(
 describe('sweepSessionNames', () => {
   it('publishes a changed name for a node no canvas has mounted', async () => {
     const { d, published } = deps([{ nodeId: 'n1', sessionId: 's1', agentId: 'claude', name: 'old' }], {
-      names: { s1: 'mac-release-rerun-notarization' }
+      names: { s1: 'windows-release-rerun-installer' }
     })
     expect(await sweepSessionNames(d)).toBe(1)
-    expect(published).toEqual([['n1', 'mac-release-rerun-notarization']])
+    expect(published).toEqual([['n1', 'windows-release-rerun-installer']])
   })
 
   it('writes nothing when the name is unchanged or unresolvable', async () => {

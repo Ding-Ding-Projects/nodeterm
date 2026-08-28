@@ -30,17 +30,10 @@ describe('decideDragOutcome', () => {
     movedPx: 40,
     sawOsc52: false,
     hasXtermSelection: false,
-    hintSeen: false,
-    useMetaPrimary: true
+    hintSeen: false
   }
   it('hints when a real drag produced neither a copy nor a selection', () => {
-    expect(decideDragOutcome(base)).toEqual({ kind: 'hint', label: 'Hold ⌥ to select text' })
-  })
-  it('says Shift off macOS', () => {
-    expect(decideDragOutcome({ ...base, useMetaPrimary: false })).toEqual({
-      kind: 'hint',
-      label: 'Hold Shift to select text'
-    })
+    expect(decideDragOutcome(base)).toEqual({ kind: 'hint', label: 'Hold Shift to select text' })
   })
   it('stays silent below the drag threshold — a click is not a drag', () => {
     expect(decideDragOutcome({ ...base, movedPx: DRAG_MIN_PX - 1 })).toBeNull()
@@ -48,7 +41,7 @@ describe('decideDragOutcome', () => {
   it('hints at exactly the threshold — the boundary counts as a drag', () => {
     expect(decideDragOutcome({ ...base, movedPx: DRAG_MIN_PX })).toEqual({
       kind: 'hint',
-      label: 'Hold ⌥ to select text'
+      label: 'Hold Shift to select text'
     })
   })
   it('stays silent when an OSC 52 landed — the handler already put its pill up', () => {

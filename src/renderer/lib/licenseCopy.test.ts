@@ -51,7 +51,7 @@ describe('licenseSentence — a keygen license that read cleanly', () => {
 
   it('is honest when the read succeeded but no key is on file', () => {
     // Legitimate: a keygen policy that hides keys, or a license predating the key column. This is
-    // the ONLY case this sentence may appear in — see the apple/free/error tests below.
+    // the ONLY case this sentence may appear in; see the store/free/error tests below.
     expect(licenseSentence(keygen({ key: null }))).toBe(
       'No key is on file for this license yet — get in touch and we will send yours.'
     )

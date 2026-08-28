@@ -12,9 +12,9 @@ const initialOf = (name: string): string => (name.trim()[0] ?? '?').toUpperCase(
 
 export const PRIORITIES: Array<{ id: KanbanPriority; label: string; color: string }> = [
   { id: 'low', label: 'Low', color: '#8e8e93' },
-  { id: 'medium', label: 'Medium', color: '#ffd60a' },
-  { id: 'high', label: 'High', color: '#ff9f0a' },
-  { id: 'urgent', label: 'Urgent', color: '#ff453a' }
+  { id: 'medium', label: 'Medium', color: '#fce100' },
+  { id: 'high', label: 'High', color: '#f7630c' },
+  { id: 'urgent', label: 'Urgent', color: '#d13438' }
 ]
 
 /** Local-wallclock value for a datetime-local input (its value is timezone-less). */

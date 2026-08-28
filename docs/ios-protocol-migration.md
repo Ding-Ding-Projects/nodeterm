@@ -378,7 +378,7 @@ sessionId)`), so a confirm from one session physically cannot cross into another
 - The phone's box keypair must be **persistent** (stable identity across reconnects),
   not ephemeral. Its public key is what the desktop pins. (On the desktop side the peer
   key is loaded/created once and reused; iOS must do the equivalent and keep the
-  private key in the keychain.)
+  private key in the platform credential vault.)
 - On a later reconnect from an **already-pinned** peer, the desktop's *standing phone
   host* can auto-approve silently (pin-once) — but see the open question in §7 about
   whether the phone path uses full mutual SAS every time or pin-once after the first
@@ -585,7 +585,7 @@ alone leaves the phone unable to connect. File and land them together.
 6. **Enforce the anti-replay seq** (strictly increasing inbound) and the **role byte**
    (reject boxes carrying your own role = a relay reflection). Reset counters per
    connection.
-7. **Persist your own box keypair** (keychain). A fresh ephemeral key each launch would
+7. **Persist your own box keypair** in the platform credential vault. A fresh ephemeral key each launch would
    force re-approval every time and break pinning.
 8. **Endianness discipline:** box seq is little-endian (2×uint32 LE, high then low);
    `encodePtyData` sidLen is big-endian uint16; SAS folds `h[0..4]` big-endian. Do not

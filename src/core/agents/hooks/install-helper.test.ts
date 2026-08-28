@@ -17,6 +17,15 @@ describe('buildManagedHookCommand', () => {
       "'/a'\\''b/$x/agent-hooks/claude.sh'"
     )
   })
+  it('uses a guarded native PowerShell command for a Windows hook script', () => {
+    const command = buildManagedHookCommand("C:\\Users\\O'Brien\\agent-hooks\\claude.ps1")
+    expect(command).toContain('powershell.exe')
+    const encoded = command.split(' ').at(-1)
+    expect(encoded).toBeTruthy()
+    const body = Buffer.from(encoded!, 'base64').toString('utf16le')
+    expect(body).toContain("O''Brien")
+    expect(body).toContain('[Console]::In.ReadToEnd()')
+  })
   it('still carries the marker that makes the entry ours', () => {
     const out = mergeManagedHook({}, cmd, ['Stop'])
     expect(mergeManagedHook(out, cmd, ['Stop']).hooks!.Stop).toHaveLength(1)
@@ -25,6 +34,12 @@ describe('buildManagedHookCommand', () => {
     const legacy = { hooks: [{ type: 'command', command: 'sh "/old/data/agent-hooks/claude.sh"' }] }
     const out = mergeManagedHook({ hooks: { UserPromptSubmit: [legacy] } }, cmd, ['UserPromptSubmit'])
     expect(out.hooks!.UserPromptSubmit).toEqual([{ hooks: [{ type: 'command', command: cmd }] }])
+  })
+  it('replaces an older shell entry when the Windows PowerShell entry is installed', () => {
+    const windows = buildManagedHookCommand('C:\\Users\\x\\.nodeterm\\agent-hooks\\claude.ps1')
+    const legacy = { hooks: [{ type: 'command', command: 'sh "/old/agent-hooks/claude.sh"' }] }
+    const out = mergeManagedHook({ hooks: { Stop: [legacy] } }, windows, ['Stop'])
+    expect(out.hooks!.Stop).toEqual([{ hooks: [{ type: 'command', command: windows }] }])
   })
 })
 
@@ -49,7 +64,7 @@ describe('mergeManagedHook', () => {
         {
           type: 'command',
           command:
-            "if [ -x '/Users/x/.someapp/agent-hooks/claude-hook.sh' ]; then /bin/sh '/Users/x/.someapp/agent-hooks/claude-hook.sh'; fi"
+            "if [ -x 'C:/Users/x/.someapp/agent-hooks/claude-hook.sh' ]; then /bin/sh 'C:/Users/x/.someapp/agent-hooks/claude-hook.sh'; fi"
         }
       ]
     }

@@ -114,7 +114,7 @@ export function parseTaskNotifications(text: string | string[]): TaskNotificatio
  * The case: an `AskUserQuestion` picker is up (node = needs-you) and the user presses Esc. Claude
  * records "User declined to answer questions" as the tool's result and carries on, but the aborted
  * tool fires no PostToolUse, and Stop does not run either — so nothing told us the ask was over and
- * the node sat on NEEDS YOU (badge, notch capsule, phone card) until the next prompt hours later.
+ * the node sat on NEEDS YOU (badge, Agent HUD, phone card) until the next prompt hours later.
  *
  * Deliberately not decline-specific: any tool_result means the blocking tool finished, whatever the
  * answer was. The caller only acts on it while the node is still in needs-you, so a normal turn's

@@ -61,7 +61,7 @@ describe('R1: fs.* is confined to the shared roots', () => {
   it('denies a path outside the roots (no fs-ops call, empty result)', async () => {
     const { socket, responses, fs, reads } = makeHostFakes()
     const handlers = createHostHandlers({} as HostPtyManager, socket, fs, () => ['/work'])
-    handlers.onRpc({ id: '1', method: 'fs.read', params: { path: '/Users/me/.ssh/id_ed25519' } })
+    handlers.onRpc({ id: '1', method: 'fs.read', params: { path: 'C:/Users/me/.ssh/id_ed25519' } })
     await Promise.resolve()
     expect(reads).toEqual([]) // fs-ops never touched
     expect(responses).toEqual([{ id: '1', ok: true, body: { content: '' } }])

@@ -11,8 +11,8 @@ const e = (
   key: '',
   ...over
 })
-const HOLD = { useMetaPrimary: false, allowHold: true }
-const KEYED = { useMetaPrimary: false, allowHold: false }
+const HOLD = { allowHold: true }
+const KEYED = { allowHold: false }
 
 describe('recordingKeydown', () => {
   it('a keyed chord commits immediately', () => {
@@ -32,16 +32,15 @@ describe('recordingKeydown', () => {
   it('modifier-only keydown is pending: remembered for a hold commit when allowed', () => {
     const r = recordingKeydown({ mods: null }, e({ ctrlKey: true, altKey: true, key: 'Alt' }), HOLD)
     expect(r.kind).toBe('pending')
-    if (r.kind === 'pending') expect(r.state.mods).toEqual({ cmd: true, ctrl: false, alt: true, shift: false })
+    if (r.kind === 'pending') expect(r.state.mods).toEqual({ ctrl: true, alt: true, shift: false })
   })
   it('does not invent a second literal Control modifier', () => {
     const r = recordingKeydown({ mods: null }, e({ ctrlKey: true, key: 'Control' }), HOLD)
-    if (r.kind === 'pending') expect(r.state.mods?.cmd).toBe(true)
+    if (r.kind === 'pending') expect(r.state.mods?.ctrl).toBe(true)
     expect(r.kind).toBe('pending')
   })
-  it('non-mac held Super is refused with a hint', () => {
+  it('held Super is refused with a hint', () => {
     const r = recordingKeydown({ mods: null }, e({ metaKey: true, ctrlKey: true, key: 'Control' }), {
-      useMetaPrimary: false,
       allowHold: true
     })
     expect(r.kind).toBe('pending')
@@ -50,12 +49,11 @@ describe('recordingKeydown', () => {
       expect(r.hint).toContain('Super')
     }
   })
-  // Deliberate divergence from the legacy SpeechSection field, which left modsRef untouched here:
-  // arm Cmd+Alt, release ⌘ while keeping ⌥, add ⇧ — the baseline still committed Cmd+Alt on the
-  // eventual full release, a chord the finished gesture (⌥⇧) could never fire under exact
-  // matching. Losing the primary modifier must DISARM.
+  // The legacy SpeechSection field left modsRef untouched here. Arm Control+Alt, release Control
+  // while keeping Alt, then add Shift: the old path still committed Control+Alt on full release,
+  // even though the completed Alt+Shift gesture could never fire it. Losing Control must disarm.
   it('a modifier-only keydown without the primary disarms an armed hold chord', () => {
-    const armed = { mods: { cmd: true, ctrl: false, alt: true, shift: false } }
+    const armed = { mods: { ctrl: true, alt: true, shift: false } }
     const r = recordingKeydown(armed, e({ altKey: true, shiftKey: true, key: 'Shift' }), HOLD)
     expect(r.kind).toBe('pending')
     if (r.kind === 'pending') expect(r.state.mods).toBeNull()
@@ -69,19 +67,18 @@ describe('recordingKeydown', () => {
 
 describe('recordingKeyup', () => {
   it('full release commits the remembered hold chord', () => {
-    const armed = { mods: { cmd: true, ctrl: false, alt: true, shift: false } }
+    const armed = { mods: { ctrl: true, alt: true, shift: false } }
     expect(recordingKeyup(armed, e({}), HOLD)).toEqual({ kind: 'commit', combo: 'Ctrl+Alt' })
   })
   it('partial release keeps waiting; no remembered mods ignores', () => {
-    const armed = { mods: { cmd: true, ctrl: false, alt: true, shift: false } }
+    const armed = { mods: { ctrl: true, alt: true, shift: false } }
     expect(recordingKeyup(armed, e({ metaKey: true }), HOLD)).toEqual({ kind: 'ignored' })
     expect(recordingKeyup({ mods: null }, e({}), HOLD)).toEqual({ kind: 'ignored' })
   })
-  // WATCH-2: the legacy SpeechSection `anyModDown` omitted ctrlKey, so a mac hold chord recorded
-  // with Ctrl held committed while Ctrl was still down — mis-capturing the gesture. The full
-  // release condition must read ALL FOUR modifier flags.
+  // The legacy SpeechSection `anyModDown` omitted ctrlKey, so a hold chord could commit while
+  // Control was still down. The full release condition must read all four modifier flags.
   it('a keyup with only Ctrl still held is ignored (the anyModDown gap, closed)', () => {
-    const armed = { mods: { cmd: true, ctrl: false, alt: false, shift: false } }
+    const armed = { mods: { ctrl: true, alt: false, shift: false } }
     expect(recordingKeyup(armed, e({ ctrlKey: true }), HOLD)).toEqual({ kind: 'ignored' })
     expect(recordingKeyup(armed, e({}), HOLD)).toEqual({ kind: 'commit', combo: 'Ctrl' })
   })

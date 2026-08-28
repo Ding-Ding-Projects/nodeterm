@@ -43,7 +43,7 @@ export function SettingsPage({
   /** Section to open on; lets callers deep-link (e.g. "Add SSH server…" → the SSH section). */
   initialSection?: SettingsSectionId
   /** Bumped by a caller that deep-links to a section, so a repeat of the SAME `initialSection`
-   *  still re-targets (and clears the search box). Plain opens — the gear, ⌘, , the native menu —
+   *  still re-targets (and clears the search box). Plain opens such as the gear, Ctrl+Comma, or the native menu
    *  leave it alone: they must not throw away a query or a section the user chose in the dialog. */
   retargetNonce?: number
 }): React.JSX.Element {

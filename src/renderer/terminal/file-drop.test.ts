@@ -118,7 +118,7 @@ describe('localPathsForFiles', () => {
       }
     })
     const file = new File(['png'], 'My image.png', { type: 'image/png' })
-    // A Finder drop already IS a file on this disk, so nothing is copied anywhere.
+    // A File Explorer drop already is a file on this disk, so nothing is copied anywhere.
     expect(await localPathsForFiles([file], canvasImageSink('project-a'))).toEqual([
       '/tmp/My image.png'
     ])

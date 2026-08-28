@@ -51,7 +51,7 @@ const EMPTY_TEXT: Record<LoadState, { title: string; detail?: string }> = {
 }
 
 /**
- * Chat view for a chat-capable agent node (Cmd+M). Renders the session transcript as
+ * Chat view for a chat-capable agent node (Ctrl+M). Renders the session transcript as
  * markdown bubbles with collapsible tool calls, and sends new prompts into the running tmux
  * session via pty.sendText. Phase 1 reloads the transcript whenever a turn finishes
  * (working -> idle); live streaming is a later phase. Replaces the markdown-of-output overlay.

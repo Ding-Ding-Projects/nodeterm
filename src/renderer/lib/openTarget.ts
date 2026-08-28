@@ -4,8 +4,8 @@
 // Extensions the OS should handle — EditorNode (Monaco) can't render these. Anything NOT in
 // this set opens in an editor node (text, code, images, or extensionless config files).
 const OS_OPEN_EXTENSIONS = new Set([
-  'dmg', 'pkg', 'app', 'zip', 'gz', 'tar', 'tgz', 'rar', '7z',
-  'exe', 'msi', 'deb', 'rpm', 'iso',
+  'zip', 'gz', 'tar', 'tgz', 'rar', '7z',
+  'exe', 'msi', 'msix', 'nupkg', 'iso',
   'mp4', 'mov', 'avi', 'mkv', 'mp3', 'wav', 'flac',
   'sqlite', 'db', 'bin', 'dat', 'wasm'
 ])
@@ -20,7 +20,7 @@ function extensionOf(segment: string): string {
 export function opensInEditor(path: string): boolean {
   const segments = path.replace(/\\/g, '/').split('/').filter(Boolean)
   if (segments.length === 0) return true
-  // A file living inside an OS bundle/archive (e.g. "App.app/Contents/Info") must go to the OS,
+  // A file living inside an archive or installer payload must go to the OS,
   // so inspect every segment — not just the basename.
   for (const segment of segments) {
     if (OS_OPEN_EXTENSIONS.has(extensionOf(segment))) return false

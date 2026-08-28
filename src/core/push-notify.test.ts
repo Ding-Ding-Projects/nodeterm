@@ -617,7 +617,7 @@ describe('createPushNotify', () => {
       h.stop()
     })
 
-    // The one overlap the desktop CAN see: the same phone dropped a grant on this Mac AND on an SSH
+    // The one overlap the desktop CAN see: the same phone dropped a grant on this PC AND on an SSH
     // host it reaches (src/main's allPushGrants concatenates both lists), so the same deviceId shows
     // up twice with different tokens. First occurrence wins — main puts the local grants first.
     it('OVERLAP: two grants for the same deviceId collapse to ONE POST (first wins)', async () => {

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { normaliseProjectKanbanGitHub, parseGitHubRepository } from './config'
 
 const columns = [
-  { id: 'todo', title: 'To Do', color: '#0a84ff' },
-  { id: 'done', title: 'Done', color: '#30d158' }
+  { id: 'todo', title: 'To Do', color: '#0078d4' },
+  { id: 'done', title: 'Done', color: '#107c10' }
 ]
 
 describe('parseGitHubRepository', () => {

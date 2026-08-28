@@ -1,5 +1,5 @@
 // The GitHub Copilot mark, as raw geometry so BOTH renderers can draw it: the React `AgentIcon` /
-// `BrandPulse` in the canvas, and the plain-DOM notch HUD, which builds its nodes imperatively and
+// `BrandPulse` in the canvas, and the plain-DOM Agent HUD, which builds its nodes imperatively and
 // cannot use JSX.
 //
 // Like grok's, Copilot's mark is MONOCHROME — the official asset is a single fill (#f0f6fc, the
@@ -18,7 +18,7 @@ export const COPILOT_MARK_PATHS = [
 ]
 
 /**
- * Build the mark as a real SVG element, for the imperative renderer (the notch HUD). Mirrors
+ * Build the mark as a real SVG element, for the imperative renderer (the Agent HUD). Mirrors
  * `createGrokMarkSvg` — `createElementNS`, self-describing `fill="currentColor"`, both subpaths.
  */
 export function createCopilotMarkSvg(size: number, className: string): SVGSVGElement {

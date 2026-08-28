@@ -241,14 +241,14 @@ export async function generateCommitMessage(cwd: string, settings: Settings): Pr
  *
  * The agent always runs on THIS machine — only the git reads route over an SSH project's
  * ControlMaster (see `git` above), and by the time we spawn, the diff is already inside the prompt.
- * So a REMOTE project's cwd is a path on the server, and handing it to a local `spawn` is asking
- * macOS to chdir into a directory that does not exist here.
+ * So a remote project's cwd is a path on the server, and handing it to a local `spawn` asks
+ * Windows to enter a directory that does not exist on this PC.
  *
  * That failed in the most misleading way possible: Node reports a missing CWD as `spawn <command>
  * ENOENT`, naming the BINARY. The 2026-08-05 report was "Error: spawn
  * /Users/enes/.local/bin/claude ENOENT" on SSH servers — which reads as "claude is not installed"
  * and sent the hunt to the CLI, while claude was sitting exactly where the path said and the
- * unreachable thing was `/root/<project>` on a Mac.
+ * unreachable thing was `/root/<project>` on the local Windows PC.
  *
  * Home is the right substitute rather than, say, a temp dir: it is where every other read-only
  * agent invocation without a project runs (`cwd || os.homedir()` has always been the fallback for

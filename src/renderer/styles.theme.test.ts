@@ -107,7 +107,7 @@ describe('every CSS variable resolves', () => {
     '--cmascot-w',
     '--cmascot-h',
     '--cmascot-sheet-w',
-    '--cmascot-sheet-h' // notch HUD sprite sheets
+    '--cmascot-sheet-h' // Agent HUD sprite sheets
   ])
 
   it('references no variable that is never defined', () => {

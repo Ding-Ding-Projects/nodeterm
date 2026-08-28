@@ -354,7 +354,7 @@ describe('S6 acceptance gate — the merged machine-scoped-Codex-account chain c
   })
 
   // ---- LEG (both shells): the record-signing secret arms on the Server Edition shell -------------
-  it('the Server Edition arms the codex record secret raw (0600 .bin), no keychain plaintext', async () => {
+  it('the Server Edition arms the codex record secret raw (0600 .bin), no credential vault plaintext', async () => {
     const { resetNodeAuthSecretForTests } = await import('../core/agents/node-auth-secret')
     resetNodeAuthSecretForTests()
     proxy.resetCodexThreadIdentityAuthSecret()
@@ -362,7 +362,7 @@ describe('S6 acceptance gate — the merged machine-scoped-Codex-account chain c
     const { armServerNodeIdentity } = await import('../server/node-identity-arm')
     const hookServer = { setNodeAuthSecret: vi.fn() }
     await armServerNodeIdentity(hookServer, () => [])
-    // The headless shell has no OS keychain: the secret is the raw 0600 `.bin`, never a sealed `.json`.
+    // The headless shell has no OS credential vault: the secret is the raw 0600 `.bin`, never a sealed `.json`.
     const entries = readdirSync(userDataDir)
     expect(entries).toContain('node-auth-key.bin')
     expect(entries).not.toContain('node-auth-key.json')

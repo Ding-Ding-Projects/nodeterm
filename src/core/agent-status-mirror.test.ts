@@ -2072,7 +2072,7 @@ describe('a restored entry is never proof', () => {
 })
 
 // `clearNode` had NO production caller, so deleting a node told the live surfaces nothing: the
-// notch HUD kept its needs-you/done row until the 6 h prune and the phone's Live Activity for it
+// Agent HUD kept its needs-you/done row until the 6 h prune and the phone's Live Activity for it
 // was never ended. It now fires the one end edge those surfaces listen for.
 describe('clearNode (permanent node destroy) fires the end edge', () => {
   beforeEach(() => _resetForTest())

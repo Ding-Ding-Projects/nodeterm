@@ -8,7 +8,7 @@ describe('opensInEditor', () => {
     }
   })
   it('binary/app artifacts open with the OS instead', () => {
-    for (const p of ['dist/app.dmg', 'x.zip', 'y.pkg', 'App.app/Contents/Info', 'a.tar.gz']) {
+    for (const p of ['dist/nodeterm-Setup-0.3.2.exe', 'x.zip', 'y.nupkg', 'a.tar.gz']) {
       expect(opensInEditor(p)).toBe(false)
     }
   })

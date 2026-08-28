@@ -15,6 +15,7 @@ import { homedir } from 'os'
 import { readFileSync, writeFileSync, mkdirSync, chmodSync } from 'fs'
 import type { ManagedHookEvent } from '@shared/agents/hook-events'
 import { buildManagedScript } from './managed-script'
+import { buildManagedWindowsScript, buildWindowsManagedHookCommand } from './managed-script-windows'
 
 type HookDef = { matcher?: string; hooks?: { type: string; command: string }[] }
 type Settings = { hooks?: Record<string, HookDef[]>; [k: string]: unknown }
@@ -43,15 +44,20 @@ export function installManagedHookScript(agentId: string, scriptFileName: string
   const scriptPath = managedHookScriptPath(scriptFileName)
   try {
     mkdirSync(path.dirname(scriptPath), { recursive: true })
-    writeFileSync(scriptPath, buildManagedScript(agentId), 'utf8')
+    const content = scriptFileName.toLowerCase().endsWith('.ps1')
+      ? buildManagedWindowsScript(agentId)
+      : buildManagedScript(agentId)
+    writeFileSync(scriptPath, content, 'utf8')
   } catch (e) {
     console.warn(`[agent-hooks] ${agentId} script write failed`, e)
     return null
   }
-  try {
-    chmodSync(scriptPath, 0o755)
-  } catch {
-    /* fail open */
+  if (!scriptFileName.toLowerCase().endsWith('.ps1')) {
+    try {
+      chmodSync(scriptPath, 0o755)
+    } catch {
+      /* fail open */
+    }
   }
   return scriptPath
 }
@@ -73,6 +79,7 @@ export function installManagedHookScript(agentId: string, scriptFileName: string
  * hashed into config.toml's trust entries, so the two must stay separate.
  */
 export function buildManagedHookCommand(scriptPath: string): string {
+  if (scriptPath.toLowerCase().endsWith('.ps1')) return buildWindowsManagedHookCommand(scriptPath)
   // POSIX single-quote escape so $, `, " and \ in the path are taken literally.
   const q = `'${scriptPath.replaceAll("'", "'\\''")}'`
   return `if [ -r ${q} ]; then sh ${q}; else cat >/dev/null 2>&1 || :; fi`
@@ -95,8 +102,17 @@ const matcherOf = (e: ManagedHookEvent): string | undefined => (typeof e === 'st
 
 /** A managed entry: matches OUR script under `agent-hooks/` or the legacy `claude-signals` marker. */
 function isManaged(d: HookDef, marker: string): boolean {
+  const base = marker.replace(/\.(?:ps1|sh)$/i, '')
   return !!d.hooks?.some(
-    (h) => h.command.includes(marker) || h.command.includes('claude-signals')
+    (h) => {
+      const command = h.command.replaceAll('\\', '/')
+      return (
+        command.includes(marker) ||
+        command.includes(`${base}.ps1`) ||
+        command.includes(`${base}.sh`) ||
+        command.includes('claude-signals')
+      )
+    }
   )
 }
 
@@ -179,6 +195,7 @@ export interface RemoveHooksOptions {
 export function removeHooksFrom(opts: RemoveHooksOptions): void {
   const { configPath, events, scriptFileName } = opts
   const marker = `agent-hooks/${scriptFileName}`
+  const base = marker.replace(/\.(?:ps1|sh)$/i, '')
   let config: Settings
   try {
     config = JSON.parse(readFileSync(configPath, 'utf8')) as Settings
@@ -189,7 +206,12 @@ export function removeHooksFrom(opts: RemoveHooksOptions): void {
   for (const e of events) {
     const ev = eventNameOf(e)
     if (!config.hooks[ev]) continue
-    config.hooks[ev] = config.hooks[ev].filter((d) => !d.hooks?.some((h) => h.command.includes(marker)))
+    config.hooks[ev] = config.hooks[ev].filter(
+      (d) => !d.hooks?.some((h) => {
+        const command = h.command.replaceAll('\\', '/')
+        return command.includes(marker) || command.includes(`${base}.ps1`) || command.includes(`${base}.sh`)
+      })
+    )
     if (config.hooks[ev].length === 0) delete config.hooks[ev]
   }
   try {

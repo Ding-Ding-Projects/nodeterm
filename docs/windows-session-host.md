@@ -17,7 +17,7 @@ neither                          →  plain shell (no persistence, as before)
 ```
 
 Stock Windows provides no native tmux, so the session host is the normal persistence backend
-there. On macOS/Linux nothing changes: if tmux is installed, it is still preferred every time.
+there. Linux SSH and Server Edition hosts still prefer tmux when it is installed.
 
 ## Why not just port tmux's approach
 

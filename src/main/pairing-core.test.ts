@@ -80,11 +80,11 @@ describe('buildPairingPayload', () => {
       user: 'enes',
       token: 'tok',
       pairPort: 5,
-      name: 'Mac',
+      name: 'PC',
       hostKey: 'AAAAhostpub'
     })
     expect(json).toBe(
-      '{"v":1,"host":"192.168.1.5","port":22,"user":"enes","token":"tok","pairPort":5,"nodeterm":true,"name":"Mac","hostKey":"AAAAhostpub"}'
+      '{"v":1,"host":"192.168.1.5","port":22,"user":"enes","token":"tok","pairPort":5,"nodeterm":true,"name":"PC","hostKey":"AAAAhostpub"}'
     )
     expect(JSON.parse(json).hostKey).toBe('AAAAhostpub')
   })
@@ -100,12 +100,12 @@ describe('buildPairingPayload', () => {
       user: 'enes',
       token: 'tok',
       pairPort: 5,
-      name: 'Mac',
+      name: 'PC',
       hostKey: 'AAAAhostpub',
       relay
     })
     expect(json).toBe(
-      '{"v":1,"host":"192.168.1.5","port":22,"user":"enes","token":"tok","pairPort":5,"nodeterm":true,"name":"Mac","hostKey":"AAAAhostpub","relay":{"hostId":"abcABC012_-def012ghij","hostPublicKeyB64":"AAAAhostpub","relayEndpoint":"wss://relay.nodeterm.dev"}}'
+      '{"v":1,"host":"192.168.1.5","port":22,"user":"enes","token":"tok","pairPort":5,"nodeterm":true,"name":"PC","hostKey":"AAAAhostpub","relay":{"hostId":"abcABC012_-def012ghij","hostPublicKeyB64":"AAAAhostpub","relayEndpoint":"wss://relay.nodeterm.dev"}}'
     )
     expect(JSON.parse(json)).toMatchObject({ hostKey: 'AAAAhostpub', relay })
   })
@@ -133,11 +133,11 @@ describe('buildPairingPayload', () => {
       user: 'enes',
       token: 'tok',
       pairPort: 5,
-      name: 'Mac',
+      name: 'PC',
       relay
     })
     expect(json).toBe(
-      '{"v":1,"host":"192.168.1.5","port":22,"user":"enes","token":"tok","pairPort":5,"nodeterm":true,"name":"Mac","relay":{"hostId":"abcABC012_-def012ghij","hostPublicKeyB64":"AAAA","relayEndpoint":"wss://relay.nodeterm.dev"}}'
+      '{"v":1,"host":"192.168.1.5","port":22,"user":"enes","token":"tok","pairPort":5,"nodeterm":true,"name":"PC","relay":{"hostId":"abcABC012_-def012ghij","hostPublicKeyB64":"AAAA","relayEndpoint":"wss://relay.nodeterm.dev"}}'
     )
     expect(JSON.parse(json).relay).toEqual(relay)
   })

@@ -1,6 +1,6 @@
 // The Server Edition's boot-time node-identity arming, extracted from `startServer` so it is REAL
 // production code a test can drive directly (constraint 8: the pin must exercise the shipped path,
-// not a re-implementation of it). Headless Linux has no OS keychain, so the secret is raw 0600 bytes
+// not a re-implementation of it). Headless Linux has no OS credential vault, so the secret is raw 0600 bytes
 // (node-auth-key.bin); the loader handles the at-rest format. Fail-open/loud is the CALLER's job —
 // this throws if the secret can't be loaded, and `startServer` catches it into legacy mode.
 import { loadOrCreateNodeAuthSecret } from '../core/agents/node-auth-secret'

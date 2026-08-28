@@ -21,7 +21,7 @@ import { findExecutableSync, shellPathNow } from '../../core/exec-path'
 import { isSafeRemoteHome } from '../../core/remote-safety'
 import { mediaCachePruneList, remoteMediaCacheName } from '../../core/remote-ssh/media-cache'
 import { allowMediaPath } from '../media-protocol'
-import { remoteAccountConfigDir, isSupportedClaudeVersion } from '../../core/claude-accounts-core'
+import { remoteAccountConfigDir } from '../../core/claude-accounts-core'
 import type { PushGrant } from '../../core/push-grants'
 import { REMOTE_GRANT_SCAN_CMD, parseRemoteGrants } from '../../core/remote-push-grants'
 import { supportsAutoPermissionMode, supportsFullscreenTui } from '../../shared/agents/config'
@@ -862,7 +862,7 @@ export class SshProjectManager {
     // Secretive without an `IdentityAgent` line). Masters authenticate against the app-private
     // agent (ssh-agent.ts), so the user's own agent is not consulted and no prompt can rescue it.
     // This is a HINT, not a retry: retrying on the ambient agent would spend a second failed login
-    // on every ordinary auth failure (launchd exports SSH_AUTH_SOCK on every Mac, empty or not),
+    // on every ordinary authentication failure when SSH_AUTH_SOCK is present but unusable,
     // and it would carry `AddKeysToAgent=yes` into the user's agent, which is the exact leak this
     // design closes. `IdentityAgent` in ~/.ssh/config overrides SSH_AUTH_SOCK and is the documented
     // setup for those tools, so the fix belongs in the user's config, not in a blind second attempt.
@@ -1462,7 +1462,7 @@ export class SshProjectManager {
 
   /**
    * Sweep phone read-acks on the connected hosts (spec: cross-surface read sync). The phone drops
-   * `~/.nodeterm/acks/<nodeId>.seen` on the host it can reach; for a Mac→SSH node that host is the
+   * `~/.nodeterm/acks/<nodeId>.seen` on the host it can reach; for a Windows-to-SSH node that host is the
    * REMOTE one, so the desktop must consume them over the ControlMaster, the local-fs sweep never
    * sees them. One command per connected HOST (deduped by host key, since projects sharing a host
    * share `$HOME/.nodeterm/acks`) atomically lists + deletes each `.seen` and prints its nodeId; the
@@ -1504,7 +1504,7 @@ export class SshProjectManager {
    * Read the SSH-possession push grants the phone dropped on the connected hosts
    * (`~/.nodeterm/push-grants/<deviceId>.grant`) — the remote counterpart of the local
    * `push-grants` scan, and the reason an SSH-only user got no push notifications at all: in the
-   * phone→host→Mac topology the grant lands on the HOST, while the process with something to push
+   * phone-to-host-to-Windows topology the grant lands on the host, while the process with something to send
    * (this one) only ever scanned its own `$HOME`. See core/remote-push-grants.ts.
    *
    * One command per connected HOST (deduped by host key — projects sharing a host share
@@ -1923,7 +1923,7 @@ export class SshProjectManager {
   async remoteAccountAdd(
     projectId: string,
     accountId: string
-  ): Promise<{ configDir: string; versionSupported: boolean } | null> {
+  ): Promise<{ configDir: string } | null> {
     const c = this.conns.get(projectId)
     if (!c) return null
     const dir = remoteAccountConfigDir(accountId) // id-validated ~-relative path
@@ -1938,13 +1938,12 @@ export class SshProjectManager {
       await this.remoteHooks.installCanvasSkillIntoAccountDir(c.conn, c.controlPath, c.remoteHome, accountId)
       await this.remoteHooks.installContextLinkSkillIntoAccountDir(c.conn, c.controlPath, c.remoteHome, accountId)
     }
-    // One remote `claude --version` gates both the keychain-scoping answer (>= 2.1, fail-open true)
-    // AND the fullscreen-tui write (>= 2.1.89, write-if-absent) into the account dir.
+    // One remote `claude --version` gates the fullscreen-TUI write into the account directory.
     const version = await this.remoteClaudeVersion(c.conn, c.controlPath)
     if (c.remoteHome && supportsFullscreenTui(version)) {
       await this.remoteHooks.ensureFullscreenTuiInAccountDir(c.conn, c.controlPath, c.remoteHome, accountId)
     }
-    return { configDir: dir, versionSupported: version ? isSupportedClaudeVersion(version) : true }
+    return { configDir: dir }
   }
 
   /** Read a managed remote account's `.claude.json` (login capture); null when not connected or the
@@ -2126,7 +2125,7 @@ const pendingPassphrasePrompts = new Map<string, (value: string | null) => void>
 /**
  * Push to the renderer without ever letting the UI's health become load-bearing. `isDestroyed()`
  * on the window is NOT enough: `webContents.send` throws "Render frame was disposed" when the
- * frame is gone but the window object is not (a renderer crash, Cmd+R, navigation, quit). Left
+ * frame is gone but the window object is not (a renderer crash, Ctrl+R, navigation, quit). Left
  * unguarded that throw either abandoned an in-flight passphrase prompt (answered as empty, so ssh
  * dropped the key and the connect died with a bare Permission denied) or, from the expiry timer
  * below, escaped as an UNCAUGHT exception in the main process. Returns false when nothing could
@@ -2140,7 +2139,7 @@ const pendingPassphrasePrompts = new Map<string, (value: string | null) => void>
  * askpass curl held the ssh master for the full 5-minute expiry, repeating every watchdog cycle
  * until the window was reopened.
  *
- * ACCEPTED gap: `true` still only means "the webContents took the send". During a Cmd+R reload
+ * ACCEPTED gap: `true` still only means "the webContents took the send". During a Ctrl+R reload
  * the frame is alive before React has re-attached onPassphraseRequest, so a prompt raised in
  * that window is dropped and its connect rides the prompt expiry, after which the watchdog's
  * next reconnect prompts again into the now-attached listener. Closing it needs a renderer ack

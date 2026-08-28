@@ -598,7 +598,7 @@ describe('packViewportRow — decorations', () => {
   })
 
   it('skips the per-cell walk entirely when nothing is decorated', () => {
-    // The common case: no ⌘F anywhere on the canvas. A call per cell per row per frame into
+    // The common case: no Ctrl+F anywhere on the canvas. A call per cell per row per frame into
     // xterm's decoration service is a real cost, and `empty()` is what buys it back.
     const deco = decoReader([])
     pack([makeCell(), makeCell(), makeCell()], { decorations: deco })

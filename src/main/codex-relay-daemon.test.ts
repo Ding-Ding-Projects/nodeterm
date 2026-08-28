@@ -903,7 +903,7 @@ describe('relay self-spawn + token transport (probe U6, GC 6 argv-spy)', () => {
   }, 30_000)
 })
 
-// The endpoint file's values are posixQuote'd since #351 (a spaced macOS path must source
+// The endpoint file's values are posixQuote'd since #351 because a spaced path must source
 // cleanly under /bin/sh). The daemon's TS-side reader must UNQUOTE them, or
 // `Number("'54321'")` is NaN and `"'/sock'".startsWith('/')` is false — hookEndpointOptions
 // then returns null and every authorize/observed/catalog call dies "endpoint unavailable".
@@ -922,12 +922,12 @@ describe('readHookEndpointEnv + hookEndpointOptions', () => {
         `NODETERM_HOOK_PORT=${posixQuote('54321')}\n` +
           `NODETERM_HOOK_TOKEN=${posixQuote('tok-abc')}\n` +
           `NODETERM_HOOK_VERSION=${posixQuote('2')}\n` +
-          `NODETERM_NODE_TOKEN_DIR=${posixQuote('/Users/x/Library/Application Support/node-terminal/node-tokens')}\n`
+          `NODETERM_NODE_TOKEN_DIR=${posixQuote('C:/Users/x/AppData/Local/node-terminal/node-tokens')}\n`
       )
       const env = readHookEndpointEnv(f)
       expect(env.NODETERM_HOOK_TOKEN).toBe('tok-abc')
       expect(env.NODETERM_NODE_TOKEN_DIR).toBe(
-        '/Users/x/Library/Application Support/node-terminal/node-tokens'
+        'C:/Users/x/AppData/Local/node-terminal/node-tokens'
       )
       expect(hookEndpointOptions(env, '/codex-thread/authorize')).toEqual({
         hostname: '127.0.0.1',

@@ -297,7 +297,7 @@ export function AgentsSection({ isActive }: { isActive: boolean }): React.JSX.El
                 <AgentIcon agentId={row.id} size={18} />
                 <span className="flex-1 text-[13px] text-text">{row.label}</span>
                 {/* Custom agents included — a user living on their own CLI aliases must be able
-                    to make one the default (⌘⇧C / Add menu) instead of a disabled claude. */}
+                    to make one the default (Ctrl+Shift+C / Add menu) instead of a disabled claude. */}
                 <Button
                   variant={isDefault ? 'primary' : 'default'}
                   aria-pressed={isDefault}

@@ -6,7 +6,6 @@ import { isBrowserRuntime } from '../bridge/runtime'
 import { commandKeys, dictationBinding } from '../lib/keybindingOverrides'
 import { useSettings } from '../state/settings'
 
-import { keyLabel } from '@shared/platform-utils'
 
 export interface ShortcutsPanelProps {
   onClose: () => void
@@ -23,7 +22,7 @@ interface Row {
  *  That promise holds because every row's KEYBOARD path also reads the registry, which is
  *  what makes the panel and the key agree — `terminal.find` included, whose match in
  *  TerminalNode now reads `effectiveBindings('terminal.find')` instead of a hardcoded
- *  Cmd/Ctrl+F. Gesture/mouse rows stay literal: they are not commands and the registry knows
+ *  Ctrl+F. Gesture/mouse rows stay literal: they are not commands and the registry knows
  *  nothing about them. "Dictate" is a registry row too now — its chord comes from
  *  `dictationBinding()` (the first effective `speech.dictation` binding), with the legacy
  *  `settings.speech.shortcut` field kept only as a downgrade mirror — so it follows a remap and
@@ -40,7 +39,7 @@ function buildSections(dictationChord: string): { title: string; rows: Row[] }[]
       ? []
       : [
           {
-            keys: shortcutKeyParts(dictationChord, false),
+            keys: shortcutKeyParts(dictationChord),
             label: isHoldChord(dictationChord) ? 'Dictate (hold)' : 'Dictate'
           }
         ]
@@ -155,7 +154,7 @@ export function ShortcutsPanel({ onClose }: ShortcutsPanelProps) {
                   <span className="shortcut-keys">
                     {r.keys.map((k, i) => (
                       <kbd key={i} className="kbd">
-                        {keyLabel(k)}
+                        {k}
                       </kbd>
                     ))}
                   </span>

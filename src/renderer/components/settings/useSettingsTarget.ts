@@ -25,7 +25,7 @@ export interface SettingsTarget {
  *   the link just navigated to — the nav row would highlight over an empty page.
  * - The nonce is what makes a REPEAT of the same section re-target: `initialSection` alone would
  *   not change, so the effect would not re-run.
- * - Plain opens (the gear, ⌘, , the native menu) pass no section and never bump the nonce, so a
+ * - Plain opens (the gear, Ctrl+Comma, the native menu) pass no section and never bump the nonce, so a
  *   query or a section the user chose inside the dialog survives.
  * - A project section that no longer exists falls back to the first section — see `openProjectIds`.
  */

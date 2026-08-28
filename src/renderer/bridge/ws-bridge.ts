@@ -259,7 +259,7 @@ export function buildRealApi(
     // (`core/agent-session-name.ts`) and the server already threads gemini's path association into
     // its session-name SWEEP, which is what keeps the phone's names correct; only this per-node poll
     // is missing. Fixing it means registering the channel from both shells, exactly as
-    // `core/transcript-ipc.ts` did for the ⌘M transcript channels.
+    // `core/transcript-ipc.ts` did for the Ctrl+M transcript channels.
     readSessionName: () => Promise.resolve(''),
     onData: (sessionId, listener) =>
       client.subscribe(IPC.ptyData(sessionId), listener as Listener),
@@ -815,7 +815,7 @@ export function buildClaudeApi(client: RpcClient, stub: ClaudeApi): ClaudeApi {
 
 /**
  * The two transcript READ channels, now that `registerTranscriptIpc` serves them in the server
- * shell too. Before this the browser had no handler at all: the stub rejected, the ⌘M panel never
+ * shell too. Before this the browser had no handler at all: the stub rejected, the Ctrl+M panel never
  * caught it, and every Server Edition session read as an empty conversation.
  *
  * Server Edition ONLY (see buildClaudeApi's note): the server runs on the machine whose
@@ -869,7 +869,6 @@ export function buildClaudeAccountsApi(client: RpcClient): Pick<NodeTerminalApi,
         client.request(IPC.claudeAccountsAdd, ctx) as Promise<{
           id: string
           configDir: string
-          versionSupported: boolean
         }>,
       waitLogin: (id, ctx) =>
         client.request(IPC.claudeAccountsWaitLogin, id, ctx) as Promise<{ email: string } | null>,

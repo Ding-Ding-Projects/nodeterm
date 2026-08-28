@@ -74,7 +74,7 @@ describe('createSession', () => {
     // sessions on the same api deliberately share a presence store (see the adversarial test).
     const relayApi = { marker: 'relay' } as unknown as NodeTerminalApi
     const serverApi = { marker: 'server' } as unknown as NodeTerminalApi
-    const relay = createSession('relay', relayApi, "Ayşe's Mac")
+    const relay = createSession('relay', relayApi, "Ayşe's PC")
     const server = createSession('server', serverApi, 'prod-box')
     expect(relay.id).not.toBe(server.id)
     const relayStores = getSessionStores(relay.id)
@@ -120,7 +120,7 @@ describe('sessionForProject (runtime tab → session resolver, never persisted)'
     expect(sessionCount()).toBe(0)
     createSession('local', fakeApi, 'This PC')
     expect(sessionCount()).toBe(1)
-    createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
+    createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's PC")
     expect(sessionCount()).toBe(2)
   })
 })
@@ -129,7 +129,7 @@ describe('bindProjectToSession (4c remote-tab resolution)', () => {
   it('a bound project resolves to its remote session; an unbound one resolves to local', () => {
     const local = createSession('local', fakeApi, 'This PC')
     setActiveSession(local.id)
-    const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
+    const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's PC")
 
     bindProjectToSession('remote-tab', relay.id)
     expect(sessionForProject('remote-tab')).toBe(relay)
@@ -248,7 +248,7 @@ describe('takeSessionOffline (Stage 4 Task 7 — an INVOLUNTARY drop, not a user
 describe('activeSessionPresence (Task 1 — the ACTIVE session presence, non-hook accessor)', () => {
   it('returns the ACTIVE relay session\'s presence — a distinct instance from local', () => {
     const local = createSession('local', fakeApi, 'This PC')
-    const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
+    const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's PC")
     setActiveSession(relay.id)
     const p = activeSessionPresence()
     expect(p).toBe(getSessionStores(relay.id).presence)
@@ -257,7 +257,7 @@ describe('activeSessionPresence (Task 1 — the ACTIVE session presence, non-hoo
 
   it('returns the LOCAL session\'s presence when local is active', () => {
     const local = createSession('local', fakeApi, 'This PC')
-    createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
+    createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's PC")
     setActiveSession(local.id)
     expect(activeSessionPresence()).toBe(getSessionStores(local.id).presence)
   })
@@ -283,7 +283,7 @@ describe('presenceForProject (Task 2 — the provider-INDEPENDENT resolver the a
     // the hook passes the store's activeProjectId here, and a relay tab's project is bound to it.
     const local = createSession('local', fakeApi, 'This PC')
     setActiveSession(local.id)
-    const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
+    const relay = createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's PC")
     bindProjectToSession('remote-tab', relay.id)
 
     const p = presenceForProject('remote-tab')
@@ -294,7 +294,7 @@ describe('presenceForProject (Task 2 — the provider-INDEPENDENT resolver the a
   it('resolves an unbound (local) project to the LOCAL session\'s presence — byte-identical to today', () => {
     const local = createSession('local', fakeApi, 'This PC')
     setActiveSession(local.id)
-    createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's Mac")
+    createSession('relay', { marker: 'relay' } as unknown as NodeTerminalApi, "Ayşe's PC")
     // A local project is never bound — it must resolve to the local session's presence (the exact
     // store the historical components read today), NOT the merely-active or relay one.
     expect(presenceForProject('some-local-tab')).toBe(getSessionStores(local.id).presence)
@@ -311,7 +311,7 @@ describe('setMeAll (obligation 2 — a rename re-helloes EVERY live session)', (
     const a = apiWithHelloSpy('a')
     const b = apiWithHelloSpy('b')
     const s1 = createSession('local', a.api, 'This PC')
-    const s2 = createSession('relay', b.api, "Ayşe's Mac")
+    const s2 = createSession('relay', b.api, "Ayşe's PC")
     setActiveSession(s1.id)
 
     const me: PeerIdentity = { name: 'Ada', color: '#0af' }

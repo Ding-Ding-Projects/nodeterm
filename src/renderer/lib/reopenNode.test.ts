@@ -29,7 +29,7 @@ describe('snapshotNode', () => {
       extent: 'parent' as const,
       width: 240,
       height: 200,
-      data: { title: 'Note', color: '#ffd60a', group: null, text: 'hi' }
+      data: { title: 'Note', color: '#fce100', group: null, text: 'hi' }
     }
     const snap = snapshotNode(node, all)
     expect(snap).toEqual({
@@ -65,7 +65,7 @@ describe('recreateNodeFromSnapshot', () => {
     type: 'sticky',
     position: { x: 10, y: 20 },
     absolutePosition: { x: 10, y: 20 },
-    data: { title: 'Note', color: '#ffd60a', group: null, text: 'hi' },
+    data: { title: 'Note', color: '#fce100', group: null, text: 'hi' },
     ...over
   })
 
@@ -100,7 +100,7 @@ describe('recreateNodeFromSnapshot', () => {
     const node = recreateNodeFromSnapshot(
       snap({
         type: 'editor',
-        data: { title: 'My renamed editor', color: '#6ac4dc', group: null, filePath: '/tmp/a.ts' }
+        data: { title: 'My renamed editor', color: '#00b7c3', group: null, filePath: '/tmp/a.ts' }
       }),
       baseCtx()
     )

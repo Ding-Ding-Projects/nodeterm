@@ -20,11 +20,11 @@ afterEach(() => {
 
 describe('useSystemCodexAccount.ensure', () => {
   it('reads the local system identity exactly once per session', async () => {
-    systemIdentity.mockResolvedValue({ email: 'me@mac' })
+    systemIdentity.mockResolvedValue({ email: 'me@pc' })
     const store = await freshStore()
     store.getState().ensure()
     store.getState().ensure()
-    await vi.waitFor(() => expect(store.getState().email).toBe('me@mac'))
+    await vi.waitFor(() => expect(store.getState().email).toBe('me@pc'))
     // Once-guard: the second ensure() must not fire a second read.
     expect(systemIdentity).toHaveBeenCalledTimes(1)
     expect(systemIdentity).toHaveBeenCalledWith()

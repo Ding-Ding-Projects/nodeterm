@@ -247,7 +247,7 @@ describe('SshProjectManager', () => {
       const command = args.at(-1) ?? ''
       commands.push(command)
       return command.includes('printf %s')
-        ? { code: 0, stdout: "/Users/O'Brien Home" }
+        ? { code: 0, stdout: "/home/O'Brien Home" }
         : { code: 0, stdout: '' }
     })
     const mgr = new SshProjectManager({
@@ -263,7 +263,7 @@ describe('SshProjectManager', () => {
     expect(await mgr.uploadFile('p1', '/local/a.png', 'same.png')).toBeNull()
     const cleanup = commands.find((command) => command.startsWith('rm -rf -- '))
     expect(cleanup).toMatch(
-      /^rm -rf -- '\/Users\/O'\\''Brien Home\/\.nodeterm\/uploads\/[0-9a-f-]{36}'$/
+      /^rm -rf -- '\/home\/O'\\''Brien Home\/\.nodeterm\/uploads\/[0-9a-f-]{36}'$/
     )
   })
 
@@ -562,21 +562,19 @@ describe('SshProjectManager', () => {
     releaseProbe?.()
   })
 
-  it('remoteAccountAdd reads the version from the markers, not from banner noise', async () => {
-    // Same probe, other consumer: an OLD remote CLI must still report versionSupported=false so the
-    // keychain-collision warning survives (the banner's `22.04.3` would have suppressed it).
+  it('remoteAccountAdd creates account directories across CLI versions', async () => {
     const { mgr } = mgrWithClaude('__NT_V_START__2.0.14 (Claude Code)__NT_V_END__')
     await mgr.connect('p1', conn)
-    expect((await mgr.remoteAccountAdd('p1', 'acc1'))?.versionSupported).toBe(false)
+    expect((await mgr.remoteAccountAdd('p1', 'acc1'))?.configDir).toContain('acc1')
 
     const modern = mgrWithClaude('__NT_V_START__2.1.0 (Claude Code)__NT_V_END__')
     await modern.mgr.connect('p2', conn)
-    expect((await modern.mgr.remoteAccountAdd('p2', 'acc1'))?.versionSupported).toBe(true)
+    expect((await modern.mgr.remoteAccountAdd('p2', 'acc1'))?.configDir).toContain('acc1')
 
-    // Probe failed entirely (no markers) → fail-open true: adding an account is never blocked.
+    // A missing version probe never blocks account creation.
     const unknown = mgrWithClaude(null)
     await unknown.mgr.connect('p3', conn)
-    expect((await unknown.mgr.remoteAccountAdd('p3', 'acc1'))?.versionSupported).toBe(true)
+    expect((await unknown.mgr.remoteAccountAdd('p3', 'acc1'))?.configDir).toContain('acc1')
   })
 
   // --- downloadFile (remote → this machine) -------------------------------------------------
@@ -2130,7 +2128,7 @@ describe('SshProjectManager', () => {
       // no key FILE exists, so no prompt can rescue it, and our private agent hides the user's own.
       // The answer is a HINT naming the documented fix (IdentityAgent), never a second attempt: an
       // automatic ambient-agent retry fired on every ordinary auth failure (launchd exports
-      // SSH_AUTH_SOCK on every Mac) and carried AddKeysToAgent=yes into the login agent - the leak
+      // SSH_AUTH_SOCK whenever an agent exists) and carried AddKeysToAgent=yes into the login agent,
       // this design exists to close.
       vi.spyOn(fs, 'mkdir').mockResolvedValue(undefined as never)
       vi.spyOn(fs, 'stat').mockRejectedValue(Object.assign(new Error('ENOENT'), { code: 'ENOENT' }))

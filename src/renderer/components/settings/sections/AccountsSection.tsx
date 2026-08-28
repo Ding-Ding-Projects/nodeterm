@@ -65,7 +65,7 @@ function MachinePanel({
       <div className="flex items-center gap-2">
         <span
           className={`inline-block h-2 w-2 rounded-full ${
-            !remote || connected ? 'bg-[color:var(--ok,#30d158)]' : 'bg-[color:var(--muted-2)]'
+            !remote || connected ? 'bg-[color:var(--ok,#107c10)]' : 'bg-[color:var(--muted-2)]'
           }`}
           aria-hidden
           title={!remote ? 'This machine' : connected ? 'Connected' : 'Not connected'}
@@ -132,7 +132,6 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
   // Subscribe to live SSH connections so a remote account's Retry button enables/disables as its
   // host connects/disconnects while this panel is open.
   const sshByProject = useSshConn((s) => s.byProject)
-  const [versionWarning, setVersionWarning] = useState(false)
   const [pendingRemove, setPendingRemove] = useState<ClaudeAccount | null>(null)
   /**
    * Which "Add account" button is mid-setup: the host key, or LOCAL_TARGET for this machine.
@@ -398,7 +397,7 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
     const projectId = host ? projectIdForHost(host) : undefined
     setAddingOn(host ?? LOCAL_TARGET)
     setAddError(null)
-    let added: { id: string; versionSupported: boolean }
+    let added: { id: string }
     try {
       added = await window.nodeTerminal.claudeAccounts.add(projectId ? { projectId } : undefined)
     } catch (e) {
@@ -422,9 +421,6 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
       // still going when the thing to do next is on the canvas.
       setAddingOn(null)
     }
-    // Non-blocking: the account still isolates config, but an old CLI's unscoped macOS keychain
-    // service would collide across accounts — surface a dismissable warning.
-    if (!added.versionSupported) setVersionWarning(true)
     const account: ClaudeAccount = {
       id: added.id,
       label: 'New account',
@@ -480,22 +476,6 @@ export function AccountsSection({ isActive }: { isActive: boolean }): React.JSX.
     >
       <SearchableRow {...ROWS.accounts}>
         <div className="space-y-4">
-          {versionWarning ? (
-            <div className="flex items-start justify-between gap-3 rounded-md border border-[color:var(--danger)]/40 bg-[color:var(--danger)]/10 px-3 py-2 text-[13px] leading-relaxed text-[color:var(--danger)]">
-              <span>
-                Your installed Claude CLI is older than the version that scopes credentials per
-                config dir. Accounts still isolate their config, but on macOS logins may collide in
-                the shared keychain. Update the Claude CLI to keep them fully separate.
-              </span>
-              <button
-                className="shrink-0 cursor-pointer text-muted hover:text-text"
-                onClick={() => setVersionWarning(false)}
-              >
-                Dismiss
-              </button>
-            </div>
-          ) : null}
-
           {/* The SYSTEM account (the machine's default ~/.claude login) is implicit — not a
               ClaudeAccount record — but gets a fixed row so it can be told apart from managed
               accounts: detected email as subtitle, renamable display label (empty = default). */}

@@ -19,9 +19,7 @@ describe('Windows Claude account credential paths', () => {
     })
   })
 
-  it('keeps supported loader injection keys reserved without Apple-only variables', () => {
+  it('keeps the supported Windows loader injection key reserved', () => {
     expect(isReservedSpawnEnvKey('LD_PRELOAD')).toBe(true)
-    expect(isReservedSpawnEnvKey('DYLD_INSERT_LIBRARIES')).toBe(false)
-    expect(isReservedSpawnEnvKey('DYLD_LIBRARY_PATH')).toBe(false)
   })
 })

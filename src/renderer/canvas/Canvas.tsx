@@ -482,15 +482,13 @@ import type { CodexAccount } from '@shared/codex-account'
 import { useSystemCodexAccount } from '../state/systemCodexAccount'
 import { toKanbanSession } from './toKanbanSession'
 
-const useMetaPrimary = false
-
 const GRID = 24
 
 /** The empty opaque set (glyphgrid), shared so the render-time compute allocates nothing on the
  *  overwhelmingly common "nothing overlaps / layer off" path. */
 const EMPTY_OPAQUE: string[] = []
 
-/** Diagonal offset for a copy made without a cursor position (⌘K, agent CLI) — the classic
+/** Diagonal offset for a copy made without a cursor position (Ctrl+K, agent CLI), the classic
  *  "duplicate appears slightly off the original" nudge. */
 const DUPLICATE_NUDGE = 28
 
@@ -673,7 +671,7 @@ const ropeEdge = (id: string, source: string, target: string, color: string): Ed
 
 
 const minimapNodeColor = (n: Node): string =>
-  (n.data as { color?: string })?.color ?? '#0a84ff'
+  (n.data as { color?: string })?.color ?? '#0078d4'
 
 /** The agent a terminal node was CREATED as. Deliberately NOT `agentIdOf`, whose extra hook-status
  *  fallback also reports a plain terminal someone typed `claude` into by hand: TerminalNode's
@@ -738,10 +736,10 @@ function StatusAwareMiniMap({ onNodeDoubleClick }: { onNodeDoubleClick: (node: N
   const nodeStrokeColor = useCallback(
     (n: Node): string => {
       const st = statusById[n.id]
-      if (st?.state === 'working') return '#ffd60a'
-      if (st?.state === 'waiting' || st?.state === 'blocked') return '#ff453a'
+      if (st?.state === 'working') return '#fce100'
+      if (st?.state === 'waiting' || st?.state === 'blocked') return '#d13438'
       if (st?.unread) return '#d97757'
-      return (n.data as { color?: string })?.color ?? '#0a84ff'
+      return (n.data as { color?: string })?.color ?? '#0078d4'
     },
     [statusById]
   )
@@ -821,7 +819,7 @@ export function Canvas() {
   // `nodeterm:toast` when neither the Clipboard API nor execCommand can copy, typically a
   // non-secure context over a LAN), and a Codex node reporting that it fell back to plain codex.
   const [copyError, setCopyError] = useState<string | null>(null)
-  // Cmd+V only drops an image on the canvas when the LAST pointer press was on the pane itself —
+  // Ctrl+V only drops an image on the canvas when the LAST pointer press was on the pane itself;
   // otherwise a paste aimed at a panel or a dialog would spawn a node behind it. See
   // canvas-image-import.ts for the arming rules.
   const canvasImagePasteArmedRef = useRef(false)
@@ -836,8 +834,8 @@ export function Canvas() {
   }, [notice])
   const [zoomPct, setZoomPct] = useState(100)
   // Canvas lock (bottom-left Controls): freezes the viewport against GESTURES — pan (drag +
-  // scroll), zoom (pinch / Cmd+wheel / double-click), node dragging and edge connecting.
-  // Deliberate button clicks (Controls +/−/fit, dock zoom, ⌘K fit) still work, matching React
+  // scroll), zoom (pinch / Ctrl+wheel / double-click), node dragging and edge connecting.
+  // Deliberate button clicks (Controls +/−/fit, dock zoom, Ctrl+K fit) still work, matching React
   // Flow's own lock convention. Transient by design: a lock that survives restart reads as
   // "the app is frozen" to whoever opens it next.
   const [canvasLocked, setCanvasLocked] = useState(false)
@@ -858,7 +856,7 @@ export function Canvas() {
    * `preventDefault` only while we actually engage: an untaken space must reach whoever it was for.
    *
    * The three RELEASE paths all matter, and only the first is obvious. A keyup ends the ordinary
-   * gesture; a window blur ends the one where the user switched apps mid-pan (⌘Tab with space held
+   * gesture; a window blur ends the one where the user switched apps mid-pan (Alt+Tab with space held
    * would otherwise never deliver a keyup, stranding the canvas in grab mode until the next tap);
    * and the lock is honoured by the props rather than here, so locking mid-pan cannot leave a
    * half-engaged state either.
@@ -1255,7 +1253,7 @@ export function Canvas() {
   } = useReactFlow()
 
   // Single "fit everything" path for every fit-view entry point (dock button, the built-in
-  // Controls button, the ⌘K palette and the context menu) so they behave identically and there's
+  // Controls button, the Ctrl+K palette and the context menu) so they behave identically and there's
   // one place to tune. Solved per click against the CURRENT chrome layout and the CURRENT content
   // shape, so hiding the minimap or fitting a narrow column reclaims that space instead of paying
   // a fixed toll for panels the content never reaches.
@@ -1814,7 +1812,7 @@ export function Canvas() {
     return extra.length ? [...decorated, ...extra] : decorated
   }, [linkEdges, ephemeralEdges, controlEdges, accent, stickySig, depEdges, drivenLeaseEntries])
 
-  // Header pin button (and ⌘⇧L): toggle the persisted pin preference. Clears the transient
+  // Header pin button (and Ctrl+Shift+L): toggle the persisted pin preference. Clears the transient
   // dismiss so (re)pinning shows the docked panel; unpinning collapses it to hover-peek.
   const toggleSessionsPin = useCallback(() => {
     setSessionsPinned((v) => {
@@ -1846,7 +1844,7 @@ export function Canvas() {
     }
   }, [sessionsPinned])
 
-  // ⌘⌥D / Dock mic button: press-to-talk toggle. Closed → opens the dictation pill targeting the
+  // Ctrl+AltD / Dock mic button: press-to-talk toggle. Closed → opens the dictation pill targeting the
   // first selected terminal node (agent nodes are `type: 'terminal'` with `data.agentId`
   // set — no separate case needed) and starts recording immediately (or, with no such node
   // selected, shows a brief warning pill — see DictationOverlay's mount effect). Already open →
@@ -1953,11 +1951,11 @@ export function Canvas() {
         }
         if (s.seenShortcuts) {
           // Existing install (pre-tour): the setup tour is for fresh installs — migrate
-          // silently so it never pops over an established workspace. Rerunnable via ⌘K.
+          // silently so it never pops over an established workspace. Rerunnable via Ctrl+K.
           useSettings.getState().update({ seenOnboarding: true })
           if (shouldShowMobileLaunch()) setMobileLaunchOpen(true)
         } else {
-          // Fresh install: the tour replaces the auto-opened ShortcutsPanel (⌘/ still
+          // Fresh install: the tour replaces the auto-opened ShortcutsPanel (Ctrl+/ still
           // opens it manually) and owns the notification-consent question.
           setOnboardingOpen(true)
           markMobileLaunchSeen()
@@ -2093,7 +2091,7 @@ export function Canvas() {
     setControlEdges(
       (project.ropes ?? []).map((r) => {
         const srcState = project.nodes.find((n) => n.id === r.source)
-        const color = agentConfig((srcState?.agentId as AgentId) ?? '')?.color ?? '#0a84ff'
+        const color = agentConfig((srcState?.agentId as AgentId) ?? '')?.color ?? '#0078d4'
         return ropeEdge(r.id, r.source, r.target, color)
       })
     )
@@ -2187,11 +2185,11 @@ export function Canvas() {
   // projects array is rebuilt on every node serialization, the id set is not. Closed-but-kept
   // projects keep their entries on purpose: closing detaches like a project switch, and the
   // memory saver reaps their pages on its own clock.
-  const projectIdsSig = useProjects((s) => s.projects.map((p) => p.id).join(' '))
+  const projectIdsSig = useProjects((s) => s.projects.map((p) => p.id).join('\u0000'))
   useEffect(() => {
     useWebviewKeepAlive
       .getState()
-      .prune(new Set(projectIdsSig === '' ? [] : projectIdsSig.split(' ')))
+      .prune(new Set(projectIdsSig === '' ? [] : projectIdsSig.split('\u0000')))
   }, [projectIdsSig])
 
   /**
@@ -3067,7 +3065,7 @@ export function Canvas() {
     }
   }, [])
 
-  // Zoom on Cmd/Ctrl+wheel and trackpad pinch (ctrl+wheel), handled in one capture-phase
+  // Zoom on Ctrl+wheel and trackpad pinch (ctrl+wheel), handled in one capture-phase
   // listener for the whole canvas — so it works on the open canvas, over a selected node, and
   // even over a *focused* terminal (whose `nowheel` would otherwise route the wheel into xterm
   // scrollback). We intercept (preventDefault + stopPropagation) before xterm sees it, then
@@ -3091,7 +3089,8 @@ export function Canvas() {
     const wheelRouting = new TrackpadWheelGestureRouter()
     const onWheel = (e: WheelEvent) => {
       if (canvasLocked) return
-      if (!e.ctrlKey && !e.metaKey) {
+      if (e.metaKey) return
+      if (!e.ctrlKey) {
         // The ancestor walk is the expensive part of this handler at ~120 Hz, so it is memoized
         // per packet AND never run for a packet no guard asks about (a plain wheel with wheelZoom
         // off, which is the default, walks nothing at all).
@@ -3298,7 +3297,7 @@ export function Canvas() {
   }, [])
 
   /** Where a node spawned FROM another node (Duplicate / Branch / Transfer) goes when the action
-   *  carried no cursor position (⌘K, an agent CLI call): just right of its source.
+   *  carried no cursor position (Ctrl+K, an agent CLI call): just right of its source.
    *  Read in ABSOLUTE coordinates on purpose — a grouped node's `position` is relative to its
    *  group frame, and using it raw threw the new node the group's own x/y away from the source. */
   const besideNode = useCallback((source: CanvasNode): { x: number; y: number } => {
@@ -3497,7 +3496,7 @@ export function Canvas() {
 
   /** Open a file as a code editor node on the canvas. `sshFs` must be passed explicitly by the
    *  caller: only genuinely-remote, Explorer-opened files in an SSH project pass `true`; native
-   *  dialog / quick-open paths are LOCAL and stay local (so their ⌘S never writes to the host).
+   *  dialog / quick-open paths are LOCAL and stay local (so their Ctrl+S never writes to the host).
    *  A file that is already open focuses its existing node instead of stacking a duplicate;
    *  a fresh node is born `selected` so React Flow elevates it above the node stack. */
   const openFile = useCallback(
@@ -3524,14 +3523,14 @@ export function Canvas() {
   )
 
   // Reuse the same path resolver as terminal file paste/drop, then feed the existing Open-file
-  // node path. Desktop Finder drops retain their real path; clipboard/browser blobs are saved in
+  // node path. Desktop File Explorer drops retain their real path; clipboard/browser blobs are saved in
   // NodeTerm's managed upload directory first. Multiple images fan out diagonally from the cursor.
   const placeCanvasImages = useCallback(
     async (files: File[], center: { x: number; y: number }, projectId: string) => {
       const images = canvasImageFiles(files)
       if (!images.length) return
       // A relay tab writes here and reads on the peer, so the node could never render its own
-      // file — say so instead of creating it. Same fact, same source as the Cmd+C gate below.
+      // file, so say so instead of creating it. Same fact, same source as the Ctrl+C gate below.
       const refusal = canvasImportRefusal(!!useProjects.getState().getProject(projectId)?.remote)
       if (refusal) {
         setCopyError(refusal)
@@ -3660,7 +3659,7 @@ export function Canvas() {
   }, [paletteOpen, activeProjectId])
 
   /** Open a quick-open file result by root-relative path: editor node for text/images,
-   *  OS default app for binaries (e.g. .dmg). On an SSH project everything opens as a canvas
+   *  operating-system default app for binaries such as .exe or .zip. On an SSH project everything opens as a canvas
    *  node routed over `sshFs` (there is no OS to hand a remote path to). */
   const openProjectFile = useCallback(
     (relPath: string) => {
@@ -3684,7 +3683,7 @@ export function Canvas() {
     setReveal((r) => ({ path: relPath, nonce: (r?.nonce ?? 0) + 1 }))
   }, [showExplorer])
 
-  // Cmd+click file links inside terminal output (TerminalNode dispatches these — it has no
+  // Ctrl+click file links inside terminal output (TerminalNode dispatches these because it has no
   // direct line to the canvas). Files open as editor nodes; directories reveal in Explorer.
   useEffect(() => {
     const onOpen = (e: Event): void => {
@@ -4172,7 +4171,7 @@ export function Canvas() {
   const dictationChord = useSettings(() => dictationBinding())
 
   // v3 hold-to-talk: active only while the configured dictation shortcut is a modifier-only
-  // chord (isHoldChord — the new default, "Cmd+Alt"). Walkie-talkie semantics: the chord held
+  // chord (isHoldChord, the new default, "Ctrl+Alt"). Walkie-talkie semantics: the chord held
   // down starts recording immediately (armed on the keydown that completes the exact modifier
   // match — see chordHeld); releasing either chord modifier stops (transcribe → insert) UNLESS
   // the hold was under 400ms, which cancels quietly (an accidental tap, not an intentional
@@ -4181,7 +4180,7 @@ export function Canvas() {
   // plain closures (not React state) so a keystroke never triggers a re-render.
   //
   // Misfire guards: a third, non-modifier key pressed while armed cancels immediately (the user
-  // was invoking a real shortcut, e.g. the ⌘⌥D Dock-collision class) — and is never
+  // was invoking a real shortcut, e.g. the Ctrl+AltD Dock-collision class), and is never
   // preventDefault()'d, so that shortcut still fires normally. An extra modifier joining the
   // held chord (chordHeld flips false) cancels the same way. Auto-repeat keydowns for an
   // already-armed chord are inert by construction: once armed, a repeat keydown of the same
@@ -4222,7 +4221,7 @@ export function Canvas() {
         // some-but-not-all of it is down (e.g. Cmd alone, before Alt joins).
         if (e.repeat) return
         if (!isModifierEventKey(e.key)) return
-        if (!chordHeld(e, combo, useMetaPrimary)) return
+        if (!chordHeld(e, combo)) return
         armed = true
         heldSince = Date.now()
         const sel = nodesRef.current.find((n) => n.selected && n.type === 'terminal')
@@ -4242,7 +4241,7 @@ export function Canvas() {
 
       // Already armed: a non-modifier key, or an extra modifier joining the chord, is the
       // misfire guard — cancel without preventDefault so the real shortcut still fires.
-      if (!isModifierEventKey(e.key) || !chordHeld(e, combo, useMetaPrimary)) {
+      if (!isModifierEventKey(e.key) || !chordHeld(e, combo)) {
         cancel()
       }
     }
@@ -4253,14 +4252,14 @@ export function Canvas() {
       // The binding moved mid-hold (disabled, or remapped to a keyed chord): this gesture has
       // no owner any more, so cancel — the same thing the cleanup below does once the change
       // reaches React a tick later. Without this the `''` case would READ AS STILL HELD
-      // (`chordHeld(e, '', useMetaPrimary)` is true exactly when no modifier is down) and the recording
+      // (`chordHeld(e, '')` is true exactly when no modifier is down) and the recording
       // would never stop.
       if (combo === '' || !isHoldChord(combo)) {
         cancel()
         return
       }
       // Still fully down (an unrelated key was released) — keep recording.
-      if (chordHeld(e, combo, useMetaPrimary)) return
+      if (chordHeld(e, combo)) return
       const heldMs = Date.now() - heldSince
       if (heldMs < 400) {
         cancel()
@@ -4678,7 +4677,7 @@ export function Canvas() {
     return () => window.removeEventListener('nodeterm:account-removed', onAccountRemoved)
   }, [setNodes, markDirty, deleteNodes])
 
-  // Cmd/Ctrl+W (forwarded from main) closes the selected node(s) immediately, like the
+  // Ctrl+W (forwarded from main) closes the selected node(s) immediately, like the
   // node's × button. With nothing selected it falls back to closing the window.
   useEffect(() => {
     return window.nodeTerminal.onCloseNode(() => {
@@ -4689,9 +4688,9 @@ export function Canvas() {
       // repeat, and outside a focused terminal).
       const ids = nodesRef.current.filter((n) => n.selected).map((n) => n.id)
       // The notice sits INSIDE the branch that actually captured the key. With nothing selected
-      // ⌘W closes the WINDOW, and a notice raised there would burn this command's once-ever slot
+      // Ctrl+W closes the WINDOW, and a notice raised there would burn this command's once-ever slot
       // on a banner nobody can read — the window is going away in the same tick — leaving the user
-      // permanently unable to be told why ⌘W stops reaching their shell.
+      // permanently unable to be told why Ctrl+W stops reaching their shell.
       if (ids.length) {
         if (isTerminalTarget(document.activeElement as unknown as ContextElement | null)) {
           noteTerminalCapture('node.close')
@@ -4701,7 +4700,7 @@ export function Canvas() {
     })
   }, [deleteNodes])
 
-  // The second main-intercepted chord (⌘/Ctrl+M). Canvas does NOT own the markdown toggle —
+  // The second main-intercepted chord (Ctrl+M). Canvas does NOT own the markdown toggle;
   // TerminalNode and EditorNode each subscribe for themselves — so this listener exists ONLY to
   // raise the same notice, and must stay side-effect-free: it consumes nothing, prevents nothing,
   // and the nodes' own subscriptions are untouched by it.
@@ -4724,7 +4723,7 @@ export function Canvas() {
   useEffect(() => {
     return window.nodeTerminal.onFitView(() => fitAll())
   }, [fitAll])
-  // ⌘⇧B and ⌘, are the other two chords the dispatcher can never notice — not because main steals
+  // Ctrl+Shift+B and Ctrl+, are the other two chords the dispatcher can never notice, not because main steals
   // them (it does not; they are ordinary registry commands) but because the MENU owns their
   // accelerators above the page under app-first, so the window keydown listener never runs and its
   // notice half never fires. Like the two receivers above, the notice is raised HERE and asks the
@@ -4740,8 +4739,8 @@ export function Canvas() {
       if (id) useViewMode.getState().toggle(id)
     })
   }, [])
-  // Native app menu → open Settings (⌘,). A menu click does not fire before-input-event, so the
-  // Cmd+, keydown handler alone would leave the menu item inert — main forwards it as IPC.
+  // Native app menu → open Settings (Ctrl+,). A menu click does not fire before-input-event, so the
+  // Ctrl+, keydown handler alone would leave the menu item inert, so main forwards it as IPC.
   useEffect(() => {
     return window.nodeTerminal.onOpenSettings(() => {
       if (isTerminalTarget(document.activeElement as unknown as ContextElement | null)) {
@@ -5374,7 +5373,7 @@ export function Canvas() {
 
   /** `at` is the right-click position in flow coordinates: the copies land where the menu was
    *  opened. A multi-node duplicate keeps its arrangement — the selection's top-left is what
-   *  lands on the cursor. Without a cursor (⌘K / an agent CLI call) the classic diagonal nudge
+   *  lands on the cursor. Without a cursor (Ctrl+K / an agent CLI call) the classic diagonal nudge
    *  applies, in ABSOLUTE space so a grouped node's copy still appears beside it. */
   const duplicateNodes = useCallback(
     (ids: string[], at?: { x: number; y: number }) => {
@@ -5967,7 +5966,7 @@ export function Canvas() {
    * bounds collapse to {0,0,0,0} and the camera flies to the canvas ORIGIN at max zoom —
    * empty canvas, node off-screen. That is precisely the state a node is in for the first
    * tick after its project loads, i.e. on every CROSS-PROJECT focus (OS-notification click,
-   * sessions sidebar, ⌘K jump, presence travel): the load and the focus happen in the same
+   * sessions sidebar, Ctrl+K jump, presence travel): the load and the focus happen in the same
    * tick, so measuring can lose the race and only a second attempt would work. In that
    * window we frame the node ourselves from its persisted size — see lib/nodeFocus.
    *
@@ -6011,7 +6010,7 @@ export function Canvas() {
   const goToNode = useCallback(
     (node: Node) => {
       // Record the landing FIRST, and unconditionally: this is the one funnel every deliberate
-      // node focus goes through (notification click, sessions sidebar, ⌘K jump, presence travel,
+      // node focus goes through (notification click, sessions sidebar, Ctrl+K jump, presence travel,
       // minimap double-click), and recording is independent of which framing branch runs below —
       // including the branch that deliberately leaves the camera where it is.
       const activeId = useProjects.getState().activeProjectId
@@ -6138,7 +6137,7 @@ export function Canvas() {
 
   // ---- project (tab) actions ----
   // Declared here (ahead of the keydown effect below, rather than near the other project
-  // actions further down) so the Cmd/Ctrl+digit shortcut can list it as a dependency without
+  // actions further down) so the Ctrl+digit shortcut can list it as a dependency without
   // a TDZ violation: `useCallback`/`const` bindings are not hoisted like function declarations,
   // so referencing switchProject in that effect's deps array before this point would throw
   // "used before its declaration".
@@ -6152,7 +6151,7 @@ export function Canvas() {
     [commitActiveToStore, writeDisk]
   )
 
-  /** `app.reopenLastClosed` (Cmd+Shift+T): pops the shared close-history stack and reopens a
+  /** `app.reopenLastClosed` (Ctrl+Shift+T): pops the shared close-history stack and reopens a
    *  project tab or recreates a deleted node batch — whichever was closed more recently.
    *  Skips stale entries (already reopened another way, or the project was permanently
    *  deleted since) and keeps walking back until it finds a usable one or the stack empties.
@@ -6235,8 +6234,8 @@ export function Canvas() {
   // dispatcher's structural `GlobalKeyEvent` does not model — and the only dispatch site is the
   // window listener below, which always hands them a real KeyboardEvent.
 
-  // ⌘/Ctrl+0 = back to 100%, Shift+1 = fit everything. `liveZoomShortcutAction` is the whole
-  // decision (see `lib/zoomShortcut.ts`), including the typing refusal, and the ⌘0 desktop route
+  // Ctrl+0 = back to 100%, Shift+1 = fit everything. `liveZoomShortcutAction` is the whole
+  // decision (see `lib/zoomShortcut.ts`), including the typing refusal, and the Ctrl+0 desktop route
   // below asks the same one, so the two paths can never disagree about when the chord is allowed
   // to move the camera. A null answer means "leave the key alone" — no `preventDefault`, which is
   // what keeps Shift+1 typing a `!` wherever the user is actually typing.
@@ -6251,7 +6250,7 @@ export function Canvas() {
     return true
   }, [zoomTo100, fitAll])
 
-  // Cmd/Ctrl+1-9 jumps to the Nth project — but only when the app actually owns the key (desktop
+  // Ctrl+1-9 jumps to the Nth project, but only when the app actually owns the key (desktop
   // shell, and the digit addresses an open project). `liveProjectJumpTarget` is the same decision
   // the terminals' swallow asks, so the two can't disagree; a null target leaves the key to
   // whatever has focus. `switchProject` no-ops on the active id.
@@ -6266,7 +6265,8 @@ export function Canvas() {
   }, [switchProject])
 
   const copyGesture = useCallback((e: GlobalKeyEvent): boolean => {
-    if (!((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'c')) return false
+    if (!(e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'c'))
+      return false
     // Native text selection wins (markdown, editor and terminal keep their normal copy path).
     const tag = (document.activeElement?.tagName || '').toLowerCase()
     if (
@@ -6284,7 +6284,7 @@ export function Canvas() {
       return true
     }
     // Nothing selected as text: copy the selected file-backed nodes as FILE REFERENCES, so
-    // Finder (or any file-aware app) pastes the actual files.
+    // File Explorer, or any file-aware app, pastes the actual files.
     //
     // Gated to where it can actually succeed, because the failure path raises a banner that
     // stays until dismissed — and before this feature the keystroke was a silent no-op, which
@@ -6314,7 +6314,7 @@ export function Canvas() {
   }, [setCopyError])
 
   /**
-   * ⌘←/→/↑/↓: hand the keyboard to the node in that direction — the multiplexer gesture
+   * Ctrl+←/→/↑/↓: hand the keyboard to the node in that direction. The multiplexer gesture
    * (Ghostty's goto_split, tmux's select-pane -L) on a canvas. The mouse is why it earns its
    * place: the wheel over a terminal belongs to that terminal's scrollback, so roaming a busy
    * canvas otherwise means hunting for empty space to drag from first.
@@ -6344,7 +6344,7 @@ export function Canvas() {
       const next = nextNodeInDirection(nodes, from, dir)
       if (next) focusNodeRef.current(next)
       // Claimed even at the edge of the canvas, where there is nothing to move to. Declining
-      // would offer ⌘→ back to the focused terminal instead, and whatever it does there it is
+      // would offer Ctrl+→ back to the focused terminal instead, and whatever it does there it is
       // not "nothing" — a navigation key with nowhere to go should do nothing, not something
       // else.
       return true
@@ -6420,7 +6420,6 @@ export function Canvas() {
     activeElement: () => document.activeElement as unknown as ContextElement | null,
     kanbanOpen: () => isKanbanOpen(useProjects.getState().activeProjectId),
     overrides: activeKeybindingOverrides,
-    useMetaPrimary,
     // Read per keystroke (the deps object is rebuilt each render anyway, but the thunk is what
     // the contract asks for): a policy change takes effect immediately, with no re-registration.
     terminalFirst: () => terminalShortcutPolicy() === 'terminal-first',
@@ -6480,7 +6479,7 @@ export function Canvas() {
       'node.newWebView': () => { void addWebView(); return true },
       'node.newDino': () => { addDino(); return true },
       'node.newFile': () => {
-        // Same gate the pane menu / ⌘K use for their "New file…" row: the file is created UNDER
+        // Same gate the pane menu / Ctrl+K use for their "New file…" row: the file is created UNDER
         // the project folder, so a cwd-less (inline) project has nowhere to put it. Refuse rather
         // than open a prompt that could only fail — and refusing lets the chord fall through.
         const project = useProjects.getState().getProject(activeProjectId ?? '')
@@ -6498,20 +6497,20 @@ export function Canvas() {
       'node.zoneUp': () => snapNodeToZone('top-half'),
       'node.zoneDown': () => snapNodeToZone('bottom-half')
       // node.close / node.toggleMarkdown: main-process intercepted on desktop; deliberately
-      // no renderer handler (the browser owns ⌘W in the Server Edition — see bridge/stubs.ts).
+      // no renderer handler (the browser owns Ctrl+W in the Server Edition; see bridge/stubs.ts).
       // terminal.* / scm.commit / speech.dictation: owned by their local listeners.
     },
     gestures: {
-      // A KEYED dictation shortcut (e.g. "Cmd+Alt+D") toggles dictation. The chord is the
+      // A KEYED dictation shortcut (e.g. "Ctrl+Alt+D") toggles dictation. The chord is the
       // registry's first effective `speech.dictation` binding (`dictationBinding()`), so a
       // remap lands here without touching this file. A modifier-only shortcut (the default,
-      // "Cmd+Alt") is hold-to-talk instead — matchesShortcut always returns false for that
+      // "Ctrl+Alt") is hold-to-talk instead. matchesShortcut always returns false for that
       // shape (its `key` is null), so this gesture is naturally a no-op for it; see the
       // dedicated hold-mode effect above, which is what fires in that case. The DISABLED case
       // (`''`) needs no guard for the same reason: an empty parse also has a null key.
       // The dispatcher only offers it in plain app focus (not typing / terminal / kanban).
       keyedDictation: (e) => {
-        if (!matchesShortcut(e, dictationBinding(), useMetaPrimary)) return false
+        if (!matchesShortcut(e, dictationBinding())) return false
         e.preventDefault()
         toggleDictation()
         return true
@@ -6586,7 +6585,7 @@ export function Canvas() {
   // closes): without it the departing canvas's title would outlive the canvas.
   useEffect(() => () => applyWindowTitle(windowBaseTitle()), [])
 
-  // ⌘/Ctrl+0 on the DESKTOP never reaches the keydown handler above: Electron's default View menu
+  // Ctrl+0 on the DESKTOP never reaches the keydown handler above: Electron's default View menu
   // binds the accelerator to `resetZoom`, and a menu accelerator is handled before the page sees
   // the key. `main/index.ts` intercepts it in `before-input-event` — exactly as it already does for
   // Ctrl+M and Ctrl+W are intercepted by the desktop shell and forwarded here, so the chord
@@ -6594,7 +6593,7 @@ export function Canvas() {
   // instead of resetting the WINDOW's page zoom, which is not what a canvas app's user means by
   // "actual size". The forwarded signal carries no event, so the refusals are re-asked here from
   // the same module rather than re-derived. Server Edition has no menu and no intercept: there the
-  // keydown branch above is the whole path (the browser's own ⌘0 means the same thing, so the two
+  // keydown branch above is the whole path (the browser's own Ctrl+0 means the same thing, so the two
   // agree rather than fight, and the bridge stubs this subscription out).
   useEffect(() => {
     return window.nodeTerminal.onZoomActualSize(() => {
@@ -6712,7 +6711,7 @@ export function Canvas() {
           ] as MenuItem[])),
       // Zone snap (issue #394 v1): place THIS node into a region of the visible canvas at that
       // region's size — halves/quarters/thirds. Single non-group, non-collapsed target only (the
-      // same declines as the ⌃⌥arrow chords; a multi-selection stacking into one zone is noise).
+      // same declines as the CtrlAltarrow chords; a multi-selection stacking into one zone is noise).
       ...(ids.length === 1 &&
       !isHidden('snap-zone', hidden) &&
       (() => {
@@ -7535,7 +7534,7 @@ export function Canvas() {
       const node = nodesRef.current.find((n) => n.id === nodeId)
       if (node) {
         // The board is a full-page overlay: framing the node on the canvas underneath it is
-        // invisible, which is why the notch's Go (and every other "go to node" path) read as
+        // invisible, which is why the Agent HUD's Go (and every other "go to node" path) read as
         // broken there. On the board, "go to" means OPEN THE CARD.
         if (isKanbanOpen(useProjects.getState().activeProjectId)) {
           useViewMode.getState().requestCard(nodeId)
@@ -7822,7 +7821,7 @@ export function Canvas() {
       })
       const placed = src.parentId ? parentInto(node, src.parentId) : node
       setNodes((ns) => [...ns, placed])
-      setControlEdges((es) => [...es, ropeEdge(`ctrl-${sourceNodeId}-${placed.id}`, sourceNodeId, placed.id, '#0a84ff')])
+      setControlEdges((es) => [...es, ropeEdge(`ctrl-${sourceNodeId}-${placed.id}`, sourceNodeId, placed.id, '#0078d4')])
       markDirty()
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -9987,7 +9986,7 @@ export function Canvas() {
         const watching = document.hasFocus() && cs.activeId === e.nodeId
         if (!watching) cs.markUnread(e.nodeId)
         // Watched it finish? Then it is already read. Nothing marks it unread in this branch, so
-        // without an explicit ack there would never BE a read signal — and the notch capsule's
+        // without an explicit ack there would never BE a read signal, and the Agent HUD's
         // green blob and the phone's Live Activity would keep glowing for a turn the user sat and
         // watched end. The mirror no-ops when there is no unresolved done event.
         else if (sound === 'done') void window.nodeTerminal.ackDone(e.nodeId)
@@ -10942,7 +10941,7 @@ export function Canvas() {
     store.projects
       // Skip unavailable projects: activating one lets edits commit to the store but they're
       // dropped on save (the ref emits header-only), so switching there silently loses work.
-      // The TabBar already guards its own click; this covers the palette (⌘K) path.
+      // The TabBar already guards its own click; this covers the palette (Ctrl+K) path.
       .filter((p) => p.id !== store.activeProjectId && !p.unavailable)
       .forEach((p) =>
         cmds.push({
@@ -11729,7 +11728,7 @@ export function Canvas() {
       {pendingPeer && (
         <ConfirmDialog
           // ConsentNotice → describeGrant: the human reads WHAT they grant ("<peer> will be able to
-          // run commands on this Mac — the same as SSH") above the SAS body, before confirming.
+          // run commands on this PC, the same as SSH") above the SAS body, before confirming.
           // Everything the dialog needs (label, SAS body, confirm id) comes from the ONE pure
           // view-model, so the peer label the user reads is the same field the test guards.
           body={<ConsentNotice peerLabel={peerApprovalView(pendingPeer).peerLabel} />}
@@ -11998,7 +11997,7 @@ export function Canvas() {
           above it. Esc is deliberately NOT an exit key — it must reach the CLI in the pane. */}
       <div id={FOCUS_SURFACE_ID} className={`focus-surface${focusedId ? ' is-active' : ''}`}>
         {focusedId && (
-          <button className="focus-exit" title="Exit focus (⌘⇧F)" onClick={toggleFocusMode}>
+          <button className="focus-exit" title="Exit focus (Ctrl+Shift+F)" onClick={toggleFocusMode}>
             Exit focus
           </button>
         )}

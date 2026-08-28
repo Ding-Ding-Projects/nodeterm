@@ -479,7 +479,7 @@ function cryptoRandomUuidBindings(source: string): CryptoRandomUuidBindings {
  * containers can both be PID 1 with a fresh module counter, worker isolates share a PID with
  * separate counters, and an OS can reuse a PID while crash litter remains. */
 function isUniqueTempName(name: string, relativeFile: string, source: string): boolean {
-  const helperWithBehavioralUuidChut =
+  const helperWithBehavioralUuidCheck =
     relativeFile === 'core/fs-atomic.ts' || relativeFile === 'session-host/state-file.ts'
   const bindings = cryptoRandomUuidBindings(source)
   const interpolationBodies = [...name.matchAll(/\$\{([^}]*)\}/g)].map((match) =>
@@ -495,7 +495,7 @@ function isUniqueTempName(name: string, relativeFile: string, source: string): b
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/\/\/.*$/g, '')]
 
-  if (helperWithBehavioralUuidChut) {
+  if (helperWithBehavioralUuidCheck) {
     if (inspectedBodies.some((body) => /(?<![A-Za-z0-9_$.])uuid\s*\(/.test(body))) {
       return true
     }

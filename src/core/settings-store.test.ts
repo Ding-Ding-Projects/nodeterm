@@ -66,7 +66,7 @@ describe('SettingsStore nested-default merge', () => {
       // Deliberately a different combo than DEFAULT_SETTINGS.speech.shortcut, so this test can't
       // pass by accident if the merge ever silently fell back to the default instead of preserving
       // the file's explicit value.
-      JSON.stringify({ speech: { engine: 'cloud', model: 'base', language: 'tr', shortcut: 'Cmd+Shift+D' } }),
+      JSON.stringify({ speech: { engine: 'cloud', model: 'base', language: 'tr', shortcut: 'Ctrl+Shift+D' } }),
       'utf-8'
     )
     const store = new SettingsStore()
@@ -75,7 +75,7 @@ describe('SettingsStore nested-default merge', () => {
       engine: 'cloud',
       model: 'base',
       language: 'tr',
-      shortcut: 'Cmd+Shift+D'
+      shortcut: 'Ctrl+Shift+D'
     })
   })
 
@@ -160,11 +160,11 @@ describe('SettingsStore nested-default merge', () => {
       // The whole point of the migration: a user who had rebound dictation before the keybinding
       // registry existed keeps their chord, because every consumer now reads the override.
       const s = loadWith({
-        speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Cmd+Shift+D' }
+        speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Ctrl+Shift+D' }
       })
-      expect(s.keybindings?.['speech.dictation']).toEqual(['Cmd+Shift+D'])
+      expect(s.keybindings?.['speech.dictation']).toEqual(['Ctrl+Shift+D'])
       // The legacy field lives on as the downgrade mirror — the seed must not consume it.
-      expect(s.speech.shortcut).toBe('Cmd+Shift+D')
+      expect(s.speech.shortcut).toBe('Ctrl+Shift+D')
     })
 
     it('a default shortcut seeds nothing', () => {
@@ -178,7 +178,7 @@ describe('SettingsStore nested-default merge', () => {
       // `[]` is a deliberate "dictation has no chord". Re-seeding it from the legacy field would
       // hand the user back the shortcut they explicitly turned off, on every single load.
       const s = loadWith({
-        speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Cmd+Shift+D' },
+        speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Ctrl+Shift+D' },
         keybindings: { 'speech.dictation': [] }
       })
       expect(s.keybindings?.['speech.dictation']).toEqual([])
@@ -186,30 +186,30 @@ describe('SettingsStore nested-default merge', () => {
 
     it('seeding does not disturb other overrides', () => {
       const s = loadWith({
-        speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Cmd+Alt+D' },
+        speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Ctrl+Alt+D' },
         keybindings: { 'canvas.undo': [] }
       })
-      expect(s.keybindings).toEqual({ 'canvas.undo': [], 'speech.dictation': ['Cmd+Alt+D'] })
+      expect(s.keybindings).toEqual({ 'canvas.undo': [], 'speech.dictation': ['Ctrl+Alt+D'] })
     })
 
     it('is idempotent — a seeded file re-loaded seeds nothing new', () => {
       // Load 1 seeds; load 2 sees the key and leaves it alone. Without the key check the seed
       // would keep overwriting a chord the user changed AFTER the migration, every launch.
       const once = loadWith({
-        speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Cmd+Shift+D' }
+        speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Ctrl+Shift+D' }
       })
-      const twice = loadWith({ ...once, keybindings: { 'speech.dictation': ['Cmd+Alt+K'] } })
-      expect(twice.keybindings?.['speech.dictation']).toEqual(['Cmd+Alt+K'])
+      const twice = loadWith({ ...once, keybindings: { 'speech.dictation': ['Ctrl+Alt+K'] } })
+      expect(twice.keybindings?.['speech.dictation']).toEqual(['Ctrl+Alt+K'])
     })
 
     it('a legacy chord colliding with another command now survives load end-to-end', () => {
-      // The PR3-era hole, measured then: Cmd+K was seeded and then stripped by the sanitizer.
-      const s = loadWith({ speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Cmd+K' } })
-      expect(s.keybindings?.['speech.dictation']).toEqual(['Cmd+K'])
+      // The PR3-era hole, measured then: Ctrl+K was seeded and then stripped by the sanitizer.
+      const s = loadWith({ speech: { engine: 'whisper', model: '', language: 'auto', shortcut: 'Ctrl+K' } })
+      expect(s.keybindings?.['speech.dictation']).toEqual(['Ctrl+K'])
       // The read path is the renderer's sanitizer; assert its verdict here too so the
       // end-to-end claim is one test, not an inference across two files.
-      expect(sanitizeKeybindingOverrides(s.keybindings, true).overrides['speech.dictation'])
-        .toEqual(['Cmd+K'])
+      expect(sanitizeKeybindingOverrides(s.keybindings).overrides['speech.dictation'])
+        .toEqual(['Ctrl+K'])
     })
   })
 })

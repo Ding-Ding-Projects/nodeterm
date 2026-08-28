@@ -7,7 +7,6 @@ import { NumberField } from '@renderer/ui/NumberField'
 import { Select } from '@renderer/ui/Select'
 import { SegmentedPill } from '@renderer/ui/SegmentedPill'
 import { Input } from '@renderer/ui/Input'
-import { hintLabel } from '@shared/platform-utils'
 import { DEFAULT_WORKTREE_PATH_TEMPLATE } from '@shared/worktree'
 
 const ROWS = {
@@ -236,9 +235,7 @@ export function BehaviorSection({ isActive }: { isActive: boolean }): React.JSX.
       <SearchableRow {...ROWS.trackpadPan}>
         <FieldRow
           label="Trackpad scroll pans"
-          description={hintLabel(
-            'A precision touchpad scroll pans the canvas even with wheel zoom on. Turn this off if scrolling pans when you meant to zoom.'
-          )}
+          description="A precision touchpad scroll pans the canvas even with wheel zoom on. Turn this off if scrolling pans when you meant to zoom."
           control={
             <Switch
               checked={settings.trackpadPan}

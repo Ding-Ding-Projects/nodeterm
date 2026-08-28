@@ -247,7 +247,7 @@ describe('parseWorktreePorcelain', () => {
 })
 
 describe('isDangerousWorktreeRemovalPath', () => {
-  const home = '/Users/me'
+  const home = 'C:/Users/me'
   it('refuses the repo root itself', () => {
     expect(isDangerousWorktreeRemovalPath('/repo', '/repo', home)).toBe(true)
   })
@@ -259,7 +259,7 @@ describe('isDangerousWorktreeRemovalPath', () => {
     expect(isDangerousWorktreeRemovalPath('/', '/repo', home)).toBe(true)
   })
   it('allows a normal sibling worktree dir', () => {
-    expect(isDangerousWorktreeRemovalPath('/Users/me/worktrees/r/feature-x', '/repo', home)).toBe(false)
+    expect(isDangerousWorktreeRemovalPath('C:/Users/me/worktrees/r/feature-x', '/repo', home)).toBe(false)
   })
 })
 

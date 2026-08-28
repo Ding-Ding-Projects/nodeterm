@@ -296,11 +296,3 @@ export function parseLoginCapture(rawClaudeJson: string): { email: string } | nu
     return null
   }
 }
-
-/** Claude Code 2.1 or newer is required for isolated managed account config directories. */
-export function isSupportedClaudeVersion(versionOutput: string): boolean {
-  const m = versionOutput.match(/(\d+)\.(\d+)\./)
-  if (!m) return false
-  const [major, minor] = [Number(m[1]), Number(m[2])]
-  return major > 2 || (major === 2 && minor >= 1)
-}

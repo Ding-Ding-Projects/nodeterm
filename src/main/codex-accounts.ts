@@ -238,9 +238,9 @@ export function initCodexAccounts(getSshManager?: () => SshProjectManager | unde
 
   ipcMain.handle(IPC.codexAccountsIdentity, (_event, id: string) => existingManagedIdentity(id))
 
-  // No ctx ⇒ this Mac's system identity. A `{ projectId }` ctx asks for a remote HOST's system
+  // No ctx ⇒ this PC's system identity. A `{ projectId }` ctx asks for a remote HOST's system
   // identity, which this build does not yet resolve — fail closed to `null` rather than returning
-  // THIS Mac's login, so a remote machine panel never fabricates/borrows a local identity
+  // this PC's login, so a remote machine panel never fabricates or borrows a local identity
   // (§5 "system-account discovery must not fabricate an account"). Remote resolution is a follow-up.
   ipcMain.handle(
     IPC.codexAccountsSystemIdentity,

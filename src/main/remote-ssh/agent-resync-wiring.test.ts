@@ -34,7 +34,7 @@ describe('resync transcript read wiring (src/main/index.ts)', () => {
 
   it('exactly one call site overrides the cap — every other reader keeps the 5 MB default', () => {
     const calls = callArgs()
-    expect(calls.length).toBeGreaterThanOrEqual(2) // the ⌘M/search read channel + the resync
+    expect(calls.length).toBeGreaterThanOrEqual(2) // the Ctrl+M/search read channel + the resync
     const capped = calls.filter((a) => a.length > 2)
     expect(capped).toEqual([['sessionId', 'ref', 'RESYNC_TRANSCRIPT_TAIL_BYTES']])
     // The transcript IPC leg (chat panel + find bar) must still read a whole transcript.

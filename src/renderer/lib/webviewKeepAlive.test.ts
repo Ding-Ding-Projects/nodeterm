@@ -21,7 +21,7 @@ const node = (id: string, type: string, data: Record<string, unknown> = {}): Can
     position: { x: 10, y: 10 },
     width: 400,
     height: 300,
-    data: { title: id, color: '#0a84ff', group: null, ...data }
+    data: { title: id, color: '#0078d4', group: null, ...data }
   }) as unknown as CanvasNode
 
 const browser = (id: string, url = 'https://x.test/'): CanvasNode => node(id, 'browser', { url })

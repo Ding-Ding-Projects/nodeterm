@@ -1,7 +1,7 @@
 // Keep-awake shell: binds the Electron-free tracker (core/keep-awake.ts) to Electron's
 // powerSaveBlocker. `prevent-app-suspension` holds off IDLE sleep only — never display sleep,
 // and a closed lid still sleeps the machine (no app can override that; user-facing copy says so).
-// index.ts wires the seams (mirror edges, settings, SSH membership) next to the notch HUD block.
+// index.ts wires the seams (mirror edges, settings, SSH membership) next to the Agent HUD block.
 
 import { powerSaveBlocker } from 'electron'
 import { createKeepAwake, type KeepAwakeTracker } from '../core/keep-awake'

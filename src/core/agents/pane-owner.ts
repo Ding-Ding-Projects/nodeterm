@@ -36,22 +36,15 @@
  *     effective group NAME, and the GNU long option `--pgid` does not exist (`error: unknown gnu
  *     long option`). So the Linux-specific "read `tpgid`, then `ps -g` that pgid" route does not
  *     work here at all, and a second round-trip would have bought nothing.
- *  2. Selecting by TTY works identically on Linux and BSD — `-t /dev/pts/0` and `-t pts/0` are both
- *     accepted — and `stat`'s `+` flag marks foreground-group membership on BOTH (procps STAT and
+ *  2. Selecting by TTY works identically on Linux and BSD: `-t /dev/pts/0` and `-t pts/0` are both
+ *     accepted, and `stat`'s `+` flag marks foreground-group membership on both (procps STAT and
  *     BSD STAT define `+` the same way: "in the foreground process group of its controlling
- *     terminal"). `tpgid` is a procps-only column, so asking for it is what would have forced a
- *     `process.platform === 'darwin'` branch.
+ *     terminal"). `tpgid` is a procps-only column, so the portable path avoids it.
  *
- * Hence ONE invocation for both platforms — `ps -ww -o pid=,pgid=,stat=,args= -t <tty>` — and the
+ * Hence one invocation for supported POSIX hosts, `ps -ww -o pid=,pgid=,stat=,args= -t <tty>`, and the
  * foreground group derived from the `+` flag rather than from a column only Linux has. `-ww` is
  * load-bearing on BSD, where `ps` truncates the command to the terminal width by default; a
  * truncated argv would hide the script path that names the agent.
- *
- * macOS was NOT reachable from the host this was measured on, so the darwin leg is unverified —
- * but it is unverified for a shape whose every piece is POSIX/BSD-documented, rather than for a
- * `tpgid` column BSD is documented not to have. **Mac verification owed.** If `ps` fails on some
- * platform, `parseForegroundArgv` answers `[]`, `PtyManager.paneOwner` answers `null`, and gate 1
- * refuses there — a refusal, never a guess.
  *
  * No credential is involved anywhere in this module — a tty path and a pid are the only inputs — so
  * Global Constraint 6 ("no credential on any argv") is trivially satisfied. Do not add one: if this
@@ -136,9 +129,8 @@ export function foregroundArgvArgs(tty: string): { bin: string; args: string[] }
   // header, may contain embedded separator characters and is always the last item" — it sets
   // `tempstr = NULL` and the header swallows the rest, so the whole string parses as the keyword
   // `pid` with the header `,pgid=,stat=,args=`. `ps` then exits 0 with one column and the read
-  // silently never works. macOS is NOT affected — Apple's adv_cmds wraps that branch in
-  // `#ifndef __APPLE__` and always `strsep`s on " \t,\n" — but FreeBSD/TrueNAS/pfSense is an
-  // ordinary SSH target and this call runs on the REMOTE host.
+  // silently never works. FreeBSD, TrueNAS, and pfSense are ordinary SSH targets, so this call
+  // must use the portable multi-option form.
   //
   // The multi-`-o` form is sanctioned by FreeBSD's own ps(1) ("Multiple keywords may also be given
   // in the form of more than one -o option… If all keywords have empty header texts, no header line

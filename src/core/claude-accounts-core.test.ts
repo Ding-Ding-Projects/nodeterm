@@ -8,15 +8,14 @@ import {
   AUTH_ENV_STRIP,
   accountTmuxEnvArgs,
   parseLoginCapture,
-  isSupportedClaudeVersion,
   transcriptRootFor,
   isSafeLocalTranscriptPath
 } from './claude-accounts-core'
 
 describe('accountConfigDir', () => {
   it('maps an account id under userData/claude-accounts', () => {
-    expect(accountConfigDir('/Users/x/Library/Application Support/nodeterm', 'a1')).toBe(
-      '/Users/x/Library/Application Support/nodeterm/claude-accounts/a1'
+    expect(accountConfigDir('C:/Users/x/AppData/Local/nodeterm', 'a1')).toBe(
+      'C:/Users/x/AppData/Local/nodeterm/claude-accounts/a1'
     )
   })
   it('rejects ids that could traverse out of the root', () => {
@@ -55,14 +54,14 @@ describe('remoteAccountConfigDirAbs', () => {
 
 describe('usageCredsPaths', () => {
   it('without a config dir uses the standard user credential files', () => {
-    expect(usageCredsPaths('/Users/x')).toEqual({
-      credsFile: '/Users/x/.claude/.credentials.json',
-      identityFile: '/Users/x/.claude.json'
+    expect(usageCredsPaths('C:/Users/x')).toEqual({
+      credsFile: 'C:/Users/x/.claude/.credentials.json',
+      identityFile: 'C:/Users/x/.claude.json'
     })
   })
   it('with a config dir reads the isolated account files', () => {
     const configDir = '/ud/claude-accounts/a1'
-    const p = usageCredsPaths('/Users/x', configDir)
+    const p = usageCredsPaths('C:/Users/x', configDir)
     expect(p.credsFile).toBe('/ud/claude-accounts/a1/.credentials.json')
     expect(p.identityFile).toBe('/ud/claude-accounts/a1/.claude.json')
   })
@@ -103,32 +102,21 @@ describe('parseLoginCapture', () => {
 
 describe('transcriptRootFor', () => {
   it('defaults to the system ~/.claude/projects when no account', () => {
-    expect(transcriptRootFor('/Users/x', null)).toBe('/Users/x/.claude/projects')
-    expect(transcriptRootFor('/Users/x', '/ud', undefined)).toBe('/Users/x/.claude/projects')
+    expect(transcriptRootFor('C:/Users/x', null)).toBe('C:/Users/x/.claude/projects')
+    expect(transcriptRootFor('C:/Users/x', '/ud', undefined)).toBe('C:/Users/x/.claude/projects')
   })
   it('uses the account config dir + projects when an account id is given', () => {
-    expect(transcriptRootFor('/Users/x', '/ud', 'a1')).toBe('/ud/claude-accounts/a1/projects')
+    expect(transcriptRootFor('C:/Users/x', '/ud', 'a1')).toBe('/ud/claude-accounts/a1/projects')
   })
   it('rejects account ids that could traverse out of the root', () => {
-    expect(() => transcriptRootFor('/Users/x', '/ud', '../evil')).toThrow()
-  })
-})
-
-describe('isSupportedClaudeVersion', () => {
-  it('accepts 2.1+ and rejects older', () => {
-    expect(isSupportedClaudeVersion('2.1.0 (Claude Code)')).toBe(true)
-    expect(isSupportedClaudeVersion('2.10.3 (Claude Code)')).toBe(true)
-    expect(isSupportedClaudeVersion('3.0.0')).toBe(true)
-    expect(isSupportedClaudeVersion('2.0.14 (Claude Code)')).toBe(false)
-    expect(isSupportedClaudeVersion('1.0.44')).toBe(false)
-    expect(isSupportedClaudeVersion('garbage')).toBe(false) // unparseable → unsupported (warn)
+    expect(() => transcriptRootFor('C:/Users/x', '/ud', '../evil')).toThrow()
   })
 })
 
 describe('isSafeLocalTranscriptPath', () => {
-  const home = '/Users/x'
-  const ud = '/Users/x/Library/Application Support/nodeterm'
-  const legacy = '/Users/x/.claude/projects'
+  const home = 'C:/Users/x'
+  const ud = 'C:/Users/x/AppData/Local/nodeterm'
+  const legacy = 'C:/Users/x/.claude/projects'
   const acctRoot = `${ud}/claude-accounts`
 
   it('accepts the legacy system root and paths under it', () => {
@@ -181,7 +169,7 @@ describe('isSafeLocalTranscriptPath', () => {
   })
   it('rejects a `..` escape out of the accounts root', () => {
     // Callers pass an already-resolved path; a resolved traversal lands elsewhere entirely.
-    expect(isSafeLocalTranscriptPath('/Users/x/.ssh/id_rsa', home, ud)).toBe(false)
+    expect(isSafeLocalTranscriptPath('C:/Users/x/.ssh/id_rsa', home, ud)).toBe(false)
     expect(isSafeLocalTranscriptPath(`${ud}/hook-endpoint.env`, home, ud)).toBe(false)
   })
   it('rejects an invalid account-id segment', () => {

@@ -58,7 +58,7 @@ import { localPasteDelivery, runPasteDelivery } from '../tmux-naming'
 
 // ── Real-tool discovery (same rules as agent-message.realtty.test.ts) ───────────────────────────
 function findPasteAwareBash(): string | null {
-  for (const c of ['/usr/local/bin/bash', '/opt/homebrew/bin/bash', '/bin/bash', '/usr/bin/bash']) {
+  for (const c of ['/usr/local/bin/bash', '/bin/bash', '/usr/bin/bash']) {
     if (!existsSync(c)) continue
     try {
       const v = execFileSync(c, ['-c', 'echo "${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}"'], {
@@ -73,7 +73,7 @@ function findPasteAwareBash(): string | null {
   return null
 }
 function findTmux(): string | null {
-  for (const c of ['/usr/local/bin/tmux', '/opt/homebrew/bin/tmux', '/usr/bin/tmux', '/bin/tmux']) {
+  for (const c of ['/usr/local/bin/tmux', '/usr/bin/tmux', '/bin/tmux']) {
     if (existsSync(c)) return c
   }
   return null

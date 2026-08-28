@@ -17,7 +17,7 @@ export interface CellDecoration {
 
 export interface DecorationReader {
   /** True when the terminal currently has NO decorations at all — the whole per-cell walk is
-   *  skipped on this answer, which is the common case (nobody has ⌘F open). */
+   *  skipped on this answer, which is the common case (nobody has Ctrl+F open). */
   empty(): boolean
   /** xterm's own `forEachDecorationAtCell` signature, narrowed: `row` is the ABSOLUTE buffer row
    *  (decoration markers are keyed absolutely, so a viewport row would highlight the wrong line the

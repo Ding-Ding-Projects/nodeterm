@@ -7,7 +7,7 @@ import {
 } from './key-file-codec'
 import { genKeyPair, publicKeyToB64, type KeyPair } from './e2ee'
 
-// A reversible fake keychain: "encryption" is a byte-flip so we can prove the plaintext secret is
+// A reversible fake credential vault: "encryption" is a byte-flip so we can prove the plaintext secret is
 // NOT stored verbatim, yet decode round-trips. isEncryptionAvailable is toggled per test.
 function fakeSafe(available: boolean): SafeStorageLike {
   const flip = (b: Buffer) => Buffer.from(b.map((x) => x ^ 0xff))
@@ -99,7 +99,7 @@ describe('key-file-codec', () => {
       isEncryptionAvailable: () => true,
       encryptString: () => Buffer.alloc(0),
       decryptString: () => {
-        throw new Error('keychain reset')
+        throw new Error('credential vault reset')
       }
     }
     const enc = encodeKeyFile(genKeyPair(), safe)
@@ -145,8 +145,8 @@ describe('key-file-codec', () => {
     expect(decodeKeyFile('{"publicKey":"x","secretKey":"y"}', safe)).toBeNull()
   })
 
-  it('returns null when the keychain decrypts to junk instead of throwing', () => {
-    // We cannot verify what real Electron safeStorage does on a keychain reset (throw vs. garbage),
+  it('returns null when the credential vault decrypts to junk instead of throwing', () => {
+    // We cannot verify what real Electron safeStorage does on a credential vault reset (throw vs. garbage),
     // so the codec must be robust to BOTH.
     const junk = (out: string): SafeStorageLike => ({
       isEncryptionAvailable: () => true,

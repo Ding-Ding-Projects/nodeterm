@@ -11,7 +11,6 @@ import { useProjects } from '../state/projects'
 import { useSession } from '../session/session'
 import type { CanvasNode } from '../state/workspace'
 import { tooLargeSize, formatBytes } from '@shared/fsLimits'
-import { hintLabel } from '@shared/platform-utils'
 import { chipFor, commandTooltip } from '../lib/keybindingOverrides'
 import { pdfBlobUrl } from '../lib/pdfBlob'
 import { MaximizeButton } from './MaximizeButton'
@@ -31,7 +30,7 @@ const IMAGE_MIME: Record<string, string> = {
 
 /**
  * A code editor node backed by Monaco. Reads the file on mount, auto-detects the language
- * from the path, and saves back with ⌘S (or the Save button). Image and PDF files are shown as a
+ * from the path, and saves back with Ctrl+S or the Save button. Image and PDF files are shown as a
  * preview instead of being opened as (binary) text.
  */
 export function EditorNode({ id, data, selected }: NodeProps<CanvasNode>) {
@@ -199,7 +198,7 @@ export function EditorNode({ id, data, selected }: NodeProps<CanvasNode>) {
       if (disposed) return
       const tooBig = tooLargeSize(content)
       if (tooBig != null) {
-        // Refuse to open rather than showing an empty buffer: ⌘S on a placeholder would
+        // Refuse to open rather than showing an empty buffer: Ctrl+S on a placeholder would
         // overwrite the real (large) file with nothing.
         setLoadError(`File too large to open here (${formatBytes(tooBig)}).`)
         return
@@ -236,7 +235,7 @@ export function EditorNode({ id, data, selected }: NodeProps<CanvasNode>) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Cmd/Ctrl+M toggles a rendered markdown preview when this node is hovered.
+  // Ctrl+M toggles a rendered markdown preview when this node is hovered.
   useEffect(() => window.nodeTerminal.onMarkdownToggle(() => {
     if (hoveredRef.current) toggleRef.current()
   }), [])
@@ -282,7 +281,7 @@ export function EditorNode({ id, data, selected }: NodeProps<CanvasNode>) {
             <button
               className="editor-node__save"
               disabled={!dirty}
-              title={hintLabel('Save (⌘S)')}
+              title="Save (Ctrl+S)"
               onClick={save}
             >
               Save

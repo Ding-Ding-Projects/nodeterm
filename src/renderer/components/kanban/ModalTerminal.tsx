@@ -193,7 +193,7 @@ export function ModalTerminal({ nodeId, spawn, searchOpen, onCloseSearch }: Moda
     let dead = false
     const cleanups: Array<() => void> = []
 
-    // MIRROR TerminalNode's link wiring, minus file links. The provider handles Cmd/Ctrl+click on
+    // MIRROR TerminalNode's link wiring, minus file links. The provider handles Ctrl+click on
     // URL text when mouse-reporting is off (plain-shell sessions); the capture-phase fallback is
     // what works under tmux/agent mouse-reporting — the norm, and the only path on which the OSC 8
     // linkHandler above can ever fire in a tmux-backed session (xterm's own link activation is
@@ -228,11 +228,11 @@ export function ModalTerminal({ nodeId, spawn, searchOpen, onCloseSearch }: Moda
       return true
     })
 
-    // MIRROR TerminalNode "const action = terminalKeyAction" — Cmd+C / Ctrl+Shift+C / Ctrl+Insert copy
+    // MIRROR TerminalNode "const action = terminalKeyAction": Ctrl+C / Ctrl+Shift+C / Ctrl+Insert copy
     // the xterm selection (a canvas can't be DOM-copied), and Shift+Enter → ESC+CR (`SHIFT_ENTER_SEQ`)
     // so agent CLIs insert a newline instead of submitting. A copy chord is always swallowed (else
     // Ctrl+Shift+C would fall through to the pty as \x03/SIGINT); plain Ctrl+C is left alone.
-    // MIRROR TerminalNode: Cmd/Ctrl+1-9 (jump to the Nth project) is swallowed here, before xterm
+    // MIRROR TerminalNode: Ctrl+1-9 (jump to the Nth project) is swallowed here, before xterm
     // turns Ctrl+2..Ctrl+8 into control bytes — but only when the app owns the key (desktop shell,
     // digit addressing an open project, AND app-first: under terminal-first the digit belongs to
     // the PTY), which `liveProjectJumpTarget` + the policy decide for both surfaces.
@@ -456,7 +456,7 @@ export function ModalTerminal({ nodeId, spawn, searchOpen, onCloseSearch }: Moda
       paths = await droppedPaths(files, { sshRemoteTmux: false, projectId: '' })
     }
     if (!paths.length) return
-    // A drag-drop from another OS app doesn't bring our window forward (esp. macOS), so the
+    // A drag-drop from another application does not bring our window forward, so the
     // drag-source keeps keyboard focus — the user's next keystrokes would land in the wrong app.
     // Raise our window FIRST, then focus the terminal, so typing after the drop reaches it.
     // A paste came from this window, which already has focus.
@@ -474,7 +474,7 @@ export function ModalTerminal({ nodeId, spawn, searchOpen, onCloseSearch }: Moda
     await insertFiles(files, { raiseWindow: true })
   }
 
-  // Cmd/Ctrl+V of a file or of raw image bytes; a text paste falls through to xterm untouched.
+  // Ctrl+V of a file or of raw image bytes; a text paste falls through to xterm untouched.
   // Capture phase, because xterm's own paste listener sits on the textarea below this wrapper.
   const onPaste = (e: React.ClipboardEvent) => {
     const files = pastedFiles(e.clipboardData)

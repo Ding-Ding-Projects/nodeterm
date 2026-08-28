@@ -52,27 +52,16 @@ export function rowPassesStatus(
   }
 }
 
-/** Mac display glyphs and the words a user would type instead. `commandKeysFor` already emits
- *  `Ctrl`/`Shift`/`Alt` spelled out on non-mac, so only the mac side needs translating. */
-const GLYPH_TO_WORD: Readonly<Record<string, string>> = {
-  '⌘': 'cmd',
-  '⇧': 'shift',
-  '⌥': 'alt',
-  '⌃': 'ctrl'
-}
-
-/** Every spelling of one binding a query may be written in: the glyph run as it appears on a mac
- *  chip (`⌘K`), the plus join (`⌘+K` / `Ctrl+K`), and the plus join with the glyphs spelled out
- *  (`cmd+k`). Kept as separate haystack ENTRIES rather than one concatenated string so a query can
- *  never match across the seam between two bindings. */
+/** Every Windows spelling of one binding a query may use: the compact run (`CtrlShiftK`) and the
+ *  displayed plus join (`Ctrl+Shift+K`). Separate haystack entries prevent a query from matching
+ *  across the seam between two bindings. */
 function chordSpellings(parts: readonly string[]): string[] {
-  return [parts.join(''), parts.join('+'), parts.map((p) => GLYPH_TO_WORD[p] ?? p).join('+')]
+  return [parts.join(''), parts.join('+')]
 }
 
 /**
  * Local search: case-insensitive substring match over the command's title, id, group, the
- * caller's keywords, and every effective binding's display string in all three spellings above —
- * so a user finds a row either by the chord they SEE (`⌘K`) or the one they would TYPE (`cmd+k`).
+ * caller's keywords, and every effective binding's Windows display string in both spellings above.
  * An empty or whitespace-only query matches everything, matching `matchesQuery`'s contract in
  * `./search`.
  *

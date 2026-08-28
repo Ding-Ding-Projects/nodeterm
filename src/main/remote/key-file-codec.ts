@@ -1,6 +1,6 @@
 // Pure encode/decode for a persisted NaCl box keypair file, with encrypt-at-rest and a legacy
 // plaintext fallback + in-place migration. The Electron `safeStorage` is injected as `SafeStorageLike`
-// so this stays free of `electron` and unit-tests without a keychain. The on-disk byte format mirrors
+// so this stays free of `electron` and unit-tests without a credential vault. The on-disk byte format mirrors
 // host-service.ts's persistKeyPair/loadOrCreateKeyPair exactly (public key always plaintext base64 —
 // it is a pinned identity, not a secret — the secret key either safeStorage-encrypted or 0600 plaintext).
 //
@@ -37,7 +37,7 @@ export function encodeKeyFile(keys: KeyPair, safe: SafeStorageLike): string {
  * - `{ keys, migrate }` — usable. `migrate:true` means the file is legacy plaintext but encryption
  *   is now available: re-persist to upgrade in place, KEEPING the identity.
  * - `null` — unusable: malformed JSON, a wrong-length key, or an encrypted blob the (available)
- *   keychain cannot decrypt (keychain reset ⇒ the secret is gone for good). Regenerating is the
+ *   credential vault cannot decrypt (credential vault reset ⇒ the secret is gone for good). Regenerating is the
  *   only way forward and is CORRECT here.
  * - `'locked'` — the file is well-formed and holds an ENCRYPTED secret, but `isEncryptionAvailable()`
  *   is false RIGHT NOW (keyring not yet unlocked, no session bus, safeStorage backend down). The
@@ -70,7 +70,7 @@ export function decodeKeyFile(raw: string, safe: SafeStorageLike): KeyFileDecode
       // An encrypted secret is AUTHORITATIVE: never silently fall back to a (possibly stale)
       // plaintext one, and never mistake "no keyring right now" for corruption.
       if (!safe.isEncryptionAvailable()) return 'locked'
-      // decryptString may throw (keychain reset) OR return junk — either way the secret is
+      // decryptString may throw (credential vault reset) OR return junk; either way the secret is
       // genuinely gone, so that is `null` (regenerate), not `'locked'`.
       const secretB64 = safe.decryptString(Buffer.from(file.secretKeyEnc, 'base64'))
       return { keys: { publicKey, secretKey: secretKeyFromB64(secretB64) }, migrate: false }
