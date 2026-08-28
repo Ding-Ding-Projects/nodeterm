@@ -272,8 +272,13 @@ describe('revokeDevice', () => {
     expect(keys).toBe(`${KEY_OTHER}\n${KEY_B}\n`)
     expect(deviceIds()).toEqual(['dev-b'])
     expect(agentJson().hostId).toBe('host-keep-me')
-    expect(statSync(AUTH_KEYS).mode & 0o777).toBe(0o600)
-    expect(statSync(AGENT_JSON).mode & 0o777).toBe(0o600)
+    if (process.platform !== 'win32') {
+      expect(statSync(AUTH_KEYS).mode & 0o777).toBe(0o600)
+      expect(statSync(AGENT_JSON).mode & 0o777).toBe(0o600)
+    } else {
+      expect(statSync(AUTH_KEYS).isFile()).toBe(true)
+      expect(statSync(AGENT_JSON).isFile()).toBe(true)
+    }
   })
 })
 

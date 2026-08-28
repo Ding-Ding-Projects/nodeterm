@@ -10,16 +10,12 @@
 import { randomUUID } from 'crypto'
 import { promises as fs } from 'fs'
 import path from 'path'
-import { execFile } from 'child_process'
-import { promisify } from 'util'
 import { IPC } from '../shared/ipc'
-import { isSupportedClaudeVersion, parseLoginCapture } from './claude-accounts-core'
+import { parseLoginCapture } from './claude-accounts-core'
 import { claudeConfigDirFor } from './claude-config-dir'
 import { installClaudeHooksInto, ensureClaudeFullscreenTuiInto } from './agents/hooks/claude'
-import { findInLoginPath } from './pty-manager'
 import { platform } from './platform'
 
-const execFileP = promisify(execFile)
 const LOGIN_POLL_MS = 2000
 const LOGIN_TIMEOUT_MS = 5 * 60 * 1000
 
@@ -66,17 +62,7 @@ export interface ClaudeAccountsDeps {
 const waiters = new Map<string, { cancelled: boolean }>()
 
 async function checkClaudeVersion(): Promise<boolean> {
-  // The < 2.1 warning is about the shared macOS Keychain service; on Linux/Windows
-  // credentials are files inside each config dir, so no version collides.
-  if (process.platform !== 'darwin') return true
-  try {
-    const claude = await findInLoginPath('claude')
-    if (!claude) return false
-    const { stdout } = await execFileP(claude, ['--version'], { timeout: 5000 })
-    return isSupportedClaudeVersion(stdout.trim())
-  } catch {
-    return false
-  }
+  return true
 }
 
 /** Register the four `claude-accounts:*` channels on the core platform seam. */

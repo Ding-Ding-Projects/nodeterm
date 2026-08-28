@@ -14,8 +14,6 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { connect as netConnect } from 'net'
 import { randomBytes, randomUUID } from 'crypto'
 import { promises as fs } from 'fs'
-import { execFile } from 'child_process'
-import { promisify } from 'util'
 import os from 'os'
 import path from 'path'
 import {
@@ -40,7 +38,6 @@ import { publicKeyToB64, deriveSharedKey, encrypt, decrypt, type KeyPair } from 
 import { hostIdFromPublicKeyB64 } from './remote/relay-id'
 import { getDeviceId } from '../core/device-id'
 
-const execFileAsync = promisify(execFile)
 
 /**
  * Optional relay dependencies injected into the pairing service. When present AND phone access is
@@ -284,17 +281,8 @@ async function sweepStaleAgentTmp(): Promise<void> {
   }
 }
 
-/** Detect the machine's display name (macOS ComputerName, else hostname). */
+/** Detect the local machine display name from the Windows hostname API. */
 async function computerName(): Promise<string> {
-  if (process.platform === 'darwin') {
-    try {
-      const { stdout } = await execFileAsync('scutil', ['--get', 'ComputerName'])
-      const name = stdout.trim()
-      if (name) return name
-    } catch {
-      // fall through to hostname
-    }
-  }
   return os.hostname()
 }
 
