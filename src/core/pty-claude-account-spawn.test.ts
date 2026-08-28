@@ -35,6 +35,9 @@ vi.mock('node-pty', () => ({
     }
   }
 }))
+vi.mock('./session-host-backend', async () =>
+  (await import('./__fixtures__/no-session-host')).noSessionHost()
+)
 vi.mock('./pty-devices', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./pty-devices')>()),
   readPtyDevices: () => ({ ceiling: 511, inUse: 8 })
