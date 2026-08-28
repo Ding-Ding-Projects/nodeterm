@@ -8,10 +8,9 @@
  * (`⌘⇧Z`) at their definition sites; the rewrite happens at render time.
  */
 
-/** True on macOS (Electron renderer or browser). Safe outside a DOM (falls back to mac notation). */
+/** Legacy compatibility predicate. The local desktop target is Windows, so it is always false. */
 export function isMacPlatform(): boolean {
-  if (typeof navigator === 'undefined') return true
-  return /Mac/i.test(navigator.platform || navigator.userAgent)
+  return false
 }
 
 /** True on Windows (Electron renderer or browser — same `navigator`-based detection as
@@ -21,7 +20,7 @@ export function isWindowsPlatform(): boolean {
   return /Win/i.test(navigator.platform || navigator.userAgent)
 }
 
-/** Rewrite mac chord notation in a hint string for the current platform. */
+/** Rewrite legacy primary-modifier notation into Windows labels. */
 export function hintLabel(text: string, isMac: boolean = isMacPlatform()): string {
   if (isMac) return text
   return text
