@@ -45,8 +45,7 @@ describe('buildIndicator', () => {
 })
 
 describe('orderIndicatorAgents', () => {
-  it('puts Claude rightmost (last) and Codex to its left, matching agent-notch', () => {
-    // Rightmost = last child (notch-side). agent-notch draws claude nearest the notch, codex left.
+  it('puts Claude last and Codex before it in the deterministic HUD order', () => {
     expect(orderIndicatorAgents(['claude', 'codex'])).toEqual(['codex', 'claude'])
     expect(orderIndicatorAgents(['codex', 'claude'])).toEqual(['codex', 'claude'])
   })

@@ -2,18 +2,18 @@ import { describe, it, expect } from 'vitest'
 import { SETTINGS_GROUPS, allSectionIds, FIRST_SECTION_ID, visibleSettingsGroups, projectsSettingsGroup } from './nav'
 
 describe('SETTINGS_GROUPS', () => {
-  it('lists exactly 24 Windows sections with no duplicates', () => {
+  it('lists exactly 25 Windows sections with no duplicates', () => {
     const ids = allSectionIds()
-    expect(ids).toHaveLength(24)
-    expect(new Set(ids).size).toBe(24)
+    expect(ids).toHaveLength(25)
+    expect(new Set(ids).size).toBe(25)
   })
   it('starts at a section that exists in the groups', () => {
     expect(allSectionIds()).toContain(FIRST_SECTION_ID)
   })
   it('exposes the complete Windows settings set on every renderer host', () => {
     const off = visibleSettingsGroups(false).flatMap((g) => g.sections.map((s) => s.id))
-    expect(off).not.toContain('notch')
-    expect(off).toHaveLength(24)
+    expect(off).toContain('agent-hud')
+    expect(off).toHaveLength(25)
     expect(visibleSettingsGroups(true)).toEqual(SETTINGS_GROUPS)
     expect(visibleSettingsGroups(false)).toEqual(SETTINGS_GROUPS)
   })

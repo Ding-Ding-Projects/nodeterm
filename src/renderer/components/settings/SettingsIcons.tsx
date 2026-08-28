@@ -28,6 +28,12 @@ const PATHS: Record<StaticSettingsSectionId, React.JSX.Element> = {
       <path d="M8 2.5a5.5 5.5 0 0 0 0 11z" fill="currentColor" stroke="none" />
     </>
   ),
+  'agent-hud': (
+    <>
+      <rect x="2.5" y="3.5" width="11" height="9" rx="3" />
+      <path d="M5 7h6M5 9.5h3.5" />
+    </>
+  ),
   phone: (
     <>
       <rect x="4.5" y="2" width="7" height="12" rx="1.6" />

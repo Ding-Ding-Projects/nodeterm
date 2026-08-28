@@ -1,4 +1,4 @@
-// Pure aggregation + ordering for the collapsed Notch HUD indicator (docs/notch-hud.md).
+// Pure aggregation and ordering for the collapsed Agent HUD indicator.
 //
 // `buildIndicator` is the ONE definition of what the collapsed capsule shows, derived from the same
 // row array the expanded panel draws. It lives here rather than beside the main-process HUD model
@@ -6,11 +6,8 @@
 // (process-model boundary) — a copy over there could only ever be dead code that drifts, which is
 // exactly what happened: it never grew the `needsYou` dot this renderer has been drawing.
 //
-// The ordering below: the indicator hugs the LEFT edge of the notch and reads right→left. agent-notch draws Claude
-// rightmost (nearest the notch) and Codex to its left (main.swift IndicatorView.draw: claude is
-// drawn first at bounds.maxX, then codex to the left). Our indicator is a normal left→right flex
-// row, so the LAST element is the rightmost/notch-side one. This helper returns the working agent
-// ids in left→right paint order (Claude last) so the DOM matches agent-notch's slot order.
+// The indicator is a normal left-to-right flex row. This helper returns a deterministic agent
+// order with Claude last so the collapsed surface does not shuffle between updates.
 //
 // Kept pure + Electron-free so both are unit-tested without a DOM.
 
@@ -51,7 +48,7 @@ export function buildIndicator(rows: readonly IndicatorRow[]): HudIndicator {
   return { workingAgents, doneUnseen, needsYou }
 }
 
-/** Higher rank = drawn further RIGHT (closer to the notch). Claude is the notch-side anchor. */
+/** Higher rank means drawn further right. */
 const SLOT_RANK: Record<string, number> = {
   claude: 3,
   codex: 2,
@@ -59,8 +56,7 @@ const SLOT_RANK: Record<string, number> = {
 }
 
 /**
- * Order the distinct working agent ids left→right so the notch-side slot (rightmost, last child)
- * is Claude, then Codex to its left, with any other/custom agents further left. Ties (unknown
+ * Order distinct working agent ids left to right with Claude last and Codex before it. Ties (unknown
  * agents, rank 0) keep their incoming order (a stable sort), so the collapsed strip stays stable
  * frame-to-frame instead of reshuffling as rows re-sort by activity.
  */

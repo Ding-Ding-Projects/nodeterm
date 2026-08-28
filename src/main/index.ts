@@ -130,13 +130,13 @@ import {
   type TerminalShortcutPolicy
 } from '../shared/keybindings'
 import {
-  initNotchHud,
-  applyNotchHudSettings,
-  type NotchHudTunables,
-  destroyNotchHud,
-  notchHudOnAgentEvent,
-  notchHudOnContextUpdate
-} from './notch-hud'
+  initAgentHud,
+  applyAgentHudSettings,
+  type AgentHudTunables,
+  destroyAgentHud,
+  agentHudOnAgentEvent,
+  agentHudOnContextUpdate
+} from './agent-hud'
 import {
   initAgentStatusMirror,
   onMirrorFlush,
@@ -1648,26 +1648,26 @@ app.whenReady().then(async () => {
   // Windows Agent HUD: a work-area overlay fed by the same agent-status seams as the main canvas.
   //
   // Create the HUD only after the main window is visible so startup ordering remains deterministic.
-  const notchTunables = (): NotchHudTunables => {
+  const agentHudTunables = (): AgentHudTunables => {
     const s = settingsStore.get()
     return {
-      enabled: s.notchHud,
-      hudWidth: s.notchWidth,
-      hoverExpand: s.notchHoverExpand,
+      enabled: s.agentHud,
+      hudWidth: s.agentHudWidth,
+      hoverExpand: s.agentHudHoverExpand,
       percentMode: s.usagePercentMode
     }
   }
-  const startNotchHud = (): void =>
-    initNotchHud({ getNodeTitle: displayTitleFor }, notchTunables())
-  if (win.isVisible()) startNotchHud()
-  else win.once('show', startNotchHud)
+  const startAgentHud = (): void =>
+    initAgentHud({ getNodeTitle: displayTitleFor }, agentHudTunables())
+  if (win.isVisible()) startAgentHud()
+  else win.once('show', startAgentHud)
   buildAppMenu(win)
   // Rebuild the native menu on every settings change so the View → Snap to Grid checkmark (and
   // any future live label) tracks the renderer's setting. The renderer is the sole settings
   // writer; a change persists through `settingsStore`, which fires this hook. No reverse IPC.
   // Keep-awake re-reads its enable flag on the same edge.
   settingsStore.onChange(() => {
-    applyNotchHudSettings(notchTunables())
+    applyAgentHudSettings(agentHudTunables())
     buildAppMenu(win)
     keepAwake?.refresh()
   })
@@ -1959,7 +1959,7 @@ app.whenReady().then(async () => {
   const pushContextUpdate = (payload: unknown): void => {
     if (!win.isDestroyed()) win.webContents.send(IPC.contextUpdate, payload)
     // Feed the macOS Notch HUD the model name (keyed by sessionId; no-op off/non-darwin).
-    notchHudOnContextUpdate(payload as { sessionId?: string; model?: string; usedPercent?: number })
+    agentHudOnContextUpdate(payload as { sessionId?: string; model?: string; usedPercent?: number })
     // Feed the mirror's per-node context ring (mobile-usage-inbox). The context tail keys by
     // sessionId; map it back to the node via the raw-listener's nodeId↔sessionId association.
     const cw = payload as { sessionId?: string; usedPercent?: number }
@@ -2220,7 +2220,7 @@ app.whenReady().then(async () => {
     const enriched = recordAgentEvent(e) ?? e
     sendToMain(IPC.agentStatus, enriched)
     // Feed the macOS Notch HUD its prompt (ev.task on newTurn) + subagent grouping (no-op off/non-darwin).
-    notchHudOnAgentEvent(enriched)
+    agentHudOnAgentEvent(enriched)
     // Agent messaging taps the SAME stream: the sender's newTurn resets its fan-out budget, and
     // an open delivery receipt watch is satisfied by the target's verified advance.
     onMessagingAgentEvent(enriched)
@@ -3473,7 +3473,7 @@ app.on('before-quit', (e) => {
     return
   }
   quitting = true // from here on, window close-events must NOT be turned into hide
-  destroyNotchHud()
+  destroyAgentHud()
   // Electron releases power assertions at exit anyway; disposing keeps the hold/release log
   // honest. Clearing the ref too keeps a hook edge that lands during the quit flush (the pty
   // teardown window below) from re-holding an assertion nothing will ever release.

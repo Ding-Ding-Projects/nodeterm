@@ -6,6 +6,7 @@ export type SettingsSectionId =
   | 'shell'
   | 'behavior'
   | 'appearance'
+  | 'agent-hud'
   | 'phone'
   | 'speech'
   | 'shortcuts'
@@ -82,6 +83,7 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     title: 'Interface',
     sections: [
       { id: 'appearance', title: 'Appearance' },
+      { id: 'agent-hud', title: 'Agent HUD' },
       { id: 'notifications', title: 'Notifications' },
       { id: 'speech', title: 'Speech' },
       { id: 'shortcuts', title: 'Keyboard Shortcuts' }
@@ -117,11 +119,9 @@ export function allSectionIds(): SettingsSectionId[] {
 }
 
 /**
- * The groups as the sidebar should render them for this platform: a mac-only section is dropped
- * entirely off macOS (an empty group would be dropped too, though none exists today). Pure — the
- * caller passes the platform so this stays testable.
+ * The groups as the sidebar should render them for the supported desktop and browser surfaces.
  */
-export function visibleSettingsGroups(_isMac: boolean): SettingsGroup[] {
+export function visibleSettingsGroups(_usesMetaPrimary: boolean): SettingsGroup[] {
   return SETTINGS_GROUPS
 }
 

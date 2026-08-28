@@ -180,7 +180,7 @@ body {
   }
 }
 
-/* Green "done, unseen" blob — a 7×7 crisp green pixel circle (agent-notch look), built as a sprite
+/* Green "done, unseen" mark: a 7x7 crisp green pixel circle built as a sprite
    in lib/mascot.ts and shown as a pixelated background; CSS drives the shimmer. */
 .done-blob {
   /* Scaled with the mascots (they shrank ~0.72×) so the slot reads evenly. */
@@ -363,7 +363,7 @@ body {
   color: #f2f2f7;
 }
 
-/* Dithered pixel separator between rows (agent-notch's DitherSeparator: a sparse row of gray
+/* Dithered pixel separator between rows: a sparse row of gray
    pixels). Two offset dashed gradients read as scattered 2px cells rather than a solid rule. */
 .hud-sep {
   height: 3px;

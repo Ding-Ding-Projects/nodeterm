@@ -10,7 +10,7 @@ import {
   HUD_STALE_DROP_MS,
   type HudRow,
   WORKING_STALE_MS
-} from './notch-hud-model'
+} from './agent-hud-model'
 
 const T0 = 1_000_000
 

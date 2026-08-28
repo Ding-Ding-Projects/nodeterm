@@ -1,4 +1,4 @@
-// Tiny, HUD-only preload (docs/notch-hud.md). The Agent HUD is a separate BrowserWindow with a
+// Tiny, HUD-only preload. The Agent HUD is a separate BrowserWindow with a
 // minimal surface — it does not need the full `window.nodeTerminal` API, so it gets its own bridge
 // exposing exactly the HUD channels. contextIsolation stays on; no node integration.
 
@@ -33,7 +33,7 @@ export interface HudPush {
   hudWidth: number
   /** HUD horizontal center in px (= width / 2). */
   centerX: number
-  /** Expand the panel on hover (settings.notchHoverExpand); false means click-only. */
+  /** Expand the panel on hover; false means click-only. */
   hoverExpand: boolean
   /** settings.usagePercentMode — how a row's context percentage renders ("42% used" / "58% left"). */
   percentMode: 'used' | 'remaining' | 'tokens'

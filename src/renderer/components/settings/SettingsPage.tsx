@@ -12,6 +12,7 @@ import { TerminalSection } from './sections/TerminalSection'
 import { ShellSection } from './sections/ShellSection'
 import { BehaviorSection } from './sections/BehaviorSection'
 import { AppearanceSection } from './sections/AppearanceSection'
+import { AgentHudSection } from './sections/AgentHudSection'
 import { PhoneSection } from './sections/PhoneSection'
 import { SpeechSection } from './sections/SpeechSection'
 import { ShortcutsSection } from './sections/ShortcutsSection'
@@ -100,6 +101,7 @@ export function SettingsPage({
             <ShellSection isActive={active === 'shell'} />
             <BehaviorSection isActive={active === 'behavior'} />
             <AppearanceSection isActive={active === 'appearance'} />
+            <AgentHudSection isActive={active === 'agent-hud'} />
             <PhoneSection isActive={active === 'phone'} />
             <SpeechSection isActive={active === 'speech'} onNavigate={setActive} />
             <ShortcutsSection isActive={active === 'shortcuts'} />

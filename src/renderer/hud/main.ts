@@ -72,7 +72,7 @@ root.append(capsule)
 
 let expanded = false
 let latestRows: HudRow[] = []
-// Hover-to-expand (settings.notchHoverExpand). Off = the capsule only expands on click.
+// Hover-to-expand. Off means the capsule only expands on click.
 let hoverExpand = true
 // settings.usagePercentMode — the same number/label the other context surfaces render (issue #78).
 let percentMode: 'used' | 'remaining' | 'tokens' = 'remaining'
@@ -204,7 +204,7 @@ function workingMascot(agentId?: string): Element {
 function doneBlob(): HTMLElement {
   const blob = document.createElement('span')
   blob.className = 'done-blob'
-  // 7×7 crisp green pixel circle (agent-notch look); CSS drives the shimmer. Falls back to the
+  // 7x7 crisp green pixel circle; CSS drives the shimmer. Falls back to the
   // CSS-only round blob when the sprite couldn't be built (no DOM canvas).
   if (DONE_BLOB.src) blob.style.backgroundImage = `url(${DONE_BLOB.src})`
   else blob.classList.add('done-blob--fallback')
@@ -251,7 +251,7 @@ function renderPanel(rows: HudRow[]): void {
   // least urgent end — but it still cuts, and what it cut is counted below rather than dropped.
   const { shown, hidden } = splitPanelRows(rows, showAllRows ? rows.length : HUD_ROW_CAP)
   shown.forEach((row, i) => {
-    // Dithered pixel separator between rows (agent-notch's DitherSeparator).
+    // Dithered pixel separator between rows.
     if (i > 0) {
       const sep = document.createElement('div')
       sep.className = 'hud-sep'

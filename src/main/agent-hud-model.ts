@@ -1,6 +1,6 @@
-// Pure, Electron-free aggregation for the Windows Agent HUD (docs/notch-hud.md).
+// Pure, Electron-free aggregation for the Windows Agent HUD.
 //
-// The HUD controller (notch-hud.ts) owns the BrowserWindow and the mirror/IPC subscriptions; this
+// The HUD controller (agent-hud.ts) owns the BrowserWindow and the mirror/IPC subscriptions; this
 // module owns the DATA: it folds the four feeds (main-state edges, now-changes, the full mirror
 // table, and the normalized agent-event stream for prompt + subagents, plus context-update for the
 // model) into the row array the HUD renderer draws. Kept separate from the window so vitest can
@@ -64,8 +64,8 @@ export interface HudRow {
  *
  * `needsYou` → unread `done` → `working` → `idle`: what must be acted on, then what is new for
  * you, then what is merely live, then what has settled. This is the sessions sidebar's own section
- * order (`STATUS_GROUP_ORDER` in renderer/lib/sessionList.ts) — the model the owner asked the notch
- * to follow — so the two surfaces rank a session the same way and can share its vocabulary.
+ * order (`STATUS_GROUP_ORDER` in renderer/lib/sessionList.ts), so the two surfaces rank a session
+ * the same way and can share its vocabulary.
  *
  * The rows used to be sorted `updatedAt` descending, and `updatedAt` is bumped by EVERY feed event
  * including `applyNowChange` — the activity/context ticks a working session emits per tool call. So

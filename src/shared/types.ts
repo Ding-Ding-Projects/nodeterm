@@ -1397,16 +1397,12 @@ export interface Settings {
    *  The auto-update "Restart to update" flow never asks — that decision was already made.
    *  Settings → Behavior. */
   confirmBeforeQuit: boolean
-  /** macOS Notch HUD (docs/notch-hud.md): a transparent always-on-top strip by the notch showing
-   *  walking agent mascots while agents work, expanding into a mini session panel. Default on;
-   *  macOS + desktop only (ignored on other platforms / Server Edition). */
-  notchHud: boolean
-  /** Assumed physical notch width in px. macOS exposes no API for it (Electron has no
-   *  `auxiliaryTopLeftArea`), so the capsule has to assume one — this is the knob that makes it sit
-   *  flush on YOUR Mac. Bigger = the capsule sits further left. */
-  notchWidth: number
-  /** Expand the notch panel on hover (after a short dwell). Off = click the capsule to expand. */
-  notchHoverExpand: boolean
+  /** Windows Agent HUD: a transparent always-on-top activity surface with a compact session panel. */
+  agentHud: boolean
+  /** Width of the collapsed Agent HUD in px. */
+  agentHudWidth: number
+  /** Expand the Agent HUD on hover after a short dwell. Off means click to expand. */
+  agentHudHoverExpand: boolean
   /** Dictation (desktop/server). Written as a whole object by the renderer. */
   speech: SpeechSettings
   /** Keyboard-shortcut overrides by command id (see shared/keybindings.ts). Absent id = the
@@ -1539,10 +1535,10 @@ export const DEFAULT_SETTINGS: Settings = {
   // Confirm-before-quit default ON: sessions survive a quit anyway, but an accidental ⌘Q
   // tears down every window at once; the toggle is one switch away for who finds it noisy.
   confirmBeforeQuit: true,
-  // macOS Notch HUD default ON (guarded to darwin at runtime; a no-op elsewhere).
-  notchHud: true,
-  notchWidth: 168,
-  notchHoverExpand: true,
+  // Windows Agent HUD default on.
+  agentHud: true,
+  agentHudWidth: 168,
+  agentHudHoverExpand: true,
   // model: '' = the explicit "no dictation" state (SPEECH_MODEL_NONE, issue #143). Dictation is
   // opt-in: nothing is selected — and so nothing downloads and no shortcut records — until the
   // user picks a model in onboarding or Settings → Speech. Existing installs keep whatever their

@@ -1,3 +1,4 @@
+/** Windows Agent HUD settings surface. */
 import { useSettings } from '../../../state/settings'
 import { SettingsSection } from '../SettingsSection'
 import { SearchableRow } from '../SearchableRow'
@@ -31,14 +32,14 @@ const ENTRIES = Object.values(ROWS)
  * width control, and hover-vs-click expansion. All three apply
  * live: dragging the width slider resizes the surface as you drag.
  */
-export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Element {
-  const notchHud = useSettings((s) => s.settings.notchHud)
-  const notchWidth = useSettings((s) => s.settings.notchWidth)
-  const hoverExpand = useSettings((s) => s.settings.notchHoverExpand)
+export function AgentHudSection({ isActive }: { isActive: boolean }): React.JSX.Element {
+  const agentHud = useSettings((s) => s.settings.agentHud)
+  const agentHudWidth = useSettings((s) => s.settings.agentHudWidth)
+  const hoverExpand = useSettings((s) => s.settings.agentHudHoverExpand)
   const update = useSettings((s) => s.update)
   return (
     <SettingsSection
-      id="notch"
+      id="agent-hud"
       title="Agent HUD"
       description="A Windows work-area activity surface with agent indicators and a compact session panel."
       isActive={isActive}
@@ -50,9 +51,9 @@ export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Ele
           description="Shows a floating top-edge capsule while agents work: a walking mascot per busy agent, a red dot when one needs you, and a green mark when one has finished and you have not looked yet."
           control={
             <Switch
-              checked={notchHud}
+              checked={agentHud}
               ariaLabel="Agent HUD"
-              onChange={(on) => update({ notchHud: on })}
+              onChange={(on) => update({ agentHud: on })}
             />
           }
         />
@@ -61,9 +62,9 @@ export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Ele
       <div
         className={
           'mt-3 space-y-3 border-l border-border pl-4' +
-          (notchHud ? '' : ' pointer-events-none opacity-40')
+          (agentHud ? '' : ' pointer-events-none opacity-40')
         }
-        aria-disabled={!notchHud}
+        aria-disabled={!agentHud}
       >
         <SearchableRow {...ROWS.width}>
           <FieldRow
@@ -76,13 +77,13 @@ export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Ele
                   min={WIDTH_MIN}
                   max={WIDTH_MAX}
                   step={2}
-                  value={notchWidth}
+                  value={agentHudWidth}
                   aria-label="Agent HUD width in pixels"
-                  onChange={(e) => update({ notchWidth: Number(e.target.value) })}
+                  onChange={(e) => update({ agentHudWidth: Number(e.target.value) })}
                   className="w-40 accent-[var(--accent)]"
                 />
                 <span className="w-12 text-right text-[12px] text-muted tabular-nums">
-                  {notchWidth} px
+                  {agentHudWidth} px
                 </span>
               </div>
             }
@@ -97,7 +98,7 @@ export function NotchSection({ isActive }: { isActive: boolean }): React.JSX.Ele
               <Switch
                 checked={hoverExpand}
                 ariaLabel="Expand the Agent HUD on hover"
-                onChange={(on) => update({ notchHoverExpand: on })}
+                onChange={(on) => update({ agentHudHoverExpand: on })}
               />
             }
           />

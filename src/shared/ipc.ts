@@ -134,7 +134,7 @@ export const IPC = {
    *  `external` opt). See core/ack-sweep.ts. */
   agentUnreadClear: 'agent:unread-clear',
   agentSubagentActivity: 'agent:subagent-activity',
-  /** Windows Agent HUD (docs/notch-hud.md). main → hud: push the current row array. */
+  /** Windows Agent HUD. Main to HUD: push the current row array. */
   hudRows: 'hud:rows',
   /** hud → main: toggle window click-through on hotspot enter/leave. Arg: `ignore: boolean`. */
   hudSetIgnoreMouse: 'hud:set-ignore-mouse',
@@ -142,7 +142,7 @@ export const IPC = {
    *  Arg: `nodeId: string`. Reuses the notification-click focus path. */
   hudFocusNode: 'hud:focus-node',
   /** hud → main: the panel expanded/collapsed. Arg: `expanded: boolean`. Marks NOTHING as read —
-   *  the handler is deliberately a no-op (notch-hud.ts `onExpanded`). It used to clear every done
+   *  the handler is deliberately a no-op (agent-hud.ts `onExpanded`). It used to clear every done
    *  latch ("you looked"), which with three finished sessions waiting meant opening the panel and
    *  clicking one silently swallowed the other two. Read is strictly per row: `hudFocusNode` clears
    *  that row, `hudDismiss` hides one by hand. Still wired because the expand state may drive more

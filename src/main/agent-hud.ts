@@ -1,12 +1,12 @@
-// Windows Agent HUD (docs/notch-hud.md): a transparent, always-on-top, click-through activity
+// Windows Agent HUD: a transparent, always-on-top, click-through activity
 // surface along the display work area that shows agent mascots while agents work and expands into
-// a mini session panel. Windows desktop only; default on (settings.notchHud).
+// a mini session panel. Windows desktop only; default on.
 //
 // This module owns the BrowserWindow + the getHudWindow/sendToHud singleton (mirroring
 // main-window.ts) and the mirror/IPC subscriptions. The DATA folding lives in the pure,
 // Electron-free HUD model so it is unit-testable without a window. index.ts feeds two
 // extra streams in (the normalized agent-event stream for prompt+subagents, and context-update for
-// the model) via the module-level notchHudOn* functions, which no-op when the HUD is off.
+// the model) via module-level Agent HUD feed functions, which no-op when the HUD is off.
 
 import { BrowserWindow, ipcMain, screen } from 'electron'
 import { join } from 'path'
@@ -21,7 +21,7 @@ import {
   type MirrorFile
 } from '../core/agent-status-mirror'
 import type { NormalizedAgentEvent } from '../shared/agents/normalize'
-import { createHudModel, type HudModel } from './notch-hud-model'
+import { createHudModel, type HudModel } from './agent-hud-model'
 
 const DEFAULT_HUD_WIDTH = 168
 /** Bounds for the user-tunable collapsed HUD width. */
@@ -50,13 +50,13 @@ export function sendToHud(channel: string, ...args: unknown[]): void {
 
 // ---- Controller ----------------------------------------------------------------------------
 
-export interface NotchHudDeps {
+export interface AgentHudDeps {
   /** Sync in-memory node title (workspaceStore.getNodeTitle). */
   getNodeTitle: (nodeId: string) => string | undefined
 }
 
 /** The user-tunable part of the HUD. Applied live, no restart. */
-export interface NotchHudTunables {
+export interface AgentHudTunables {
   enabled: boolean
   /** Collapsed HUD width in px. */
   hudWidth: number
@@ -71,7 +71,7 @@ function sanitizeHudWidth(px: number): number {
   return Number.isFinite(px) ? Math.max(HUD_WIDTH_MIN, Math.min(HUD_WIDTH_MAX, Math.round(px))) : DEFAULT_HUD_WIDTH
 }
 
-class NotchHudController {
+class AgentHudController {
   private model: HudModel = createHudModel()
   private unsubs: (() => void)[] = []
   private pushTimer: ReturnType<typeof setTimeout> | null = null
@@ -84,7 +84,7 @@ class NotchHudController {
   private readonly onDisplayChange: () => void
 
   constructor(
-    private deps: NotchHudDeps,
+    private deps: AgentHudDeps,
     private tunables: { hudWidth: number; hoverExpand: boolean; percentMode: 'used' | 'remaining' | 'tokens' }
   ) {
     this.onSetIgnoreMouse = (_e, ignore) => {
@@ -314,8 +314,8 @@ class NotchHudController {
 
 // ---- Module-level lifecycle + feed shims ---------------------------------------------------
 
-let controller: NotchHudController | null = null
-let controllerDeps: NotchHudDeps | null = null
+let controller: AgentHudController | null = null
+let controllerDeps: AgentHudDeps | null = null
 
 /** Whether the HUD is supported on the Windows desktop. */
 function supported(): boolean {
@@ -324,13 +324,13 @@ function supported(): boolean {
 
 /**
  * Create the HUD (if Windows + enabled). Idempotent. `deps.getNodeTitle` is retained so a later
- * `setNotchHudEnabled(true)` (settings toggle) can recreate it without re-plumbing.
+ * The settings toggle can recreate it without re-plumbing.
  */
-export function initNotchHud(deps: NotchHudDeps, t: NotchHudTunables): void {
+export function initAgentHud(deps: AgentHudDeps, t: AgentHudTunables): void {
   controllerDeps = deps
   if (!supported() || !t.enabled) return
   if (controller) return
-  controller = new NotchHudController(deps, t)
+  controller = new AgentHudController(deps, t)
   controller.start()
 }
 
@@ -339,7 +339,7 @@ export function initNotchHud(deps: NotchHudDeps, t: NotchHudTunables): void {
  * tunables (HUD width and hover-expand) straight through to a running HUD, with no restart, so the
  * width slider can be dragged while watching the capsule move.
  */
-export function applyNotchHudSettings(t: NotchHudTunables): void {
+export function applyAgentHudSettings(t: AgentHudTunables): void {
   if (!supported()) return
   if (!t.enabled) {
     controller?.stop()
@@ -351,21 +351,21 @@ export function applyNotchHudSettings(t: NotchHudTunables): void {
     return
   }
   if (!controllerDeps) return
-  controller = new NotchHudController(controllerDeps, t)
+  controller = new AgentHudController(controllerDeps, t)
   controller.start()
 }
 
 /** Tear the HUD down (app quit). */
-export function destroyNotchHud(): void {
+export function destroyAgentHud(): void {
   controller?.stop()
   controller = null
 }
 
 /** Feed shims — cheap no-ops when the HUD is off. Called unconditionally from index.ts. */
-export function notchHudOnAgentEvent(ev: NormalizedAgentEvent): void {
+export function agentHudOnAgentEvent(ev: NormalizedAgentEvent): void {
   controller?.onAgentEvent(ev)
 }
-export function notchHudOnContextUpdate(p: {
+export function agentHudOnContextUpdate(p: {
   sessionId?: string
   model?: string
   usedPercent?: number
