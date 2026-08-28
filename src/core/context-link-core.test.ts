@@ -216,8 +216,7 @@ describe('buildLinkedContextInstructions', () => {
       expect(body).toContain(CODEX_SANDBOX_BLOCKED_LINE)
       expect(body.toLowerCase()).toContain('escalated permissions')
       expect(body).toMatch(/never relink, reinstall or restart nodeterm/)
-      expect(body).toContain('network.allow_unix_sockets')
-      expect(body).toContain('~/.codex/config.toml')
+      expect(body).not.toContain('network.allow_unix_sockets')
     }
   })
 
