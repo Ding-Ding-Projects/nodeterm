@@ -228,7 +228,7 @@ export interface PtyCreateResult {
    * This is the tombstone (PtyManager): `pty:closed` only reaches a session's SUBSCRIBERS, and a
    * co-viewer whose project is inactive or closed is not one. Without this, the create it issues
    * when it later opens that project would happily spawn a brand-new `nt-<id>` and resurrect a
-   * terminal its owner deliberately deleted. The client that DID the destroy is exempt (its ⌘Z
+   * terminal its owner deliberately deleted. The client that DID the destroy is exempt (its Ctrl+Z
    * must still restore the node), so the single-user delete→undo path is unchanged.
    */
   closed?: { by: number | null }
@@ -922,12 +922,12 @@ export interface DialogApi {
 
 export interface ClipboardApi {
   writeText(text: string): void
-  /** Copy local files so Finder and other file-aware macOS apps can paste them. */
+  /** Copy local files as Windows file references for File Explorer and file-aware applications. */
   writeFiles(paths: string[]): Promise<boolean>
 }
 
 export interface ShellApi {
-  /** Reveal a path in the OS file manager (Finder). */
+  /** Reveal a path in File Explorer. */
   reveal(path: string): void
   /** Open a path with the OS default application. */
   openPath(path: string): void
@@ -1074,7 +1074,7 @@ export interface SpeechSettings {
   /** Press-to-talk / hold-to-talk shortcut, canonical form e.g. "Cmd+Alt+D" (keyed = toggle) or
    *  "Cmd+Alt" (v3, modifier-only = hold-to-talk — the new DEFAULT); see `shared/shortcut.ts`
    *  (`isHoldChord` derives the mode from the string, not a separate setting). "Cmd" is
-   *  platform-abstracted: metaKey on mac, ctrlKey elsewhere. Drives the Canvas listener, the
+   *  resolved through the supported Control-first shortcut contract. Drives the Canvas listener, the
    *  Dock mic tooltip, and the ShortcutsPanel row. */
   shortcut: string
 }
@@ -1177,8 +1177,7 @@ export interface Settings {
   panHoverDelay: number
   doubleClickFocus: boolean
   /**
-   * Let a MIDDLE CLICK inside a terminal paste (Linux in practice — macOS and Windows have no
-   * PRIMARY selection and no tmux middle-click habit, so the guard changes nothing visible there).
+   * Let a middle click inside a terminal paste where the host supports a primary selection.
    *
    * OFF by default, and OFF means the middle button is fully INERT inside a terminal — tmux's own
    * middle-click paste included. That is a consequence of the real mechanism (issue #84, measured
@@ -1191,13 +1190,9 @@ export interface Settings {
    * click drops whatever was last selected anywhere on the machine into a live agent prompt.
    */
   terminalMiddleClickPaste: boolean
-  /** Plain mouse wheel zooms the canvas (no Cmd/Ctrl needed). On macOS a two-finger trackpad
-   *  scroll keeps panning independently (see canvas/wheel-gesture.ts), so mouse and trackpad
-   *  coexist; elsewhere this still trades away scroll-to-pan, so it stays opt-in. */
+  /** Plain mouse wheel zooms the canvas without a modifier. Trackpad routing remains independent. */
   wheelZoom: boolean
-  /** macOS only: a two-finger trackpad scroll pans the canvas, independently of `wheelZoom`
-   *  (see canvas/wheel-gesture.ts). Off restores the pre-router behavior — `wheelZoom` alone
-   *  decides — which is also the recourse for a precise-pixel MOUSE that reads as a trackpad. */
+  /** Two-finger trackpad scroll pans the canvas independently of `wheelZoom`. */
   trackpadPan: boolean
   /** What a left-drag on EMPTY canvas does. 'select' (default) rubber-band selects, like
    *  Figma's move tool — pan stays on middle-drag / two-finger scroll. 'pan' drags the map
@@ -1259,7 +1254,7 @@ export interface Settings {
   seenShortcuts: boolean
   /** Whether the first-run setup tour (onboarding) has been completed or skipped. Existing
    *  installs (seenShortcuts already true) are migrated to true silently — the tour is for
-   *  fresh installs; rerunnable via the ⌘K "Setup tour" command. */
+   *  fresh installs; rerunnable via the Ctrl+K "Setup tour" command. */
   seenOnboarding: boolean
   /** Notify (OS notification) when a Claude Code turn finishes while the app is in the background. */
   notifyOnClaudeDone: boolean
@@ -1314,7 +1309,7 @@ export interface Settings {
    *  have no token counts and fall back to 'used' display). 'remaining' is the historical
    *  default; users coming from other tools expect 'used'. */
   usagePercentMode: 'used' | 'remaining' | 'tokens'
-  /** Which agent the ⌘⇧C shortcut / quick-add launches. Always a launchable builtin. */
+  /** Which agent the Ctrl+Shift+C shortcut / quick-add launches. Always a launchable builtin. */
   defaultAgent: AgentId
   /** The permission mode Claude TERMINAL (CLI) sessions START in — passed as `--permission-mode`
    *  at launch; Shift+Tab still cycles modes at runtime. SDK chat nodes are NOT covered (the chat
@@ -1338,7 +1333,7 @@ export interface Settings {
    *  ring and unlocks the log viewer. Default off — a debugging tool, not a daily surface.
    *  Toggle in Settings → Application → Debug. */
   debugLogPanel: boolean
-  /** Keep a standing relay host connection so a paired phone can reach this Mac from anywhere
+  /** Keep a standing relay host connection so a paired phone can reach this machine from anywhere
    *  (end-to-end encrypted). Default on — the host only admits SAS-approved, pinned devices, so
    *  an un-paired install just keeps an idle listener. Toggle in Settings → Phone. */
   phoneAccessEnabled: boolean
@@ -1371,7 +1366,7 @@ export interface Settings {
    *  survive an unattended laptop. Released when the last one stops (or goes stale). Cannot
    *  hold through a closed lid. Asked in the setup tour; Settings → Behavior. */
   keepAwakeWhileAgentsWork: boolean
-  /** Ask before the app actually quits (⌘/Ctrl+Q, menu Quit, or the Windows/Linux title-bar ×).
+  /** Ask before the app actually quits (Ctrl+/Ctrl+Q, menu Quit, or the Windows/Linux title-bar ×).
    *  The auto-update "Restart to update" flow never asks — that decision was already made.
    *  Settings → Behavior. */
   confirmBeforeQuit: boolean
@@ -1390,7 +1385,7 @@ export interface Settings {
   keybindings?: KeybindingOverrides
   /** Who wins while a terminal has keyboard focus: 'app-first' (default) lets allowInTerminal
    *  app commands fire over an xterm; 'terminal-first' reserves every chord but the terminal's
-   *  own (find, copy) for the shell/TUI — including ⌘W/⌘M and the zoom/project-jump gestures. */
+   *  own (find, copy) for the shell/TUI — including Ctrl+W/Ctrl+M and the zoom/project-jump gestures. */
   terminalShortcutPolicy: TerminalShortcutPolicy
   /** Command ids whose "this chord was captured from your terminal" notice has been shown
    *  (app-first only, once per command). Optional and absent from DEFAULT_SETTINGS: absent
@@ -1510,7 +1505,7 @@ export const DEFAULT_SETTINGS: Settings = {
   // Keep-awake-while-agents-work default ON (existing users pick it up on hydrate — deliberate,
   // same note style as hookReplyApprovals). Held only while a local agent is actually working.
   keepAwakeWhileAgentsWork: true,
-  // Confirm-before-quit default ON: sessions survive a quit anyway, but an accidental ⌘Q
+  // Confirm-before-quit default ON: sessions survive a quit anyway, but an accidental Ctrl+Q
   // tears down every window at once; the toggle is one switch away for who finds it noisy.
   confirmBeforeQuit: true,
   // Windows Agent HUD default on.
@@ -1549,8 +1544,7 @@ export interface SpeechApi {
   deleteModel(id: string): Promise<void>
   /** Subscribe to model-download progress (`pct` 0-100). Returns unsubscribe. */
   onProgress(cb: (p: { id: string; pct: number }) => void): () => void
-  /** Ask for microphone permission. Electron: OS-level (macOS TCC prompt); browser: always
-   *  resolves true — the browser's own getUserMedia prompt is not ours to gate. */
+  /** Ask for microphone permission where the desktop host exposes a native permission API. */
   micConsent(): Promise<boolean>
 }
 
@@ -1681,7 +1675,7 @@ export interface SshFsApi {
   write(projectId: string, path: string, content: string): Promise<boolean>
   mkdir(projectId: string, path: string): Promise<boolean>
   exists(projectId: string, path: string): Promise<boolean>
-  /** ⌘K Quick Open index of the project's remoteCwd: root-relative `/`-paths ([] on failure). */
+  /** Ctrl+K Quick Open index of the project's remoteCwd: root-relative `/`-paths ([] on failure). */
   quickOpen(projectId: string, cwd: string): Promise<string[]>
 }
 
@@ -2215,7 +2209,7 @@ export interface ChatToolSummary {
  * Result of a chat transcript read. `found` is the whole point of the wrapper: an empty
  * `messages` means two very different things — the session exists and nobody has said anything
  * yet (`found: true`), or no transcript could be resolved at all (`found: false`, e.g. Claude's
- * 30-day cleanup removed it, or the id belongs to another machine). The ⌘M panel rendered both
+ * 30-day cleanup removed it, or the id belongs to another machine). The Ctrl+M panel rendered both
  * as "No conversation yet.", which is what made a resolution failure look like an empty session.
  */
 export interface ChatTranscriptResult {
@@ -2257,7 +2251,7 @@ export interface ClaudeAccountsApi {
 }
 
 /**
- * Machine-scoped managed Codex accounts (S6). LOCAL accounts on this Mac are reachable through
+ * Machine-scoped managed Codex accounts. Local accounts are reachable through
  * PR 5; SSH remote accounts land in PR 6. The account LIST is renderer-owned in `settings.json`
  * (`codexAccounts`), exactly like `claudeAccounts`; main owns only the fs + daemon lifecycle and
  * the switch protocol.
@@ -2273,9 +2267,9 @@ export interface CodexAccountsApi {
   cancelWaitLogin(id: string): Promise<void>
   /** Read a managed account's already-logged-in identity (email), or null if not logged in. */
   identity(id: string): Promise<{ email: string | null } | null>
-  /** Read a machine's system (`~/.codex`) account identity. No arg ⇒ this Mac. `{ projectId }` ⇒
+  /** Read a machine's system (`~/.codex`) account identity. No argument means this machine. `{ projectId }` means
    *  the connected SSH host behind that project; a host whose system identity cannot be resolved
-   *  resolves `null` (fail-closed — a remote machine panel never borrows this Mac's login). */
+   *  resolve `null` on failure, so a remote machine panel never borrows the local login. */
   systemIdentity(ctx?: { projectId?: string }): Promise<{ email: string | null } | null>
   /** Remove a managed account: stop its daemon and delete its home. Refused while a switch
    *  reservation holds it or a concurrent removal is in flight (Property 10). */
@@ -2549,7 +2543,7 @@ export interface RemoteHostApi {
   /** Reject the pending client → the connection is dropped. Same id/pub matching as approve. */
   reject(id: string, pub?: string): void
   /**
-   * Start/stop the standing (phone) relay host so a paired phone can reach this Mac from anywhere.
+   * Start or stop the standing relay host so a paired phone can reach this machine.
    * Mirrors `settings.phoneAccessEnabled`.
    */
   setPhoneAccess(enabled: boolean): void
@@ -2737,8 +2731,8 @@ export interface PresenceApi {
 /** Keyboard-shortcut plumbing the RENDERER cannot do for itself. */
 export interface ShortcutsApi {
   /** Tell the shell that a shortcut recorder is armed (`true`) or released (`false`), so the
-   *  desktop's `before-input-event` intercepts stand down and the chord being recorded — ⌘W and
-   *  ⌘M among them — reaches the recorder instead of closing the user's selected nodes. A claimed
+   *  desktop's `before-input-event` intercepts stand down and the chord being recorded — Ctrl+W and
+   *  Ctrl+M among them — reaches the recorder instead of closing the user's selected nodes. A claimed
    *  chord never reaches the page, so the recorder's own preventDefault cannot substitute for
    *  this. Fire-and-forget. **The `false` leg is not optional**: the bit is global, so a recorder
    *  that arms and never releases leaves those chords dead app-wide. Server Edition: a documented
@@ -2816,17 +2810,13 @@ export interface NodeTerminalApi {
   onFitView(listener: () => void): () => void
   /** Native View menu → Toggle Kanban / Canvas view. Returns unsubscribe. */
   onToggleKanban(listener: () => void): () => void
-  /** Fires when the native app menu's "Settings…" item (⌘,) is clicked. Returns unsubscribe. */
+  /** Fires when the native app menu's Settings item is clicked. Returns unsubscribe. */
   onOpenSettings(listener: () => void): () => void
   /** Close the application window (Cmd/Ctrl+W fallback when no node is selected). */
   closeWindow(): void
-  /** Bring the app window to the foreground (show + OS focus). Called after a file is DROPPED
-   *  into a terminal: on macOS a drag-drop from another app (Finder/browser) does not activate
-   *  the destination app, so the drag-source keeps keyboard focus and the user's next keystrokes
-   *  land in the WRONG application — `term.focus()` (DOM-only) can't fix that. Desktop raises the
-   *  BrowserWindow; the browser bridge does a best-effort `window.focus()`. */
+  /** Bring the app window to the foreground after an external file drop. */
   focusWindow(): void
-  /** Set the macOS Dock badge to the unread-message count (0 clears it). */
+  /** Set the Windows taskbar unread indicator (0 clears it). */
   setBadgeCount(count: number): void
   /** Apply the UI-scale setting as page zoom for THIS window (desktop: `webFrame.setZoomFactor`).
    *  The preload re-clamps through `resolveUiScale` — the value originates in hand-editable
