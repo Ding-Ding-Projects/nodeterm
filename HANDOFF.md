@@ -8,7 +8,7 @@ The work is being prepared in PR #494, targeting `eneskirca/nodeterm:main` from
 The latest source commit is:
 
 ```text
-160ddef2
+d30e754b
 ```
 
 The source checkout is clean and the source ref has been verified with `git ls-remote`.
@@ -45,6 +45,9 @@ reports no executable Darwin or Apple-only branches in the shipped source paths 
 The later font-stack cleanup commit `5667f07b` and neutral shortcut-name cleanup commit `160ddef2`
 have green production builds, focused renderer tests, and green typecheck. The final hidden-app
 verification was performed from the packaged executable built from this source state.
+The current public-surface commit `d30e754b` converts the landing page and release workflow to
+Windows-only unsigned Squirrel.Windows distribution. Its YAML parses successfully and the site
+and workflow scan contains no Apple or non-Windows package references.
 
 ### Fresh ZIP build
 
@@ -101,6 +104,8 @@ produce an unknown-publisher warning.
 - Refresh hosted documentation and release presentation after upstream review if those surfaces are
   required for the release.
 - Merge only after upstream review approval.
+- The hosted release workflow has not yet produced a GitHub run for this PR head; its local YAML
+  structure and Windows package path are verified, but remote workflow evidence is pending.
 
 ## Known historical note
 
