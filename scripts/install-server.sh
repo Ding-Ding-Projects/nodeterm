@@ -42,7 +42,7 @@ warn() { printf '\033[33m⚠\033[0m %s\n' "$1" >&2; }
 fail() { printf '\033[31m✗\033[0m %s\n' "$1" >&2; exit 1; }
 
 # ---- preflight: OS + required tools ----------------------------------------------------------
-[ "$(uname -s)" = "Linux" ] || fail "The headless host targets Linux (systemd). For macOS run the desktop app; for containers use the Dockerfile (see docs/SERVER.md)."
+[ "$(uname -s)" = "Linux" ] || fail "The headless host requires Linux with systemd; containers use the Dockerfile described in docs/SERVER.md."
 
 command -v git >/dev/null 2>&1 || fail "git is not installed. Install it first (e.g. 'sudo apt install git' or 'sudo dnf install git')."
 
@@ -72,11 +72,7 @@ ensure_node() {
 
   # 2. Provision the pinned Node LTS under the app dir. Map uname → nodejs.org dist naming.
   local os arch runtime_dir node_bin
-  case "$(uname -s)" in
-    Linux)  os="linux" ;;
-    Darwin) os="darwin" ;;
-    *) fail "Automatic Node provisioning supports Linux and macOS only (found $(uname -s)). Install Node.js >= ${MIN_NODE_MAJOR} manually and re-run." ;;
-  esac
+  os="linux"
   case "$(uname -m)" in
     x86_64|amd64)  arch="x64" ;;
     aarch64|arm64) arch="arm64" ;;
