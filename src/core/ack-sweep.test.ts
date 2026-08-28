@@ -12,14 +12,14 @@ function fakeFs(initial: Record<string, string>) {
   const fs: AckSweepFsLike = {
     readdirSync: (_dir) => [...files.keys()],
     readFileSync: (p, _e) => {
-      const name = p.split('/').pop() as string
+      const name = p.split(/[\\/]/).pop() as string
       if (readErrors.has(name)) throw new Error('EACCES')
       if (!files.has(name)) throw new Error('ENOENT')
       return files.get(name) as string
     },
     statSync: (_p) => ({ mtimeMs }),
     rmSync: (p, _o) => {
-      const name = p.split('/').pop() as string
+      const name = p.split(/[\\/]/).pop() as string
       if (files.delete(name)) mtimeMs++
     }
   }
