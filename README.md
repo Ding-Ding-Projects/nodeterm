@@ -11,16 +11,12 @@ project doubles as a **Trello-style board of live Claude Code sessions**. Built 
 people with ADHD and scattered workflows: a spatial layout instead of a stack of
 hidden tabs.
 
-[![Platform](https://img.shields.io/badge/platform-macOS%20(arm64%20%2B%20x64)%20·%20Linux%20(x64)-black)](https://nodeterm.dev)
+[![Platform](https://img.shields.io/badge/platform-Windows%20(x64)-black)](https://nodeterm.dev)
 [![Built with Electron](https://img.shields.io/badge/built%20with-Electron-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![License](https://img.shields.io/badge/license-BUSL--1.1-blue)](./LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/eneskirca/nodeterm?style=flat)](https://github.com/eneskirca/nodeterm/stargazers)
 [![Latest release](https://img.shields.io/github/v/release/eneskirca/nodeterm?include_prereleases&sort=semver)](https://github.com/eneskirca/nodeterm/releases)
-<!-- Installer downloads: .dmg + .AppImage + .deb across every release, hand-written on purpose.
-     shields' github/downloads/…/total reads ~12× higher because electron-updater's own traffic
-     (latest-*.yml polls, mac .zip deltas, blockmaps) is counted as downloads there. Recount with:
-     gh api --paginate repos/eneskirca/nodeterm/releases --jq \
-       '[.[].assets[] | select(.name|test("\\.(dmg|AppImage|deb)$")) | .download_count] | add' -->
+<!-- Installer downloads are reported from the Windows Squirrel.Windows release assets. -->
 [![Downloads](https://img.shields.io/badge/downloads-1.2k-brightgreen)](https://github.com/eneskirca/nodeterm/releases)
 
 [Download](#-download) · [Docs](https://nodeterm.dev/docs) · [Features](#-features) · [Build from source](#-build-from-source) · [Architecture](#-architecture) · [License](#-license)
@@ -43,7 +39,7 @@ Stacked terminal tabs hide context — you lose track of what's running where. n
 turns that into a **map**: every shell is a node you can place, group, label, and zoom
 into. Sessions are spatial and persistent, so your mental model stays intact across
 restarts. And because the app is built around a clean service seam, the same canvas runs
-three ways — as the **desktop app for macOS and Linux**, as a **self-hosted browser app**
+three ways — as the **Windows desktop app**, as a **self-hosted browser app**
 you reach from anywhere (Server Edition), and an **iOS companion** that attaches to the
 same live sessions.
 
@@ -74,7 +70,7 @@ map. Quit the app, even **restart the machine** — every session comes back.
 Hook-driven status — no output scraping: pulsing **RUNNING / NEEDS YOU** badges,
 **subagent** cards with live transcripts, a per-node **context meter**, and OS
 notifications. Click the ping, answer the permission prompt right in the node, and get
-told the moment the turn is **done**. On a MacBook, agents live in the **notch** too.
+told the moment the turn is **done**. On Windows, the Agent HUD keeps that activity visible above the taskbar without stealing focus.
 
 </td>
 <td><img src="docs/assets/agents-tour.webp" alt="Agent status — NEEDS YOU flip, notification, answering a permission prompt, subagent fan-out" /></td>
@@ -87,7 +83,7 @@ told the moment the turn is **done**. On a MacBook, agents live in the **notch**
 Every project is a canvas — **and also a kanban board**. Cards *are* your live
 sessions: drag them across columns while the agent keeps running, open a card into a
 **live card modal** (the real session + members, due date, priority, comments), and
-assign teammates. Toggle with `⌘⇧B`.
+assign teammates. Toggle with `Ctrl+Shift+B`.
 <br/><sub>▶ <a href="docs/assets/kanban-launch.mp4">Watch the board video with sound</a></sub>
 
 </td>
@@ -110,7 +106,7 @@ LAN**. The same canvas also runs self-hosted in any browser (Server Edition).
 
 ### Talk to your terminal
 
-Hold `⌘⌥` and say it. On-device **Whisper** transcribes locally — review the text,
+Hold `Ctrl+Alt` and say it. On-device **Whisper** transcribes locally — review the text,
 then **Send** (nothing auto-submits). Your voice never leaves the machine.
 
 </td>
@@ -122,17 +118,15 @@ then **Send** (nothing auto-submits). Your voice never leaves the machine.
 
 🖥 **Terminal** (xterm + tmux, AI naming) · 🤖 **Agent** (Claude Code / Codex / Gemini /
 GitHub Copilot / opencode / Grok / custom) · 📝 **Sticky note** (link to an agent as context) · 🗂 **Group**
-(bind to a **git worktree** for agent-per-branch) · ✏️ **Editor** (Monaco, ⌘S) ·
+(bind to a **git worktree** for agent-per-branch) · ✏️ **Editor** (Monaco, Ctrl+S) ·
 🔀 **Diff** · 🌐 **Web / Video**
 
 ### More
 
 - **Session continuity (tmux)** — terminals keep running across node remounts *and* full
-  app restarts, including live processes; machine reboots restore scrollback and resume
-  agent sessions (`claude --resume`). The macOS app **ships its own tmux**, so this works
-  with nothing installed; a tmux already on your system is always used in preference to it,
-  and terminals opened before an upgrade stay as they were until you refresh the node.
-- **Talk to your terminal** — on-device Whisper dictation (hold ⌘⌥): speak, review, send.
+  app restarts through the bundled Windows session host; machine reboots restore saved scrollback
+  and resume agent sessions where the session host has a durable record.
+- **Talk to your terminal** — on-device Whisper dictation (hold Ctrl+Alt): speak, review, send.
 - **Agent superpowers** — **context links** so agent nodes read each other's transcripts
   on demand; Claude-only **branch a conversation** and **managed accounts** for several
   logged-in Claude identities side by side; agents can drive the canvas (open nodes,
@@ -154,14 +148,14 @@ GitHub Copilot / opencode / Grok / custom) · 📝 **Sticky note** (link to an a
   tour or Settings → Behavior). No app can hold a machine awake through a closed lid —
   for overnight runs keep the laptop open and plugged in, or run the agents on a box
   that doesn't sleep via the [Server Edition](./docs/SERVER.md).
-- **Command palette** (⌘K), **file explorer** (⌘⇧E), **markdown view** (⌘M),
-  **undo/redo**, and a native macOS dark UI.
+- **Command palette** (Ctrl+K), **file explorer** (Ctrl+Shift+E), **markdown view** (Ctrl+M),
+  **undo/redo**, and a native Windows desktop UI.
 - **Auto-update & in-app announcements** — the app checks a self-hosted feed and
   surfaces a "Restart to update" banner and product news.
 
 ### 🌍 Server Edition — nodeterm in your browser
 
-The same canvas runs headless on a Linux (or macOS) host and is used from any browser —
+The same canvas runs headless on a Linux host and is used from any browser —
 so your terminals, editors, source control, board, and agents live on a server you reach
 from anywhere. Single-user auth (password + secure cookie), a WebSocket bridge, and the
 exact same renderer as the desktop app.
@@ -191,24 +185,24 @@ section for details.
 
 ## 📦 Download
 
+### Start on a fresh Windows installation
+
+The highlighted path needs no manually installed build tooling. Download this repository as a ZIP,
+extract it, and double-click `build.bat`. It automatically obtains the pinned Node.js runtime,
+Visual Studio C++ tools, Python, and project packages, requests administrator approval only for the
+toolchain installer when required, builds the runnable application, and asks whether to launch it
+after the build succeeds. No terminal preparation is required.
+
+For unattended use, run `build.bat /s`. The equivalent installer path is `build-installer.bat /s`,
+which produces and validates the unsigned x64 Squirrel.Windows installer. Both scripts are safe to
+run from a super-fresh Windows machine and do not publish or modify GitHub releases.
+
 Grab the latest build from **[nodeterm.dev](https://nodeterm.dev)** — the download button
 detects your platform. Everything is also listed at
 [nodeterm.dev/releases](https://nodeterm.dev/releases):
 
-- **macOS** — `.dmg` for Apple Silicon and Intel (auto-updates), or **Homebrew**:
-
-  ```bash
-  brew tap nodeterm/tap
-  brew trust nodeterm/tap        # Homebrew ≥6 refuses to load an untrusted tap
-  brew install --cask nodeterm
-  ```
-
-  Both first lines are required. On its own, `brew install --cask nodeterm` only searches
-  `homebrew/cask` and reports the cask as not found; without the trust grant, Homebrew ≥6
-  fails rather than prompting. The cask tracks each promoted release, and the app updates
-  itself (electron-updater), so `brew upgrade` is rarely needed for it.
-- **Linux (x64)** — self-updating **AppImage**, or a `.deb` for Debian/Ubuntu
-  (`sudo apt install ./nodeterm-*.deb`; updates are manual for `.deb`).
+- **Windows (x64)** — unsigned Squirrel.Windows installer from the Releases page. Windows may
+  show an unknown-publisher warning because code signing is intentionally disabled.
 - **iOS** — **nodeterm mobile** on the
   [App Store](https://apps.apple.com/app/nodeterm/id6790581233).
 
@@ -228,21 +222,19 @@ The full inventory of what nodeterm writes where (and what the script keeps, lik
 
 ## 🛠 Build from source
 
-Requires Node.js 20+ on macOS or Linux (tmux recommended — it's what makes sessions
-survive restarts). A source checkout does **not** carry the bundled tmux: run
-`node scripts/build-tmux.mjs` once on macOS to build it into `resources/bin/tmux` (the
-release job does this automatically), or just install tmux yourself.
+The supported build path is Windows-first and requires no manual toolchain preparation. Download
+the repository ZIP, extract it, and double-click `build.bat`.
 
 ```bash
-npm install        # deps + rebuilds node-pty against Electron's ABI (postinstall)
-npm run dev        # dev mode with renderer HMR
-npm run build      # production build into out/
-npm start          # preview the production build
-npm run typecheck  # fastest correctness gate
-npm test           # vitest unit + integration suite
-npm run dist       # local UNSIGNED .dmg into dist/ (smoke test)
-npm run dist:linux # AppImage + .deb into dist/ (on a Linux host)
-npm run server:dev # build + run the browser Server Edition (needs Node 22 + tmux)
+build.bat /s             # bootstrap everything and build without prompts
+build-installer.bat /s  # bootstrap everything and build the unsigned installer
+npm run dev              # dev mode with renderer HMR
+npm run build            # production build into out/
+npm start                # preview the production build
+npm run typecheck        # fastest correctness check
+npm test                 # vitest unit + integration suite
+npm run dist:win         # unsigned Squirrel.Windows package
+npm run server:dev       # build + run the browser Server Edition
 ```
 
 ## ⌨️ Keyboard shortcuts
@@ -251,16 +243,16 @@ These are the defaults — every one of them is remappable in **Settings → Key
 
 | Shortcut | Action |
 | --- | --- |
-| `⌘K` | Command palette |
-| `⌘T` / `⌘⇧C` | New terminal / New Claude Code |
-| `⌘⇧B` | Toggle the kanban board |
-| `⌘W` | Close the selected node |
-| `⌘←` `⌘→` `⌘↑` `⌘↓` | Focus the node left / right / above / below (`Ctrl+Shift+arrow` off macOS) |
-| `⌘Z` / `⌘⇧Z` | Undo / Redo |
-| `⌘M` | Toggle markdown view (terminal / editor) |
-| Hold `⌘⌥` (`Ctrl+Alt`) | Dictate into the focused terminal |
-| `⌘⇧E` | File explorer |
-| `⌘,` | Settings · `⌘/` Shortcuts |
+| `Ctrl+K` | Command palette |
+| `Ctrl+T` / `Ctrl+Shift+C` | New terminal / New Claude Code |
+| `Ctrl+Shift+B` | Toggle the kanban board |
+| `Ctrl+W` | Close the selected node |
+| `Ctrl+Shift+Left/Right/Up/Down` | Focus the node in that direction |
+| `Ctrl+Z` / `Ctrl+Shift+Z` | Undo / Redo |
+| `Ctrl+M` | Toggle markdown view (terminal / editor) |
+| Hold `Ctrl+Alt` | Dictate into the focused terminal |
+| `Ctrl+Shift+E` | File explorer |
+| `Ctrl+,` | Settings · `Ctrl+/` Shortcuts |
 | `Right-click` | Actions menu (empty space or node) |
 
 ## 🏗 Architecture
