@@ -10694,26 +10694,6 @@ button.group-node__setup:disabled {
 .onb-scene--phone {
   position: relative;
 }
-.onb-soon {
-  /* pinned over the phone's top-right corner — must not cover the session rows */
-  position: absolute;
-  top: 13%;
-  right: 15%;
-  transform: rotate(8deg);
-  background: var(--accent);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 4px 11px;
-  border-radius: 999px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, calc(0.4 * var(--shadow-k)));
-  animation: onb-soon 3.2s ease-in-out infinite;
-}
-@keyframes onb-soon {
-  0%, 100% { transform: rotate(8deg) scale(1); }
-  50% { transform: rotate(8deg) scale(1.07); }
-}
 
 /* ---- reduced motion: freeze every scene to a readable final frame ---- */
 @media (prefers-reduced-motion: reduce) {
@@ -10755,8 +10735,7 @@ button.group-node__setup:disabled {
   .onb-mini {
     transition: none;
   }
-  .onb-phone,
-  .onb-soon {
+  .onb-phone {
     animation: none;
   }
 }

@@ -344,7 +344,6 @@ export function ScenePhone() {
           </div>
         </div>
       </div>
-      <span className="onb-soon">ON THE APP STORE</span>
     </div>
   )
 }
