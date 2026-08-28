@@ -419,7 +419,7 @@ function findSsh(): string | null {
   // Subprocess-free (was a sync login-shell `command -v ssh` + an `ssh -V` spawn per fallback,
   // all blocking the main thread). A MISS is only memoized once the async login-shell PATH
   // probe has settled — before that a custom-location ssh would be cached away forever.
-  const found = findExecutableSync('ssh', ['/usr/bin/ssh', '/usr/local/bin/ssh', '/opt/homebrew/bin/ssh'])
+  const found = findExecutableSync('ssh', ['C:\\Windows\\System32\\OpenSSH\\ssh.exe'])
   if (found || shellPathNow() !== undefined) cachedSsh = found
   return found
 }

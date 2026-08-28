@@ -58,7 +58,7 @@ let cachedSsh: string | null | undefined
  *  probe has settled, so an early call cannot pin `ssh` to the bare name forever. */
 function defaultSshPath(): string {
   if (cachedSsh !== undefined) return cachedSsh ?? 'ssh'
-  const found = findExecutableSync('ssh', ['/usr/bin/ssh', '/usr/local/bin/ssh', '/opt/homebrew/bin/ssh'])
+  const found = findExecutableSync('ssh', ['C:\\Windows\\System32\\OpenSSH\\ssh.exe'])
   cachedSsh = found
   return found ?? 'ssh'
 }

@@ -375,9 +375,7 @@ let cachedSsh: string | null | undefined
 function sshBin(): string {
   if (cachedSsh !== undefined) return cachedSsh ?? 'ssh'
   const found = findExecutableSync('ssh', [
-    '/usr/bin/ssh',
-    '/usr/local/bin/ssh',
-    '/opt/homebrew/bin/ssh'
+    'C:\\Windows\\System32\\OpenSSH\\ssh.exe'
   ])
   if (found || shellPathNow() !== undefined) cachedSsh = found
   return found ?? 'ssh'
@@ -388,9 +386,7 @@ let cachedScp: string | null | undefined
 function scpBin(): string {
   if (cachedScp !== undefined) return cachedScp ?? 'scp'
   const found = findExecutableSync('scp', [
-    '/usr/bin/scp',
-    '/usr/local/bin/scp',
-    '/opt/homebrew/bin/scp'
+    'C:\\Windows\\System32\\OpenSSH\\scp.exe'
   ])
   if (found || shellPathNow() !== undefined) cachedScp = found
   return found ?? 'scp'

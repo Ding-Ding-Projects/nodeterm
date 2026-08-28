@@ -29,9 +29,7 @@ function findSsh(): string | null {
   // PATH from exec-path.ts, then the hardcoded locations. A MISS is only memoized once the
   // async PATH probe has settled, so a custom-location ssh isn't cached away forever.
   const found = findExecutableSync('ssh', [
-    '/usr/bin/ssh',
-    '/usr/local/bin/ssh',
-    '/opt/homebrew/bin/ssh'
+    'C:\\Windows\\System32\\OpenSSH\\ssh.exe'
   ])
   if (found || shellPathNow() !== undefined) sshPath = found
   return found

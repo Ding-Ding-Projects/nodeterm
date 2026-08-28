@@ -6,6 +6,7 @@ import type {
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import type { SecretStore } from '../secret-store'
+import path from 'node:path'
 
 export type CommandResult = { ok: boolean; stdout: string; stderr: string }
 export type CommandRunner = (command: string, args: string[]) => Promise<CommandResult>
@@ -20,7 +21,14 @@ export const runGitHubCliCommand: CommandRunner = async (command, args) => {
       maxBuffer: 1024 * 1024,
       env: {
         ...process.env,
-        PATH: `/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin${process.env.PATH ? `:${process.env.PATH}` : ''}`
+        PATH: [
+          ...(process.platform === 'win32'
+            ? ['C:\\Windows\\System32\\OpenSSH']
+            : ['/usr/bin', '/bin']),
+          process.env.PATH
+        ]
+          .filter(Boolean)
+          .join(path.delimiter)
       }
     })
     return { ok: true, stdout: result.stdout, stderr: result.stderr }

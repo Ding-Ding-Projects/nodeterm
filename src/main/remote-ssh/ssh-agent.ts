@@ -51,7 +51,7 @@ const APP_AGENT_ENV = 'NODETERM_APP_AGENT_SOCK'
  *  reason sshBin()/findSsh() exist), and a bare `spawn('ssh-agent')` miss is only a console.error
  *  whose visible symptom is "a passphrase prompt on every connect this run" with no diagnostic. */
 function findSshAgent(): string {
-  for (const p of ['/usr/bin/ssh-agent', '/opt/homebrew/bin/ssh-agent', '/usr/local/bin/ssh-agent']) {
+  for (const p of ['C:\\Windows\\System32\\OpenSSH\\ssh-agent.exe']) {
     if (existsSync(p)) return p
   }
   return 'ssh-agent' // PATH as a last resort; a miss fails into env()'s fail-closed posture
