@@ -40,7 +40,7 @@ Verified at commit `6ec87ac2520021f8d96ae85db12de575ce329b44`:
 
 The final source commit `d752e268` has a green full retained Windows suite with 591 passing files,
 7,737 passing tests, 2 skipped files, and 52 skipped tests. It also has green typecheck, focused
-session-budget, SSH-project, memory-pressure, and bug-report Chuts. The source scan at that commit
+session-budget, SSH-project, memory-pressure, and bug-report checks. The source scan at that commit
 reports no executable Darwin or Apple-only branches in the shipped source paths covered by the scan.
 The later font-stack cleanup commit `5667f07b` has a green production build for the renderer,
 session-host, and relay outputs, plus 30 focused renderer tests and a green typecheck.
@@ -73,12 +73,31 @@ The full package SHA-256 was:
 7825A0606AB99336DFC5CEF3D78963BD280A9186
 ```
 
+### Hidden built-app verification
+
+The packaged executable from the current source state was launched directly on a named hidden
+Win32 desktop through the local command-line runtime. The real product window was resolved by its
+non-empty title, `Chrome_WidgetWin_1` class, and non-zero `2121x1363` dimensions. A first-screen
+capture was visually inspected, then a control-targeted keyboard action advanced onboarding to
+Step 1 and a second capture was visually inspected.
+
+The two capture SHA-256 values were:
+
+```text
+DA0DFAAF3D505FE5112FEB7F77316985B5B56DFD16ED8CD60FCE3905EDF6719C
+7C4FC370A6A6D464D7109E9C8F82CBC217D67D7C7213BB9365D78B7F23183B3E
+```
+
+The task-owned process tree was terminated after capture. The hidden desktop release command
+reported that the short-lived CLI instance did not retain desktop bookkeeping, so process-tree
+termination is the authoritative cleanup evidence.
+
 Packaging logs confirmed that signing was skipped. The installer is intentionally unsigned and may
 produce an unknown-publisher warning.
 
 ## Remaining work
 
-- The full retained Windows suite is verified at `d752e268`; the final font-stack cleanup is covered by its focused Chuts and production build.
+- The full retained Windows suite is verified at `d752e268`; the final font-stack cleanup is covered by its focused checks and production build. Hidden built-app verification is recorded above.
 - Complete hidden-desktop verification of the packaged application.
 - Inspect the final production source for any remaining active Apple-only runtime path.
 - Add the final evidence to PR #494 and keep it draft until the evidence is complete.
@@ -87,6 +106,6 @@ produce an unknown-publisher warning.
 ## Known historical note
 
 Commit `bc37ad47` contains literal `\\n` sequences in its public commit body because of an earlier
-PowerShell message-encoding mistake. It was already dewed before discovery, so correcting it would
+PowerShell message-encoding mistake. It was already pushed before discovery, so correcting it would
 require history rewriting. The commit is preserved and later commits use correctly formatted
 bilingual messages.
