@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import path from 'node:path'
 import { BrowserControlLedger, BROWSER_USER_STOPPED } from './browser-control-ledger'
 import { BrowserSession } from './browser-lease'
 import type { DebuggerLike } from './browser-cdp-send'
@@ -270,13 +271,14 @@ describe('--screenshot is jailed to the project dir through the gate (Task 9.1)'
       m === 'Page.captureScreenshot' ? { data: Buffer.from('PNG').toString('base64') } : origSend(m, p)
     const io = screenshotIO()
     const deps: DriveDeps = { ledger, refs: new RefTable(), sessionFor: () => guest, revoke: vi.fn(), screenshotIO: io }
+    const projectCwd = path.resolve('/proj')
     const r = await driveBrowser(
-      { call: shotCall('shot.png'), ownerNodeId: OWNER, verified: true, resolve: { ...okResolve, projectCwd: '/proj' } },
+      { call: shotCall('shot.png'), ownerNodeId: OWNER, verified: true, resolve: { ...okResolve, projectCwd } },
       deps
     )
     expect(r.ok).toBe(true)
-    expect(r.message).toContain('/proj/shot.png')
-    expect(r.message).toContain('show-image /proj/shot.png')
+    expect(r.message).toContain(path.join(projectCwd, 'shot.png'))
+    expect(r.message).toContain(`show-image ${path.join(projectCwd, 'shot.png')}`)
     expect(io.writeFile).toHaveBeenCalled()
   })
 

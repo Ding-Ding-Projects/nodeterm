@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { CanvasNodeState, Project, Workspace } from '../shared/types'
+import path from 'node:path'
 import {
   toPortableNodes, resolveNodes, projectToFile, fileToProject, framingViewport,
   sameProjectContent, splitWorkspace, serializeProjectFile
@@ -21,7 +22,7 @@ describe('portable node cwds', () => {
     const nodes = [node({ cwd: '/Users/enes/projects/foo/sub' })]
     const portable = toPortableNodes(nodes, '/Users/enes/projects/foo')
     expect(portable[0].cwd).toBe('./sub')
-    expect(resolveNodes(portable, '/mnt/other/foo')[0].cwd).toBe('/mnt/other/foo/sub')
+    expect(resolveNodes(portable, '/mnt/other/foo')[0].cwd).toBe(path.join('/mnt/other/foo', 'sub'))
   })
   it('the root itself becomes "." ', () => {
     const portable = toPortableNodes([node({ cwd: '/a/b' })], '/a/b')
@@ -59,7 +60,7 @@ describe('projectToFile / fileToProject round-trip', () => {
       id: 'p1', cwd: '/new/root', closed: true, defaultAccountId: 'acct1', dinoHighScore: 7,
       viewport: { x: 5, y: 6, zoom: 2 }
     })
-    expect(back.nodes[0]).toMatchObject({ cwd: '/new/root/x', agentId: 'claude', accountId: 'acct1' })
+    expect(back.nodes[0]).toMatchObject({ cwd: path.join('/new/root', 'x'), agentId: 'claude', accountId: 'acct1' })
     expect(back.unavailable).toBeUndefined()
   })
 })

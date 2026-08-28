@@ -77,7 +77,7 @@ describe('the open-project → targeted-open chain', () => {
     // 1. Main resolves + validates the hostile --cwd once; the renderer only ever sees the
     //    resolved form (P5/P7) — here proven with a real un-normalized path.
     const gate = gateCwd(repoA + '/./')
-    expect('resolvedCwd' in gate && gate.resolvedCwd).toBe(repoA)
+    expect('resolvedCwd' in gate && gate.resolvedCwd).toBe(path.resolve(repoA))
     const resolvedCwd = (gate as { resolvedCwd: string }).resolvedCwd
 
     // 2. First contact: the plan demands a CONFIRM (create) — never a silent create.
@@ -158,7 +158,7 @@ describe('the open-project → targeted-open chain', () => {
     const r2 = useProjects.getState().registerProject({ resolvedCwd })
     expect(r2.created).toBe(false)
     expect(r2.project.id).toBe(r1.project.id)
-    expect(useProjects.getState().projects.filter((p) => p.cwd === repoA)).toHaveLength(1)
+    expect(useProjects.getState().projects.filter((p) => p.cwd === path.resolve(repoA))).toHaveLength(1)
 
     // 7. ANOTHER caller presenting the id it was never granted: refused, byte-identically to
     //    every other stranger (P2 — the grant is per-caller).
