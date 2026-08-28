@@ -144,7 +144,7 @@ function esc(s: string): string {
 }
 
 const PAGE_STYLE =
-  "margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0b0d10;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+  "margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0b0d10;color:#e6e6e6;font-family:'Segoe UI',system-ui,sans-serif"
 const CARD_STYLE =
   'background:#16191d;border:1px solid #26292e;border-radius:12px;padding:32px;width:320px;box-shadow:0 10px 40px rgba(0,0,0,0.4)'
 const INPUT_STYLE =

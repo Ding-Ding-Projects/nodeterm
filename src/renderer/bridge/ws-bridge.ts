@@ -904,7 +904,7 @@ export function showReconnectOverlay(): void {
   el.style.cssText =
     'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;' +
     'justify-content:center;background:rgba(0,0,0,0.72);color:#fff;' +
-    'font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center;padding:24px'
+    'font:15px "Segoe UI",system-ui,sans-serif;text-align:center;padding:24px'
   el.textContent = 'Connection lost — reconnecting…'
   document.body.appendChild(el)
 }
