@@ -11,32 +11,32 @@ const e = (
   key: '',
   ...over
 })
-const HOLD = { isMac: true, allowHold: true }
-const KEYED = { isMac: true, allowHold: false }
+const HOLD = { isMac: false, allowHold: true }
+const KEYED = { isMac: false, allowHold: false }
 
 describe('recordingKeydown', () => {
   it('a keyed chord commits immediately', () => {
-    expect(recordingKeydown({ mods: null }, e({ metaKey: true, key: 'd' }), KEYED)).toEqual({
+    expect(recordingKeydown({ mods: null }, e({ ctrlKey: true, key: 'd' }), KEYED)).toEqual({
       kind: 'commit',
-      combo: 'Cmd+D'
+      combo: 'Ctrl+D'
     })
   })
-  it('mac Ctrl rides along in a keyed capture (the PR1 gap, closed)', () => {
+  it('captures the Windows Ctrl chord without a second primary modifier', () => {
     expect(
-      recordingKeydown({ mods: null }, e({ metaKey: true, ctrlKey: true, key: 'd' }), KEYED)
-    ).toEqual({ kind: 'commit', combo: 'Cmd+Ctrl+D' })
+      recordingKeydown({ mods: null }, e({ ctrlKey: true, key: 'd' }), KEYED)
+    ).toEqual({ kind: 'commit', combo: 'Ctrl+D' })
   })
   it('Escape cancels', () => {
     expect(recordingKeydown({ mods: null }, e({ key: 'Escape' }), KEYED)).toEqual({ kind: 'cancel' })
   })
   it('modifier-only keydown is pending: remembered for a hold commit when allowed', () => {
-    const r = recordingKeydown({ mods: null }, e({ metaKey: true, altKey: true, key: 'Alt' }), HOLD)
+    const r = recordingKeydown({ mods: null }, e({ ctrlKey: true, altKey: true, key: 'Alt' }), HOLD)
     expect(r.kind).toBe('pending')
     if (r.kind === 'pending') expect(r.state.mods).toEqual({ cmd: true, ctrl: false, alt: true, shift: false })
   })
-  it('mac Ctrl is collected into a hold chord (the PR1 gap, closed)', () => {
-    const r = recordingKeydown({ mods: null }, e({ metaKey: true, ctrlKey: true, key: 'Control' }), HOLD)
-    if (r.kind === 'pending') expect(r.state.mods?.ctrl).toBe(true)
+  it('does not invent a second literal Control modifier', () => {
+    const r = recordingKeydown({ mods: null }, e({ ctrlKey: true, key: 'Control' }), HOLD)
+    if (r.kind === 'pending') expect(r.state.mods?.cmd).toBe(true)
     expect(r.kind).toBe('pending')
   })
   it('non-mac held Super is refused with a hint', () => {
@@ -70,7 +70,7 @@ describe('recordingKeydown', () => {
 describe('recordingKeyup', () => {
   it('full release commits the remembered hold chord', () => {
     const armed = { mods: { cmd: true, ctrl: false, alt: true, shift: false } }
-    expect(recordingKeyup(armed, e({}), HOLD)).toEqual({ kind: 'commit', combo: 'Cmd+Alt' })
+    expect(recordingKeyup(armed, e({}), HOLD)).toEqual({ kind: 'commit', combo: 'Ctrl+Alt' })
   })
   it('partial release keeps waiting; no remembered mods ignores', () => {
     const armed = { mods: { cmd: true, ctrl: false, alt: true, shift: false } }
@@ -81,8 +81,8 @@ describe('recordingKeyup', () => {
   // with Ctrl held committed while Ctrl was still down — mis-capturing the gesture. The full
   // release condition must read ALL FOUR modifier flags.
   it('a keyup with only Ctrl still held is ignored (the anyModDown gap, closed)', () => {
-    const armed = { mods: { cmd: true, ctrl: true, alt: false, shift: false } }
+    const armed = { mods: { cmd: true, ctrl: false, alt: false, shift: false } }
     expect(recordingKeyup(armed, e({ ctrlKey: true }), HOLD)).toEqual({ kind: 'ignored' })
-    expect(recordingKeyup(armed, e({}), HOLD)).toEqual({ kind: 'commit', combo: 'Cmd+Ctrl' })
+    expect(recordingKeyup(armed, e({}), HOLD)).toEqual({ kind: 'commit', combo: 'Ctrl' })
   })
 })

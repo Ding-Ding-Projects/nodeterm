@@ -33,23 +33,23 @@ describe('activeKeybindingOverrides', () => {
 
 describe('effectiveBindings / commandKeys / commandTooltip', () => {
   it('defaults flow through when no override exists', () => {
-    expect(effectiveBindings('app.commandPalette')).toEqual(['Cmd+K'])
+    expect(effectiveBindings('app.commandPalette')).toEqual(['Ctrl+K'])
   })
   it('an override replaces the default everywhere', () => {
-    setKb({ 'panel.sessions': ['Cmd+Alt+L'] })
-    expect(commandKeys('panel.sessions', true)).toEqual(['⌘', '⌥', 'L'])
-    expect(commandTooltip('Sessions', 'panel.sessions', true)).toBe('Sessions (⌘⌥L)')
+    setKb({ 'panel.sessions': ['Ctrl+Alt+L'] })
+    expect(commandKeys('panel.sessions', true)).toEqual(['Ctrl', 'Alt', 'L'])
+    expect(commandTooltip('Sessions', 'panel.sessions', true)).toBe('Sessions (Ctrl+Alt+L)')
   })
   it('matches the legacy hintLabel formatting on both platforms for the defaults', () => {
-    expect(commandTooltip('Sessions', 'panel.sessions', true)).toBe('Sessions (⌘⇧L)')
+    expect(commandTooltip('Sessions', 'panel.sessions', true)).toBe('Sessions (Ctrl+Shift+L)')
     expect(commandTooltip('Sessions', 'panel.sessions', false)).toBe('Sessions (Ctrl+Shift+L)')
   })
   it('resolves the defaults with the SAME platform it formats with', () => {
     // terminal.copySelection is the one command whose defaults differ per platform, so it is
     // the only case that can catch a commandKeys that resolves with isMacPlatform() (true in
     // node) while formatting for the caller's platform.
-    expect(commandKeys('terminal.copySelection', true)).toEqual(['⌘', 'C'])
-    expect(commandKeys('terminal.copySelection', false)).toEqual(['Ctrl', 'Shift', 'C'])
+    expect(commandKeys('terminal.copySelection', true)).toEqual(['Ctrl', 'C'])
+    expect(commandKeys('terminal.copySelection', false)).toEqual(['Ctrl', 'C'])
   })
   it('unbound commands render without a chord suffix', () => {
     expect(commandTooltip('Fit all', 'canvas.fitAll', true)).toBe('Fit all')
@@ -67,22 +67,22 @@ describe('the commit textarea matcher (scm.commit)', () => {
     effectiveBindings('scm.commit').some((s) => matchesShortcut(e, s, isMac))
 
   it('commits on the platform chord', () => {
-    expect(commits(key({ metaKey: true }), true)).toBe(true)
+    expect(commits(key({ ctrlKey: true }), true)).toBe(true)
     expect(commits(key({ ctrlKey: true }), false)).toBe(true)
   })
   it('no longer commits on the OTHER platform primary (the named D-strict losses)', () => {
-    expect(commits(key({ ctrlKey: true }), true)).toBe(false) // mac Ctrl+Enter
+    expect(commits(key({ metaKey: true }), true)).toBe(false) // Windows Meta+Enter
     expect(commits(key({ metaKey: true }), false)).toBe(false) // non-mac Meta+Enter
   })
   it('no longer commits with an extra modifier held on top', () => {
-    expect(commits(key({ metaKey: true, shiftKey: true }), true)).toBe(false)
-    expect(commits(key({ metaKey: true, altKey: true }), true)).toBe(false)
+    expect(commits(key({ ctrlKey: true, shiftKey: true }), true)).toBe(false)
+    expect(commits(key({ ctrlKey: true, altKey: true }), true)).toBe(false)
   })
   it('follows a remap, so the key agrees with the placeholder chip', () => {
-    setKb({ 'scm.commit': ['Cmd+Shift+Enter'] })
+    setKb({ 'scm.commit': ['Ctrl+Shift+Enter'] })
     expect(commits(key({ metaKey: true }), true)).toBe(false)
-    expect(commits(key({ metaKey: true, shiftKey: true }), true)).toBe(true)
-    expect(chipFor('scm.commit', true)).toBe('⌘⇧Enter')
+    expect(commits(key({ ctrlKey: true, shiftKey: true }), true)).toBe(true)
+    expect(chipFor('scm.commit', true)).toBe('Ctrl+Shift+Enter')
   })
   it('is inert when unbound — the placeholder drops its chord for the same reason', () => {
     setKb({ 'scm.commit': [] })
@@ -96,12 +96,12 @@ describe('the commit textarea matcher (scm.commit)', () => {
 
 describe('chipFor', () => {
   it('renders the bare chord the way each platform spells it', () => {
-    expect(chipFor('app.commandPalette', true)).toBe('⌘K')
+    expect(chipFor('app.commandPalette', true)).toBe('Ctrl+K')
     expect(chipFor('app.commandPalette', false)).toBe('Ctrl+K')
   })
   it('follows a remap', () => {
-    setKb({ 'app.commandPalette': ['Cmd+Shift+P'] })
-    expect(chipFor('app.commandPalette', true)).toBe('⌘⇧P')
+    setKb({ 'app.commandPalette': ['Ctrl+Shift+P'] })
+    expect(chipFor('app.commandPalette', true)).toBe('Ctrl+Shift+P')
   })
   it('is empty for an unbound command, so callers can fall back', () => {
     expect(chipFor('canvas.fitAll', true)).toBe('')
@@ -193,9 +193,9 @@ describe('commandKeysFor / dictationBinding', () => {
     expect(commandKeysFor('canvas.fitAll', true)).toEqual([])
   })
   it('dictationBinding follows the override and reports disabled as empty', () => {
-    expect(dictationBinding()).toBe('Cmd+Alt')
-    setKeybindingOverride('speech.dictation', ['Cmd+Alt+D'])
-    expect(dictationBinding()).toBe('Cmd+Alt+D')
+    expect(dictationBinding()).toBe('Ctrl+Alt')
+    setKeybindingOverride('speech.dictation', ['Ctrl+Alt+D'])
+    expect(dictationBinding()).toBe('Ctrl+Alt+D')
     setKeybindingOverride('speech.dictation', [])
     expect(dictationBinding()).toBe('')
   })

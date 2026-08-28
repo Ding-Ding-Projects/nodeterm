@@ -299,8 +299,8 @@ export interface ChordModifiers {
  *  (`isModifierEventKey`) — the keyup event itself no longer carries that state. */
 export function buildModifierChord(mods: ChordModifiers): string | null {
   if (!mods.cmd) return null
-  const parts = ['Cmd']
-  if (mods.ctrl) parts.push('Ctrl')
+  const parts = ['Ctrl']
+  if (mods.ctrl) return null
   if (mods.alt) parts.push('Alt')
   if (mods.shift) parts.push('Shift')
   return parts.join('+')

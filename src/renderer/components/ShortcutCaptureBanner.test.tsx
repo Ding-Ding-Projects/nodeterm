@@ -101,7 +101,7 @@ describe('ShortcutCaptureBanner', () => {
     expect(title()).toBe('Command palette')
     // The chord is read through `chipFor`, so this is the EFFECTIVE binding, not the registry
     // default — the remap case below is the same assertion with an override in place.
-    expect(body()).toContain('⌘K')
+    expect(body()).toContain('Ctrl+K')
     expect(body()).toContain('Command palette')
     expect(body()).toContain('terminal-first')
   })
@@ -110,8 +110,8 @@ describe('ShortcutCaptureBanner', () => {
     setKb({ 'app.commandPalette': ['Cmd+Alt+P'] })
     render()
     capture('app.commandPalette')
-    expect(body()).toContain('⌘⌥P')
-    expect(body()).not.toContain('⌘K')
+    expect(body()).toContain('Ctrl+Alt+P')
+    expect(body()).not.toContain('Ctrl+K')
   })
 
   it('a second capture REPLACES the first and restarts the 12s clock', () => {
@@ -123,7 +123,7 @@ describe('ShortcutCaptureBanner', () => {
     capture('app.settings')
     // Replaced, not queued: the first notice is gone the instant the second arrives.
     expect(title()).toBe('Open settings')
-    expect(body()).toContain('⌘,')
+    expect(body()).toContain('Ctrl+,')
 
     // 8s past the FIRST capture's deadline (16s in) — a clock that had been inherited rather than
     // restarted would have dismissed the strip here.

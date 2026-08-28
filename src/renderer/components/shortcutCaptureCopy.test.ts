@@ -13,7 +13,7 @@ describe('shortcutCaptureCopy', () => {
   it('names the command and the chord that took the key', () => {
     const copy = shortcutCaptureCopy('app.commandPalette', true)
     expect(copy?.title).toBe('Command palette')
-    expect(copy?.body).toContain('⌘K')
+    expect(copy?.body).toContain('Ctrl+K')
     expect(copy?.body).toContain('Command palette')
     // The two ways out are what the banner is FOR — a notice that only reports is noise.
     expect(copy?.body.toLowerCase()).toContain('terminal-first')
@@ -25,7 +25,7 @@ describe('shortcutCaptureCopy', () => {
 
   it('follows a remap, so the notice quotes the chord the user actually pressed', () => {
     setKb({ 'app.commandPalette': ['Cmd+Shift+P'] })
-    expect(shortcutCaptureCopy('app.commandPalette', true)?.body).toContain('⌘⇧P')
+    expect(shortcutCaptureCopy('app.commandPalette', true)?.body).toContain('Ctrl+Shift+P')
   })
 
   // Both halves of "say nothing": there is no chord to quote, so a banner could only claim a

@@ -46,7 +46,7 @@ export function commandKeys(id: CommandId, isMac: boolean = isMacPlatform()): st
 export function commandTooltip(text: string, id: CommandId, isMac: boolean = isMacPlatform()): string {
   const parts = commandKeys(id, isMac)
   if (!parts.length) return text
-  return `${text} (${isMac ? parts.join('') : parts.join('+')})`
+  return `${text} (${parts.join('+')})`
 }
 
 /** The bare chord, as a chip: `'⌘K'` (mac) / `'Ctrl+K'`. **`''` when unbound** — every caller
@@ -54,7 +54,7 @@ export function commandTooltip(text: string, id: CommandId, isMac: boolean = isM
  *  and fall back to chord-less copy rather than rendering a stray fragment. */
 export function chipFor(id: CommandId, isMac: boolean = isMacPlatform()): string {
   const parts = commandKeys(id, isMac)
-  return isMac ? parts.join('') : parts.join('+')
+  return parts.join('+')
 }
 
 /** The single WRITE path for overrides. `null` = reset (delete the key, defaults return);
