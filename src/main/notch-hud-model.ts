@@ -1,4 +1,4 @@
-// Pure, Electron-free aggregation for the macOS Notch HUD (docs/notch-hud.md).
+// Pure, Electron-free aggregation for the Windows Agent HUD (docs/notch-hud.md).
 //
 // The HUD controller (notch-hud.ts) owns the BrowserWindow and the mirror/IPC subscriptions; this
 // module owns the DATA: it folds the four feeds (main-state edges, now-changes, the full mirror

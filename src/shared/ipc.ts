@@ -109,7 +109,7 @@ export const IPC = {
   /** Write text to the system clipboard from the MAIN process. Renderer-side `clipboard` access is
    *  deprecated in Electron; the renderer sends this instead (fire-and-forget). */
   clipboardWrite: 'clipboard:write',
-  /** Copy local files as file references (not bytes/text) to the macOS system clipboard. */
+  /** Copy local files as file references (not bytes/text) to the Windows system clipboard. */
   clipboardWriteFiles: 'clipboard:write-files',
   appNotify: 'app:notify',
   appOpenNotificationSettings: 'app:open-notification-settings',
@@ -134,7 +134,7 @@ export const IPC = {
    *  `external` opt). See core/ack-sweep.ts. */
   agentUnreadClear: 'agent:unread-clear',
   agentSubagentActivity: 'agent:subagent-activity',
-  /** macOS Notch HUD (docs/notch-hud.md). main → hud: push the current row array. */
+  /** Windows Agent HUD (docs/notch-hud.md). main → hud: push the current row array. */
   hudRows: 'hud:rows',
   /** hud → main: toggle window click-through on hotspot enter/leave. Arg: `ignore: boolean`. */
   hudSetIgnoreMouse: 'hud:set-ignore-mouse',
