@@ -10,8 +10,17 @@ are accepted under that license.
 
 ## Getting set up
 
+On a fresh Windows checkout, run the supported one-click entry point:
+
+```bat
+build.bat
+```
+
+It obtains the complete build toolchain and project packages automatically. For a prepared
+checkout, the direct developer commands are:
+
 ```bash
-npm install        # also patches + rebuilds node-pty against Electron's ABI (postinstall)
+npm install        # rebuilds native modules against Electron's ABI (postinstall)
 npm run dev        # dev mode with renderer HMR
 npm run typecheck  # tsc for both the node and web projects — the fastest correctness gate
 npm test           # vitest, unit + integration
@@ -19,10 +28,8 @@ npm test           # vitest, unit + integration
 
 `npm run server:dev` boots the Server Edition (browser UI) if you are working on that surface.
 
-**If `src/main/node-pty-patch.test.ts` is red, your `node_modules` is unpatched — not your code.**
-Run `npm run rebuild`. node-pty 1.1.0 leaks a pty device per spawn on macOS
-([node-pty#950](https://github.com/microsoft/node-pty/issues/950)); we patch its source before
-`electron-rebuild` compiles it, and that test guards the patch surviving upgrades.
+On Windows, session capacity is owned by ConPTY and the bundled session-host process. Run
+`npm run rebuild` when native ABI output is stale or the build script reports a rebuild issue.
 
 ## Where code goes
 
@@ -49,7 +56,7 @@ boundary tests cannot tell you a feature is *missing*.
 A feature is not done until you have decided how it behaves on each — even if the decision is "not
 applicable here":
 
-1. **Desktop** (Electron)
+1. **Windows desktop** (Electron)
 2. **Server Edition** (Linux, browser)
 3. **Mobile companion** — *nodeterm mobile*, a **private** repo (`nodeterm-ios`, SwiftUI). You
    cannot open a PR against it, so this is normally a follow-up note rather than same-PR
@@ -66,8 +73,8 @@ need it too, and wire it in the same change.
 
 ## House rules
 
-- **Anything path-shaped: Windows is a delivery target.** Most of this was written on
-  macOS/Linux, so the recurring defect is code that is genuinely correct on POSIX —
+- **Anything path-shaped: Windows is the desktop delivery target.** The recurring defect is code
+  that is genuinely correct on POSIX —
   `split('/')`, `startsWith('/')` as an is-absolute test, a bare `fs.rename`. Use
   `path.basename`/`join`/`sep`, publish files with `renameAtomic`, and write at least one test with
   a real `C:\`-shaped input. Guards enforce some of this and will fail your PR. In the Server
@@ -164,7 +171,7 @@ hook script alone could heal itself, the same node proved itself through one cli
 through another for the life of the session.
 
 **A stream error is not a throw you can catch.** When a write to `process.stdout`/`stderr` fails —
-`EPIPE` down a closed pipe, `EIO` after macOS revokes a closed terminal's tty — node reports it by
+`EPIPE` down a closed pipe, or a host terminal stream being revoked, node reports it by
 emitting `'error'` on the stream a tick later, and the default for an unhandled `'error'` event is
 to kill the process. The stack it carries was captured at the write, so the crash *reads* as if it
 happened synchronously at your `console.log`, and wrapping that call in `try/catch` changes nothing

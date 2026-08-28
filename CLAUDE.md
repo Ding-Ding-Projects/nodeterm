@@ -20,9 +20,10 @@ UI rewrite (see Transport abstraction below).
 
 ## Platform support
 
-macOS, Linux, and a browser Server Edition are the shipping targets; Windows is being brought up
-as a first-class desktop target (extraction from external PR #276). The policy for what "supported"
-means — and what you may assume when writing a feature — is three tiers, not "100% parity":
+Windows x64 is the supported desktop target. The browser Server Edition and mobile companion remain
+separate surfaces, while the current desktop delivery, packaging, and build evidence are Windows-
+only. The policy for what "supported" means, and what you may assume when writing a feature, is
+explicit platform boundaries rather than "100% parity":
 
 - **Core is first-class everywhere.** The terminal + agent + canvas + session-continuity
   experience must work on every desktop platform. Continuity is tmux on POSIX and, where there is
@@ -43,6 +44,8 @@ means — and what you may assume when writing a feature — is three tiers, not
 
 ## Commands
 
+On a fresh Windows checkout, run `build.bat` or `build.bat /s` before using the direct commands.
+
 ```bash
 npm install        # deps + rebuilds node-pty against Electron's ABI (postinstall hook)
 npm run dev        # dev mode with renderer HMR
@@ -52,17 +55,10 @@ npm run typecheck  # tsc for both node (main/preload) and web (renderer) project
 npm run rebuild    # re-run electron-rebuild for node-pty if you hit ABI/native errors
 ```
 
-**`rebuild` and `postinstall` both run `scripts/patch-node-pty.mjs` first, and that is not
-optional.** node-pty 1.1.0's darwin `pty_posix_spawn` leaks a ptmx device on every SUCCESSFUL spawn
-(an off-by-one in the low-fd cleanup) and master+slave on every FAILED one; on this app's spawn
-churn that exhausts `kern.tty.ptmx_max` within hours, and terminals then simply stop opening. The
-script rewrites `node_modules/node-pty/src/unix/pty.cc` before electron-rebuild compiles it.
-
-`src/main/node-pty-patch.test.ts` asserts the marker is present in those sources, so a node-pty
-upgrade that silently drops the patch fails loudly. **If that test is red, your `node_modules` is
-unpatched, not your code** — run `npm run rebuild`. It deliberately does not measure descriptors
-(that is environment-dependent); it checks the source the native module is built from. Upstream:
-microsoft/node-pty#950 — if the fix lands there, delete the script, its wiring and that test.
+Native rebuilds are handled by the Windows bootstrap and `scripts/rebuild-windows.mjs`, which selects
+the supported Visual Studio 2022 toolchain and rebuilds the native modules against Electron's ABI.
+Windows terminal capacity is owned by ConPTY and the session-host process, not by a POSIX device
+ceiling.
 ```
 ```
 
