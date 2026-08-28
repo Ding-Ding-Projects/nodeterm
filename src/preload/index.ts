@@ -7,7 +7,6 @@ import type {
   NodeTerminalApi,
   Project,
   PtyCreateOptions,
-  PtyPressure,
   LogRecord,
   RecycledInfo,
   RelayPeerPending,
@@ -725,11 +724,6 @@ const api: NodeTerminalApi = {
     const handler = (_e: unknown, severity: 'warning' | 'critical') => listener(severity)
     ipcRenderer.on(IPC.appMemoryPressure, handler)
     return () => ipcRenderer.removeListener(IPC.appMemoryPressure, handler)
-  },
-  onPtyPressure: (listener) => {
-    const handler = (_e: unknown, reading: PtyPressure) => listener(reading)
-    ipcRenderer.on(IPC.ptyPressure, handler)
-    return () => ipcRenderer.removeListener(IPC.ptyPressure, handler)
   },
   answerPermission: (payload) => ipcRenderer.invoke(IPC.agentAnswerPermission, payload),
   ackDone: (nodeId) => {

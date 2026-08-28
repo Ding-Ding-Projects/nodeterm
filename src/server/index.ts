@@ -80,7 +80,6 @@ import { createAckSweeper } from '../core/ack-sweep'
 import { createSessionReaper } from '../core/session-budget'
 import { startSessionMemoryService, sshScopePredicate } from '../core/session-memory-service'
 import { createMemoryPressureMonitor } from '../core/memory-pressure'
-import { createPtyPressureMonitor } from '../core/pty-pressure'
 import { claudeCliCaps, type ClaudeCliCaps } from '../core/claude-cli'
 import { claudeConfigDirFor } from '../core/claude-config-dir'
 import { presenceHub } from '../core/presence/hub'
@@ -603,30 +602,6 @@ export async function startServer(
     }
   })
   pressure.start()
-  // Pty-device pressure (core/pty-pressure.ts): the reaper leg ONLY, and deliberately so.
-  //
-  // A standing host is exactly where the ceiling is reached first — it accumulates the sessions
-  // (field report: 95) whose panes and ssh children hold the devices — so the sweep matters more
-  // here than on the desktop. What is missing is the OTHER half: the desktop also raises a banner
-  // whose one useful affordance is "Fix automatically…", and that button ends in macOS's own
-  // admin-password dialog on the HOST's physical display. A browser tab (possibly on another
-  // machine, possibly on a Linux host with no such limit at all) cannot answer that prompt, so a
-  // banner there would name a problem it gives the reader no way to act on. The channel exists —
-  // platform.broadcast reaches attached tabs — this is a choice, not a gap, and the same one
-  // already documented for the memory-pressure levers in renderer/bridge/stubs.ts. Server hosts
-  // hitting the wall are told by the spawn error (core/pty-devices.ts), which is the surface a
-  // headless host actually has. Stopped on close beside the memory monitor.
-  //
-  // `pressure: 'pty'` for the same reason as the desktop: without an explicit reason the budget's
-  // own triggers (memory watermark, detached cap) are both clear on a pty-starved host and the
-  // sweep plans nothing. It buys an allowance, not an exemption — see planReap.
-  const ptyPressure = createPtyPressureMonitor({
-    onLevel: (reading) => {
-      if (reading.level === 'critical') void sessionReaper.sweep({ pressure: 'pty' })
-    }
-  })
-  ptyPressure.start()
-
   // Session memory: the pill's RAM read plus the on-demand per-session breakdown. The Server
   // Edition runs ON the host whose sessions it reports and has no SSH-project manager, so it passes
   // no `run` — an SSH scope is REFUSED (ok:false), never swept locally.
@@ -673,7 +648,6 @@ export async function startServer(
         // Detach PTY clients — tmux sessions keep running (Phase 1 contract).
         sessionReaper.stop()
         pressure.stop()
-        ptyPressure.stop()
         await contextLink.stop()
         await ptyManager.killAll()
         // Same native hazard as the desktop app: a whisper transcribe still running when the
@@ -728,7 +702,6 @@ export async function startServer(
       // Detach PTY clients — tmux sessions keep running (Phase 1 contract; never kill the server).
       sessionReaper.stop()
       pressure.stop()
-      ptyPressure.stop()
       await contextLink.stop()
       await ptyManager.killAll()
       // Same native hazard as the desktop app: a whisper transcribe still running when the node

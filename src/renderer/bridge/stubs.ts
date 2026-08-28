@@ -460,7 +460,6 @@ export function buildStubApi(): Omit<
     // on its own terms; pushing our levers over the wire would fight it, not help it. Deliberate
     // no-op, not an oversight.
     onMemoryPressure: noopUnsub,
-    onPtyPressure: noopUnsub,
     onAgentControl: noopUnsub,
     sendAgentControlResult: noop,
     // Browser control is desktop-only (no <webview>, no CDP on the Server Edition / relay), so the

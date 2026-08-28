@@ -161,7 +161,6 @@ import { UpdateCard } from '../components/UpdateCard'
 import { AnnouncementBanner } from '../components/AnnouncementBanner'
 import { ResumeCard } from '../components/ResumeCard'
 import { TmuxBanner } from '../components/TmuxBanner'
-import { PtyPressureBanner } from '../components/PtyPressureBanner'
 import { ShortcutCaptureBanner } from '../components/ShortcutCaptureBanner'
 import { ConflictBar } from '../components/ConflictBar'
 import { ConfirmDialog } from '../components/ConfirmDialog'
@@ -11068,9 +11067,6 @@ export function Canvas() {
       <div className="top-banners">
         <AnnouncementBanner />
         <TmuxBanner onInstall={runInTerminal} />
-        {/* This MACHINE is running out of pty devices — subscribes for itself; a failed
-            "Fix automatically…" lands in the same notice strip as every other async op. */}
-        <PtyPressureBanner onError={(text) => setNotice({ kind: 'error', text })} />
         {/* App-first just took a chord from a focused terminal, once per command ever —
             subscribes for itself; only the route into Settings is Canvas's to give. */}
         <ShortcutCaptureBanner

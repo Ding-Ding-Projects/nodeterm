@@ -303,24 +303,16 @@ export function hostUnderMemoryPressure(mem: MemInfo | null, cfg: SessionBudgetC
  * Eligible = named `nt-*` AND detached AND silent past the grace window. Then:
  *   - memory below the watermark → up to `batchMax` (a failed memory read — `mem === null` — is
  *     NOT pressure: absence of evidence never triggers the primary path);
- *   - `externalPressure` → the same allowance, for a resource this module cannot measure (today:
- *     pty devices — see core/pty-pressure.ts). It exists because the 2026-08-11 host had HEALTHY
- *     memory and sat well under `maxDetached` while being unable to open a single terminal, so
- *     every term above was zero and the sweep the shell fired was a no-op;
  *   - detached count over `maxDetached` → the excess, even with healthy memory;
  * combined take is bounded by `batchMax`.
  *
- * An allowance is not an exemption: `externalPressure` raises how MANY of the eligible may go, and
- * touches nothing about which sessions are eligible. Attached sessions and sessions inside the
- * grace window stay unkillable under it, exactly as under memory pressure — that is this module's
- * one hard rule and no caller gets to spend it.
+ * Attached sessions and sessions inside the grace window remain ineligible.
  */
 export function planReap(
   sessions: SessionInfo[],
   mem: MemInfo | null,
   nowSec: number,
-  cfg: SessionBudgetConfig,
-  externalPressure = false
+  cfg: SessionBudgetConfig
 ): string[] {
   if (cfg.disabled) return []
   const nt = sessions.filter((s) => s.name.startsWith('nt-'))
@@ -330,7 +322,7 @@ export function planReap(
     .sort((a, b) => a.outputSec - b.outputSec)
 
   const lowMem = hostUnderMemoryPressure(mem, cfg)
-  const pressure = lowMem || externalPressure ? cfg.batchMax : 0
+  const pressure = lowMem ? cfg.batchMax : 0
   const overCap = Math.max(0, detached.length - cfg.maxDetached)
   const take = Math.min(cfg.batchMax, Math.max(pressure, overCap))
   return eligible.slice(0, take).map((s) => s.name)
@@ -453,20 +445,9 @@ export interface SessionReaperOpts {
   log?: (msg: string) => void
 }
 
-/**
- * A resource OUTSIDE this module's instruments that is exhausted right now, named by the shell
- * that measured it. Today only pty devices (`kern.tty.ptmx_max`, core/pty-pressure.ts).
- */
-export type SweepPressure = 'pty'
-
-export interface SweepOptions {
-  /** Grant this sweep the same allowance low memory would. Omitted ⇒ ordinary budget semantics. */
-  pressure?: SweepPressure
-}
-
 export interface SessionReaper {
   /** One sweep; resolves to the number of sessions killed. Never throws. */
-  sweep(opts?: SweepOptions): Promise<number>
+  sweep(): Promise<number>
   start(): void
   stop(): void
 }
@@ -524,7 +505,7 @@ export function createSessionReaper(opts: SessionReaperOpts): SessionReaper {
     }
   }
 
-  const sweep = async (sweepOpts?: SweepOptions): Promise<number> => {
+  const sweep = async (): Promise<number> => {
     if (cfg.disabled) return 0
     const bin = opts.tmuxBin()
     if (!bin) return 0
@@ -538,7 +519,7 @@ export function createSessionReaper(opts: SessionReaperOpts): SessionReaper {
 
     const all = [...bySocket.entries()].flatMap(([, list]) => list)
     const now = nowSec()
-    const plan = new Set(planReap(all, readMem(), now, cfg, sweepOpts?.pressure !== undefined))
+    const plan = new Set(planReap(all, readMem(), now, cfg))
     if (plan.size === 0) return 0
     const h = (sec: number): string => ((now - sec) / 3600).toFixed(1)
     const clocks = new Map(all.map((s) => [s.name, `no pane output for ${h(s.outputSec)}h; last attach ${h(s.activitySec)}h ago`]))

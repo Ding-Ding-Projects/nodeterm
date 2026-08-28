@@ -27,11 +27,6 @@ export const IPC = {
    *  Model switching uses this instead of typing an exit slash-command into an agent composer. */
   ptyTerminateForeground: 'pty:terminate-foreground',
   ptyReadSessionName: 'pty:read-session-name',
-  /** Shell → renderer: this MACHINE's pty-device pressure band changed (core/pty-pressure.ts).
-   *  Payload: `PtyPressure` — `{ level, usage, ceiling }`. Sent on band CHANGES only, and re-sent
-   *  for a held band at most once every five minutes; `level: 'none'` is what clears the banner.
-   *  Desktop only — see the Server Edition note beside the monitor in src/server/index.ts. */
-  ptyPressure: 'pty:pressure',
   claudeReadTranscript: 'claude:read-transcript',
   chatReadTranscript: 'chat:read-transcript',
   claudeAccountsAdd: 'claude-accounts:add',

@@ -169,7 +169,6 @@ import { initKeepAwake } from './keep-awake'
 import type { KeepAwakeTracker } from '../core/keep-awake'
 import { startSessionMemoryService, sshScopePredicate } from '../core/session-memory-service'
 import { createMemoryPressureMonitor } from '../core/memory-pressure'
-import { createPtyPressureMonitor } from '../core/pty-pressure'
 import { getDeviceId } from '../core/device-id'
 import { initRemoteStatusPush } from './remote-ssh/remote-status-push'
 import { initCanvasSync } from '../core/canvas-sync'
@@ -2287,9 +2286,7 @@ app.whenReady().then(async () => {
   // culls sessions on a machine macOS says is fine. Fixing readMemInfo made the bytes HONEST; it
   // did not make them the right instrument.
   //
-  // This is not a regression of the reaper's purpose on macOS: the count cap still bounds
-  // accumulation, the pty-pressure monitor covers the resource that actually ran out, and the
-  // session-memory panel gives the user the visibility to cull deliberately.
+  // The detached-session cap and session-memory panel remain the two reaper inputs.
   const sessionReaper = createSessionReaper({
     tmuxBin: () => ptyManager.getTmuxBin(),
     shadowed: (socket) => ptyManager.shadowedTmuxSessions(socket)
@@ -2308,25 +2305,6 @@ app.whenReady().then(async () => {
       if (severity === 'critical') void sessionReaper.sweep()
     }
   }).start()
-  // Pty-device pressure (core/pty-pressure.ts): the OTHER way this machine runs out, and the one
-  // that actually happened. The memory monitor above could not see it — during the 2026-08-11
-  // incident RAM was plentiful while `/dev/ttys*` was full, so the reaper never woke and the user
-  // got no warning at all, just terminals that stopped opening. Same shape as the memory leg: tell
-  // the renderer (which raises a banner) on every band change, and sweep the reaper NOW on
-  // critical — a reaped detached session returns its pty device, which is exactly the resource in
-  // short supply. Transitions only, re-announced at most every five minutes.
-  //
-  // The sweep is passed `pressure: 'pty'` because a bare `sweep()` here would plan NOTHING: the
-  // budget's own triggers are memory and a detached-count cap, and the incident profile clears
-  // both (healthy RAM, under the cap). The reason grants the same batch allowance low memory
-  // would and widens no exemption — attached and in-grace sessions stay untouchable.
-  const ptyPressure = createPtyPressureMonitor({
-    onLevel: (reading) => {
-      sendToMain(IPC.ptyPressure, reading)
-      if (reading.level === 'critical') void sessionReaper.sweep({ pressure: 'pty' })
-    }
-  })
-  ptyPressure.start()
   // Session memory (docs/superpowers/specs/2026-08-10-session-memory-panel-design.md): the pill's
   // cheap RAM read plus the on-demand per-session breakdown. An SSH project's sessions live on ITS
   // host, so they are read THERE over the project's ControlMaster — the same injection Context Link

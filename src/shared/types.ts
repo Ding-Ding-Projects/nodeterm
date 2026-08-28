@@ -725,22 +725,6 @@ export interface TmuxStatus {
   platform: string | null
 }
 
-/**
- * How close THIS MACHINE is to `kern.tty.ptmx_max`, the system-wide pty-device ceiling that took
- * the whole app down in the 2026-08-11 field report (every spawn failing with a bare
- * `posix_spawnp failed.`). See core/pty-pressure.ts for the bands.
- */
-export type PtyPressureLevel = 'none' | 'elevated' | 'critical'
-
-/** A pty-pressure reading, as broadcast on `IPC.ptyPressure`. `null` = could not be measured. */
-export interface PtyPressure {
-  level: PtyPressureLevel
-  /** `/dev/ttys*` entries in existence right now. */
-  usage: number | null
-  /** `kern.tty.ptmx_max`. */
-  ceiling: number | null
-}
-
 
 export interface PtyApi {
   /** Starts a new PTY session; returns its sessionId and whether the session was freshly
@@ -2879,12 +2863,6 @@ export interface NodeTerminalApi {
    *  need only be idempotent, not cheap. Returns unsubscribe. Server Edition: never fires (the
    *  pressure levers run host-side there; a browser tab's memory belongs to the browser). */
   onMemoryPressure(listener: (severity: 'warning' | 'critical') => void): () => void
-  /** Fires when THIS MACHINE's pty-device pressure band changes (core/pty-pressure.ts): the
-   *  renderer raises/lowers the banner that warns before `kern.tty.ptmx_max` stops every new
-   *  terminal from opening. Band changes only, re-sent for a held band at most once every five
-   *  minutes; `level: 'none'` means the banner should come down. Returns unsubscribe.
-   *  Server Edition: never fires — the reaper leg runs host-side only (see src/server/index.ts). */
-  onPtyPressure(listener: (reading: PtyPressure) => void): () => void
   /** Answer a Claude permission request via the deterministic hook-reply channel (spec:
    *  docs/hook-reply-approvals.md). Writes the one-line answer file the held hook is polling
    *  (`~/.nodeterm/pending/<pendingId>.answer`) on the host the agent runs on — the LOCAL fs for a
