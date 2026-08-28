@@ -15,17 +15,15 @@ site/
 
 ## How the download buttons work
 
-`index.html` fetches `/updates/latest-mac.yml` on load, reads the version and the `.dmg`
-filenames, and points the buttons at the latest build. If the feed isn't reachable yet, the
-buttons fall back to the GitHub Releases page. So once you deploy a release to `/updates/`,
-the download buttons update themselves — no edit needed.
+`index.html` links to the Windows release page and documents the zero-setup source build. The
+site does not publish or discover non-Windows packages.
 
 ## Two feeds this site serves
 
 - **`/announcements.json`** — the in-app news banner reads this. Edit it to post news; see
   the schema in [`../docs/announcements.example.json`](../docs/announcements.example.json).
-- **`/updates/`** — the app's auto-updater reads `latest-mac.yml` here. Populated per
-  release (see [`updates/README.md`](./updates/README.md)).
+- **`/updates/`** — retained only for historical records. Current Windows distribution uses
+  Squirrel.Windows release assets.
 
 ## Local preview
 
