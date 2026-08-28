@@ -234,7 +234,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
         <div className="onb-card">
           <div className="onb-scene">
             {stepId === 'agents' && <SceneAgents agentId={agentId} label={agent.label} color={agent.color} />}
-            {stepId === 'dictation' && <SceneDictation keys={dictKeys.map((k) => keyLabel(k, false))} hold={dictHold} />}
+            {stepId === 'dictation' && <SceneDictation keys={dictKeys.map((k) => keyLabel(k))} hold={dictHold} />}
             {stepId === 'kanban' && <SceneKanban pulseKey={kanbanPulse} />}
             {stepId === 'notify' && <SceneNotify />}
             {stepId === 'keepawake' && (
@@ -284,7 +284,7 @@ export function OnboardingFlow({ onClose }: { onClose: () => void }) {
                   {dictHold ? 'Hold' : 'Press'}{' '}
                   {dictKeys.map((k, i) => (
                     <kbd key={i} className="kbd">
-                      {keyLabel(k, false)}
+                      {keyLabel(k)}
                     </kbd>
                   ))}{' '}
                   anywhere to dictate — on-device Whisper turns speech into text. Nothing is

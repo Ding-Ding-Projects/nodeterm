@@ -18,7 +18,7 @@ import { PublishDialog } from './PublishDialog'
 import { defaultScmScope, type ScmScope } from '@shared/scm-scope'
 import { chipFor, effectiveBindings } from '../lib/keybindingOverrides'
 import { matchesShortcut } from '@shared/shortcut'
-import { isLegacyPrimaryPlatform } from '@shared/platform-utils'
+import { usesMetaPrimary } from '@shared/platform-utils'
 
 export interface SourceControlPanelProps {
   onClose: () => void
@@ -40,7 +40,7 @@ export interface SourceControlPanelProps {
 const AUTO_FETCH_MS = 180_000
 
 /** Which physical modifier the registry's abstract `Cmd` resolves to for the commit chord. */
-const useMetaPrimary = isLegacyPrimaryPlatform()
+const useMetaPrimary = usesMetaPrimary()
 
 const STATUS_COLOR: Record<string, string> = {
   M: '#ffd60a',

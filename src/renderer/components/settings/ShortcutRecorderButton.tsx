@@ -38,12 +38,12 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { COMMANDS_BY_ID, normalizeBindingForCommand, type CommandId } from '@shared/keybindings'
-import { isLegacyPrimaryPlatform } from '@shared/platform-utils'
+import { usesMetaPrimary } from '@shared/platform-utils'
 import { recordingKeydown, recordingKeyup, type RecordingState } from './shortcutRecording'
 import { IconRecordKey } from './ShortcutRowIcons'
 import { Tooltip } from '../Tooltip'
 
-const useMetaPrimary = isLegacyPrimaryPlatform()
+const useMetaPrimary = usesMetaPrimary()
 
 export function ShortcutRecorderButton({
   commandId,

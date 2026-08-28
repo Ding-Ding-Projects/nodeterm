@@ -10,11 +10,7 @@ import { ShortcutsSection, commitCandidate } from './ShortcutsSection'
 
 ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
-// jsdom reports a non-mac platform; the chips and the refusal messages are platform-formatted,
-// so pin macOS here — `isLegacyPrimaryPlatform()` is read at call time, never captured at module load.
-Object.defineProperty(window.navigator, 'platform', { value: 'MacIntel', configurable: true })
-
-/** How many commands ship with NO chord on the pinned (mac) platform. COMPUTED, because the
+/** How many commands ship with NO chord on the supported desktop platform. COMPUTED, because the
  *  registry is a growing POOL: every unbound command added later would otherwise red these
  *  counts with a number that says nothing about the behavior under test. Overrides are absent in
  *  the cases below (or sanitized away), so the effective binding IS the mac default. */

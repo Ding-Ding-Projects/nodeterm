@@ -180,7 +180,7 @@ import {
   terminalShortcutPolicy
 } from '../lib/keybindingOverrides'
 import { matchesShortcut } from '@shared/shortcut'
-import { hintLabel, isWindowsPlatform, isLegacyPrimaryPlatform } from '@shared/platform-utils'
+import { hintLabel, isWindowsPlatform, usesMetaPrimary } from '@shared/platform-utils'
 import { ColumnPill } from '../components/kanban/ColumnPill'
 import { BoardLogPanel } from '../components/kanban/BoardLogPanel'
 import { AgentMascot } from './AgentMascot'
@@ -188,7 +188,7 @@ import { MaximizeButton } from './MaximizeButton'
 import { connectHostAttachment } from '../lib/sshAttachments'
 
 /** Which physical modifier the registry's abstract `Cmd` resolves to for the find-bar chord. */
-const useMetaPrimary = isLegacyPrimaryPlatform()
+const useMetaPrimary = usesMetaPrimary()
 
 /** How long a remote terminal waits for its project's ControlMaster before giving up and showing
  *  the offline overlay. Sized for the SLOW-but-fine case (a cold app load whose connect is still

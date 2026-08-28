@@ -24,11 +24,6 @@ import { ShortcutCaptureBanner } from './ShortcutCaptureBanner'
 
 ;(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
-// jsdom reports a non-mac platform, and the body quotes a PLATFORM-FORMATTED chord ('⌘K' vs
-// 'Ctrl+K'). Pin macOS so the assertions name one spelling — `isLegacyPrimaryPlatform()` is read at call
-// time, never captured at module load.
-Object.defineProperty(window.navigator, 'platform', { value: 'MacIntel', configurable: true })
-
 /** Must be a FRESH `keybindings` object every time: `activeKeybindingOverrides` memoizes on that
  *  object's identity, so mutating one in place would serve the previous sanitize. */
 const setKb = (kb: Record<string, readonly string[]> | undefined): void =>

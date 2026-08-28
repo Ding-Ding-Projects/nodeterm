@@ -14,7 +14,7 @@
  * command names the user's own chord, never the registry default they no longer use.
  */
 import { COMMANDS_BY_ID, type CommandId } from '@shared/keybindings'
-import { isLegacyPrimaryPlatform } from '@shared/platform-utils'
+import { usesMetaPrimary } from '@shared/platform-utils'
 import { chipFor } from '../lib/keybindingOverrides'
 
 export interface ShortcutCaptureCopy {
@@ -24,7 +24,7 @@ export interface ShortcutCaptureCopy {
 
 export function shortcutCaptureCopy(
   id: CommandId,
-  useMetaPrimary: boolean = isLegacyPrimaryPlatform()
+  useMetaPrimary: boolean = usesMetaPrimary()
 ): ShortcutCaptureCopy | null {
   const def = COMMANDS_BY_ID.get(id)
   if (!def) return null

@@ -3,7 +3,7 @@
 // The decisions live in ./copy-feedback; this file owns the listeners, the timers, the one-time
 // storage flag, and the browser-honesty rule.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { isLegacyPrimaryPlatform } from '@shared/platform-utils'
+import { usesMetaPrimary } from '@shared/platform-utils'
 import {
   COPIED_DWELL_MS,
   ERROR_TOAST_SUPPRESS_MS,
@@ -106,7 +106,7 @@ export function useCopyFeedback(opts: {
           sawOsc52: lastCopyAt.current >= from.t,
           hasXtermSelection: hasSelectionRef.current(),
           hintSeen: hintSeen(),
-          useMetaPrimary: isLegacyPrimaryPlatform()
+          useMetaPrimary: usesMetaPrimary()
         })
         if (!out) return
         markHintSeen()

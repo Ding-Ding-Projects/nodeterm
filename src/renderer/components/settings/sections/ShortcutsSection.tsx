@@ -49,7 +49,7 @@ import {
   type TerminalShortcutPolicy
 } from '@shared/keybindings'
 import { formatShortcut } from '@shared/shortcut'
-import { isLegacyPrimaryPlatform, keyLabel } from '@shared/platform-utils'
+import { usesMetaPrimary, keyLabel } from '@shared/platform-utils'
 import {
   activeKeybindingOverrides,
   commandKeysFor,
@@ -176,7 +176,7 @@ export function commitCandidate(
   combo: string,
   mode: 'replace' | 'add'
 ): { ok: true } | { ok: false; error: string } {
-  const useMetaPrimary = isLegacyPrimaryPlatform()
+  const useMetaPrimary = usesMetaPrimary()
   const current = activeKeybindingOverrides()
   const existing = effectiveBindings(id)
   const nextList = mode === 'add' ? [...existing.filter((b) => b !== combo), combo] : [combo]
@@ -298,7 +298,7 @@ function Chips({
   title: string
   onRemove?: (index: number) => void
 }): React.JSX.Element {
-  const useMetaPrimary = isLegacyPrimaryPlatform()
+  const useMetaPrimary = usesMetaPrimary()
   const keys = limit === undefined ? chords : chords.slice(0, limit)
   if (keys.length === 0) return <></>
   return (

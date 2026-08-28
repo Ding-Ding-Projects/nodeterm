@@ -40,14 +40,13 @@ describe('effectiveBindings / commandKeys / commandTooltip', () => {
     expect(commandKeys('panel.sessions', true)).toEqual(['Ctrl', 'Alt', 'L'])
     expect(commandTooltip('Sessions', 'panel.sessions', true)).toBe('Sessions (Ctrl+Alt+L)')
   })
-  it('matches the legacy hintLabel formatting on both platforms for the defaults', () => {
+  it('formats the default shortcut consistently for explicit modifier modes', () => {
     expect(commandTooltip('Sessions', 'panel.sessions', true)).toBe('Sessions (Ctrl+Shift+L)')
     expect(commandTooltip('Sessions', 'panel.sessions', false)).toBe('Sessions (Ctrl+Shift+L)')
   })
   it('resolves the defaults with the SAME platform it formats with', () => {
-    // terminal.copySelection is the one command whose defaults differ per platform, so it is
-    // the only case that can catch a commandKeys that resolves with isLegacyPrimaryPlatform() (true in
-    // node) while formatting for the caller's platform.
+    // terminal.copySelection exercises primary-modifier resolution, so it catches formatting and
+    // binding resolution drifting apart.
     expect(commandKeys('terminal.copySelection', true)).toEqual(['Ctrl', 'C'])
     expect(commandKeys('terminal.copySelection', false)).toEqual(['Ctrl', 'C'])
   })
