@@ -8,7 +8,7 @@ The work is being prepared in PR #494, targeting `eneskirca/nodeterm:main` from
 The latest source commit is:
 
 ```text
-d30e754b
+ea66cca2
 ```
 
 The source checkout is clean and the source ref has been verified with `git ls-remote`.
@@ -106,9 +106,9 @@ produce an unknown-publisher warning.
 - Merge only after upstream review approval.
 - The hosted release workflow has not yet produced a GitHub run for this PR head; its local YAML
   structure and Windows package path are verified, but remote workflow evidence is pending.
-- The Windows-only `release.yml` is present on the PR source jer, but GitHub registers workflows
-  from the source repository's default branch. Because this is a new feature jer in a fork, the
-  workflow is not dispatchable from the source repository until that jer is merged or otherwise
+- The Windows-only `release.yml` is present on the PR source branch, but GitHub registers workflows
+  from the source repository's default branch. Because this is a new feature branch in a fork, the
+  workflow is not dispatchable from the source repository until that branch is merged or otherwise
   installed on its default branch. `gh pr checks 494 -R eneskirca/nodeterm` reports no checks, and
   the target repository has existing `action_required` CI and Security runs.
 
