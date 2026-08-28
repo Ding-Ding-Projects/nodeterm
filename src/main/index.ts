@@ -317,15 +317,15 @@ function isSafeExternalUrl(url: unknown): url is string {
 }
 
 const settingsStore = new SettingsStore()
-// ⌘M / ⌘W are registry commands (`node.toggleMarkdown` / `node.close`), so what the window
+// Ctrl+M and Ctrl+W are registry commands (`node.toggleMarkdown` and `node.close`), so what the window
 // intercepts follows the user's settings. Resolved LAZILY (first keystroke, long after
 // `settingsStore.init()` in `whenReady`) rather than at module load, where `get()` would still be
 // DEFAULT_SETTINGS and every override would be missed until the next save; recomputed on
 // `onChange`, which fires after a successful save. Never per keystroke — sanitize is real work.
-const interceptIsMac = false
+const interceptUsesMetaPrimary = false
 let interceptBindings: KeydownInterceptBindings | null = null
 const currentInterceptBindings = (): KeydownInterceptBindings =>
-  (interceptBindings ??= resolveInterceptBindings(settingsStore.get().keybindings, interceptIsMac))
+  (interceptBindings ??= resolveInterceptBindings(settingsStore.get().keybindings, interceptUsesMetaPrimary))
 // The user's terminal-shortcut policy, memoized on exactly the same terms and for exactly the same
 // reason as `interceptBindings` above: lazily on first keystroke (module load is before
 // `settingsStore.init()`, where every stored value still reads as DEFAULT_SETTINGS), recomputed on
@@ -341,7 +341,7 @@ let interceptPolicy: TerminalShortcutPolicy | null = null
 const currentInterceptPolicy = (): TerminalShortcutPolicy =>
   (interceptPolicy ??= normalizeTerminalShortcutPolicy(settingsStore.get().terminalShortcutPolicy))
 settingsStore.onChange((s) => {
-  interceptBindings = resolveInterceptBindings(s.keybindings, interceptIsMac)
+  interceptBindings = resolveInterceptBindings(s.keybindings, interceptUsesMetaPrimary)
   interceptPolicy = normalizeTerminalShortcutPolicy(s.terminalShortcutPolicy)
   // A policy flip changes the stood-down answer with no focus event behind it, so the menu leg
   // owes a sync here too. (`buildAppMenu` re-runs on this same hook and syncs at its end, so this
@@ -836,7 +836,7 @@ function syncMenuForStandDown(): void {
   const menu = Menu.getApplicationMenu()
   if (!menu) return
   const enabled = !menuStandsDown(shortcutRecording, currentInterceptPolicy(), terminalFocused)
-  for (const id of menuItemIdsToSuspend(interceptIsMac)) {
+  for (const id of menuItemIdsToSuspend(interceptUsesMetaPrimary)) {
     const item = menu.getMenuItemById(id)
     if (item) item.enabled = enabled
   }
@@ -845,7 +845,7 @@ function syncMenuForStandDown(): void {
   // kill-word. Applied ON TOP of the shared suspension — the item must never be MORE enabled than
   // the shared rule says. Mac has no close item in the template, so the lookup is null there and
   // this is a no-op by construction.
-  if (closeStandsDownInTerminal(interceptIsMac, terminalFocused)) {
+  if (closeStandsDownInTerminal(interceptUsesMetaPrimary, terminalFocused)) {
     const close = menu.getMenuItemById(MENU_ITEM_ID_CLOSE)
     if (close) close.enabled = false
   }
@@ -961,11 +961,11 @@ function createWindow(): BrowserWindow {
   installKeydownIntercepts(
     win,
     currentInterceptBindings,
-    interceptIsMac,
+    interceptUsesMetaPrimary,
     () => shortcutRecording,
     () => policyStandsDown(currentInterceptPolicy(), terminalFocused),
     // The close leg's own, policy-independent stand-down (issue #383) — see the predicate's doc.
-    () => closeStandsDownInTerminal(interceptIsMac, terminalFocused)
+    () => closeStandsDownInTerminal(interceptUsesMetaPrimary, terminalFocused)
   )
 
   // The THIRD way the page that armed a recorder (or reported terminal focus) can go away: a
