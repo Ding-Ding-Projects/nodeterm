@@ -47,13 +47,6 @@ import {
 import { PANE_OWNER_FMT, foregroundArgvArgs, paneOwnerFrom, parsePaneOwner } from './agents/pane-owner'
 import { binariesFor, isAgentPane, type PaneOwner } from '../shared/agents/pane-owner-predicate'
 import { readSpawnResources, spawnResourceNote } from './spawn-resources'
-import {
-  primePtyCeiling,
-  ptyDevicesExhausted,
-  readPtyDevices,
-  spawnFailureHint,
-  type PtyDevices
-} from './pty-devices'
 import { REAP_SWEEP_MS, shouldReap } from './pty-reap'
 import { ControlModeClient, type ControlSpawn } from './tmux-control-client'
 import {
@@ -1425,11 +1418,6 @@ export class PtyManager {
     // own, so a tmux living only on the user's shell PATH is invisible until this resolves.
     void resolveShellPath().then(() => this.ensureTmux())
     this.ensureTmux()
-    // Read the system pty-device ceiling now, while nothing is wrong. The spawn path that needs it
-    // is synchronous and already one failed spawn deep — it cannot await a `sysctl` there, and a
-    // machine at its device limit is exactly a machine where spawning one more process is a bad
-    // idea. See pty-devices.ts.
-    primePtyCeiling()
   }
 
   /**
@@ -2370,21 +2358,13 @@ export class PtyManager {
   /**
    * The sentence a caller sees when no terminal came back.
    *
-   * One function because TWO paths now produce it: the spawn that failed (node-pty threw), and the
-   * spawn that was never attempted (the pre-flight in `spawnSession`). Both must say the same thing
-   * about the same machine — a user who is out of pty devices should not be able to tell which of
-   * the two refused them, and the exhaustion copy must exist exactly once (it lives in
-   * `spawnFailureHint`, and this is the only place that supplies its generic fallback).
-   *
-   * `archNote` is a parameter rather than a lookup because it is only ever true of a spawn that
-   * actually tried to exec the helper — see the call sites.
+   * The message includes the requested program, cwd, and measured process resources before one
+   * generic recovery suggestion.
    */
   private spawnFailureError(
     reason: string,
     file: string,
-    cwd: string,
-    archNote: string | null,
-    devices: PtyDevices
+    cwd: string
   ): Error {
     // MEASURED, not guessed. node-pty discards the errno, so the old message ended every failure
     // with the same advice — restart, or rebuild node-pty for the wrong architecture. Both are
@@ -2392,15 +2372,9 @@ export class PtyManager {
     // (2026-08-06) chasing an architecture that was fine. `spawnResourceNote` states what it
     // actually counted and only names a remedy the numbers support.
     const resources = spawnResourceNote(readSpawnResources(), this.sessions.size)
-    // ONE closing hint, picked by what was measured (`spawnFailureHint`): arch, else the system
-    // pty-device limit, else the generic guess of last resort.
-    const hint = spawnFailureHint(
-      archNote,
-      devices,
+    const hint =
       `If this persists, restart the app (tmux sessions survive a restart) or run ` +
-        `\`npm run rebuild\` in the repo — a release build may have rebuilt node-pty ` +
-        `for the wrong architecture.`
-    )
+      `\`npm run rebuild\` in the repo.`
     return new Error(
       `Failed to spawn terminal (${reason}). Program: ${file}, cwd: ${cwd}, ${resources} ${hint}`
     )
@@ -2417,59 +2391,6 @@ export class PtyManager {
      *  because this function is synchronous. Null on every path with no proven project owner. */
     overrides?: ProjectSpawnOverrides | null
   ): string {
-    // PRE-FLIGHT — refuse before node-pty is touched, not after it fails.
-    //
-    // node-pty's darwin spawn path LEAKS the pty it opened when `posix_spawn` fails:
-    // `pty_posix_spawn` (node_modules/node-pty/src/unix/pty.cc) opens the master with
-    // `posix_openpt` and the slave with `open()`, and the error branch in `PtyFork` throws without
-    // closing either — measured at 2 `/dev/ptmx` fds + 1 `/dev/ttys*` fd, i.e. 2 pty DEVICES, per
-    // failed spawn (there is a third, smaller leak of one device per SUCCESSFUL spawn from the
-    // `low_fds` cleanup loop's off-by-one). That makes exhaustion self-amplifying: at the ceiling
-    // every spawn fails, every failure eats two more devices, and each retry pushes the ceiling
-    // further away — a 31-minute-old main held 479 masters against 28 tmux panes and dozens of
-    // consecutive failed creates. The leak is node-pty's to fix; ours is to stop feeding it.
-    //
-    // FIRST STATEMENT IN THE FUNCTION, ahead of the swap-out below, because a refusal must leave
-    // the node exactly as it found it. Retiring the shadow first would trade a live background
-    // client for nothing at all: the painter it was making way for never arrives, and nothing
-    // re-attaches a shadow (`shadowAttach` is driven by release/reap, not by a failed create), so
-    // a node nobody is watching would go quietly dark on a machine that is merely full. Nothing
-    // between here and `pty.spawn` is needed to decide this — the reading is machine-wide.
-    //
-    // FAIL-OPEN is the rule here: `ptyDevicesExhausted` is false for anything unmeasured
-    // (non-darwin, a `sysctl` that failed, or a ceiling whose async prime — kicked in `init` — has
-    // not landed yet), so an unknown machine spawns exactly as it always did. Refusing a terminal
-    // on a machine that had room would be a worse bug than the leak this avoids.
-    //
-    // AND THAT IS THE WHOLE FIX — no backoff, no circuit breaker, deliberately. The bursts of
-    // consecutive failed creates in the field log are not a retry storm: NOTHING re-attempts a
-    // create that failed. The renderer's create rejection lands in one `.catch` that only records
-    // `spawnError` for the node's overlay (TerminalNode.tsx) — no timer, no respawn bump, and no
-    // `reportSshDrop`, so a failure cannot even feed the SSH reconnect coordinator (whose own loop
-    // is bounded anyway: 1→2→4→8→15s, then parked until a `connected` event, plus a 10s re-drop
-    // refusal). A burst is therefore N DISTINCT nodes each trying exactly once, fanned out by one
-    // moment — app boot, a project tab switch past the park window, an agent's bulk
-    // `open-terminal --count N`, or one reconnect flush. Rate-limiting that would only stagger
-    // failures the user asked for. What made it look like a storm was the amplification: 40
-    // one-shot creates used to cost 80 devices, and now cost none.
-    const devices = readPtyDevices()
-    if (ptyDevicesExhausted(devices)) {
-      // The REQUESTED program and cwd, not the resolved ones — resolution happens further down and
-      // deliberately has not run. Nothing was chosen, so nothing is claimed to have been.
-      //
-      // `archNote` is deliberately not consulted: it outranks the device note in
-      // `spawnFailureHint`, and no helper was exec'd here, so its architecture cannot be the
-      // reason. Saying "rebuild node-pty" to a machine that is simply full is the 2026-08-06
-      // mistake with a new cause.
-      throw this.spawnFailureError(
-        'not attempted',
-        options.shell ?? '(default shell)',
-        options.cwd ?? os.homedir(),
-        null,
-        devices
-      )
-    }
-
     // SWAP-OUT, before anything at all is spawned: a painter pty client is arriving for this node,
     // and a session never has both. The painter attaches with `-D` and would kick the shadow off by
     // itself — but only once tmux has processed both attaches, leaving a window where two clients
@@ -2999,7 +2920,7 @@ export class PtyManager {
         // Re-read the devices rather than reusing the pre-flight's reading: this spawn just consumed
         // (and, per the leak above, kept) devices of its own, so the number the user is shown should
         // be the one that was true when the failure happened.
-        throw this.spawnFailureError(reason, file, cwd, null, readPtyDevices())
+        throw this.spawnFailureError(reason, file, cwd)
       }
     }
 

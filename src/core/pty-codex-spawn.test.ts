@@ -48,10 +48,6 @@ vi.mock('node-pty', () => ({
 }))
 
 // Never let the real /dev probe refuse the spawn on the developer's host (see pty-require-remote).
-vi.mock('./pty-devices', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('./pty-devices')>()),
-  readPtyDevices: () => ({ ceiling: 511, inUse: 8 })
-}))
 
 const ALICE = 1
 
