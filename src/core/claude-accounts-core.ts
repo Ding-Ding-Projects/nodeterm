@@ -1,6 +1,5 @@
 // Pure logic for managed Claude accounts (config-dir isolation). No fs/electron imports —
 // everything here is unit-tested; the impure lifecycle lives in claude-accounts.ts.
-import { createHash } from 'crypto'
 import path from 'path'
 import { MODEL_GATEWAY_ENV_KEYS } from '../shared/agents/model-gateway'
 
@@ -135,36 +134,20 @@ export function isSafeRemoteTranscriptPath(abs: string, remoteHome: string | und
 }
 
 /**
- * Claude Code ≥ 2.1 scopes its macOS Keychain service name per config dir:
- * 'Claude Code-credentials-' + first 8 hex chars of sha256(CLAUDE_CONFIG_DIR).
- * (Learned from REF's claude-accounts/keychain.ts — undocumented CLI behavior.)
- */
-export function claudeKeychainService(configDir: string): string {
-  const suffix = createHash('sha256').update(configDir).digest('hex').slice(0, 8)
-  return `Claude Code-credentials-${suffix}`
-}
-
-/**
- * Where the usage indicator looks for a Claude OAuth token + identity, per account. With a
- * `configDir` (managed account) the scoped Keychain service comes first — Claude Code ≥ 2.1
- * writes there — with the legacy unscoped services as fallback for older CLIs; the file +
- * identity live under that config dir. Without a `configDir` (system account) it's exactly the
- * legacy layout: unscoped services + `~/.claude`. Pure so it's unit-tested; the impure keychain
- * / fs reads live in claude-usage.ts.
+ * Where the usage indicator reads a Claude OAuth token and identity. Managed accounts use their
+ * isolated config directory; the system account uses the standard user files.
  */
 export function usageCredsPaths(
   homeDir: string,
   configDir?: string
-): { services: string[]; credsFile: string; identityFile: string } {
+): { credsFile: string; identityFile: string } {
   if (configDir) {
     return {
-      services: [claudeKeychainService(configDir), 'Claude Code-credentials', 'claudeAiOauth'],
       credsFile: path.join(configDir, '.credentials.json'),
       identityFile: path.join(configDir, '.claude.json')
     }
   }
   return {
-    services: ['Claude Code-credentials', 'claudeAiOauth'],
     credsFile: path.join(homeDir, '.claude', '.credentials.json'),
     identityFile: path.join(homeDir, '.claude.json')
   }
@@ -187,9 +170,6 @@ const AGENT_CONFIG_DIR_ENV: readonly string[] = ['CLAUDE_CONFIG_DIR', 'CODEX_HOM
  * three mechanisms, one list because they are one hazard (see `isReservedSpawnEnvKey`'s clause):
  *  - `LD_PRELOAD` / `LD_AUDIT` / `LD_LIBRARY_PATH` — the Linux dynamic loader loads a repo-supplied
  *    `.so` into the CLI's own address space before `main` runs.
- *  - `DYLD_INSERT_LIBRARIES` / `DYLD_LIBRARY_PATH` — the macOS equivalent. macOS strips DYLD_* only
- *    across a SIP-protected or hardened-runtime boundary, and a node/agent CLI is neither: it is a
- *    script run by the user's own `node`, so the pair applies exactly as on Linux.
  *  - `BASH_ENV` / `ENV` — sourced by a NON-interactive shell at startup, which is precisely the
  *    shell every launch line runs in; the file runs before the agent's first byte.
  *  - `GIT_SSH_COMMAND` / `GIT_EXTERNAL_DIFF` — git runs the named command verbatim the moment the
@@ -209,8 +189,6 @@ const INJECTION_ENV: readonly string[] = [
   'LD_PRELOAD',
   'LD_AUDIT',
   'LD_LIBRARY_PATH',
-  'DYLD_INSERT_LIBRARIES',
-  'DYLD_LIBRARY_PATH',
   'GIT_SSH_COMMAND',
   'GIT_EXTERNAL_DIFF',
   'BASH_ENV',
@@ -253,8 +231,7 @@ const INJECTION_ENV: readonly string[] = [
  *    and stealthier than PATH: the process still IS the real claude, from the real location, so
  *    nothing downstream — not the pane, not the identity probe — can tell. The dialog shows a flag
  *    string; the grant is code execution.
- *  - `INJECTION_ENV` — the same grant through the DYNAMIC LOADER (`LD_PRELOAD` and friends; the
- *    macOS `DYLD_*` pair, which a non-SIP-protected node/agent CLI honors just as Linux does), the
+ *  - `INJECTION_ENV` — the same grant through the dynamic loader (`LD_PRELOAD` and friends), the
  *    NON-interactive shell's own startup file (`BASH_ENV` / `ENV`, sourced by the very shell the
  *    launch line runs in), and git's command hooks (`GIT_SSH_COMMAND` / `GIT_EXTERNAL_DIFF`, run
  *    verbatim as soon as the agent shells out to git). One reserve-reason with NODE_OPTIONS: the
@@ -320,7 +297,7 @@ export function parseLoginCapture(rawClaudeJson: string): { email: string } | nu
   }
 }
 
-/** Claude Code < 2.1 uses one unscoped Keychain service for every config dir → accounts collide. */
+/** Claude Code 2.1 or newer is required for isolated managed account config directories. */
 export function isSupportedClaudeVersion(versionOutput: string): boolean {
   const m = versionOutput.match(/(\d+)\.(\d+)\./)
   if (!m) return false

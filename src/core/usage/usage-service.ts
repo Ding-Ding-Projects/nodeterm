@@ -83,14 +83,8 @@ export function parseCreds(raw: string): OAuthCreds {
   }
 }
 
-/**
- * macOS Keychain → {config}/.credentials.json → email backfill from {config}/.claude.json.
- * With an `accountId` the config dir is the managed account's isolated dir (scoped Keychain
- * service first); without, it's exactly the system default (`~/.claude`, unscoped services).
- *
- * The Keychain leg is darwin-only by construction — on the Server Edition's Linux host the
- * `security` binary does not exist, so the file leg is the whole story there.
- */
+/** Read account credentials from the selected config directory and backfill identity from its
+ * companion file. Without an account id, use the standard user credential files. */
 async function resolveCreds(accountId?: string): Promise<OAuthCreds> {
   const configDir = accountId ? claudeConfigDirFor(accountId) : undefined
   const { credsFile, identityFile } = usageCredsPaths(os.homedir(), configDir)
@@ -124,7 +118,7 @@ async function resolveCreds(accountId?: string): Promise<OAuthCreds> {
   return creds
 }
 
-/** The OAuth access token alone (keychain → {config}/.credentials.json), or null. */
+/** The OAuth access token from the selected credential file, or null. */
 export async function resolveClaudeAccessToken(accountId?: string): Promise<string | null> {
   return (await resolveCreds(accountId)).accessToken
 }
