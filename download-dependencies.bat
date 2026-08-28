@@ -32,6 +32,13 @@ call :ensure_python
 if errorlevel 1 exit /b %ERRORLEVEL%
 
 pushd "%ROOT%"
+call node scripts/check-dependencies-ready.mjs verify >nul 2>nul
+if not errorlevel 1 (
+  echo [OK] Project packages are already ready for this package-lock.json.
+  popd
+  echo [DONE] Toolchain and project packages are ready.
+  exit /b 0
+)
 echo --- Installing project packages ---
 call npm ci
 set "NPM_EXIT=%ERRORLEVEL%"
@@ -39,6 +46,11 @@ popd
 if not "%NPM_EXIT%"=="0" (
   echo [FAILED] npm ci exited with code %NPM_EXIT%.
   exit /b %NPM_EXIT%
+)
+call node scripts/check-dependencies-ready.mjs write
+if errorlevel 1 (
+  echo [FAILED] Could not write the dependency readiness marker.
+  exit /b 1
 )
 echo [DONE] Toolchain and project packages are ready.
 exit /b 0
