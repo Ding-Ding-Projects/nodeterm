@@ -27,10 +27,10 @@ hidden tabs.
 
 <div align="center">
   <a href="docs/assets/hero-tour.mp4">
-    <img src="docs/assets/hero-tour.webp" alt="nodeterm in 30 seconds — canvas, agents, kanban board, three surfaces" width="900" />
+    <img src="docs/assets/hero-tour.webp" alt="nodeterm on Windows in 30 seconds: canvas, agents, kanban board, remote access, and settings" width="900" />
   </a>
   <br/>
-  <sub>▶ <a href="docs/assets/hero-tour.mp4">Watch the 30-second tour with sound</a></sub>
+  <sub>▶ <a href="docs/assets/hero-tour.mp4">Watch the 30-second Windows tour</a></sub>
 </div>
 
 ## Why nodeterm
@@ -84,7 +84,7 @@ Every project is a canvas — **and also a kanban board**. Cards *are* your live
 sessions: drag them across columns while the agent keeps running, open a card into a
 **live card modal** (the real session + members, due date, priority, comments), and
 assign teammates. Toggle with `Ctrl+Shift+B`.
-<br/><sub>▶ <a href="docs/assets/kanban-launch.mp4">Watch the board video with sound</a></sub>
+<br/><sub>▶ <a href="docs/assets/kanban-launch.mp4">Watch the 16-second board tour</a></sub>
 
 </td>
 <td><img src="docs/assets/kanban-launch.webp" alt="The kanban board — live session cards, drag between columns, the card modal with a live Claude Code session" /></td>
@@ -169,6 +169,25 @@ Terminals, files/editor/diff, the full git panel, the kanban board, and agent-st
 badges all work in the browser today. See [`docs/SERVER.md`](./docs/SERVER.md) for the
 quickstart, security model, and current limitations.
 
+<details>
+<summary><strong>Server Edition capture gallery</strong></summary>
+
+These are real captures from the container image built from commit
+[`ed7ed9cf`](https://github.com/Ding-Ding-Projects/nodeterm/commit/ed7ed9cf0332560790a07912e8dbe198d44c6aec).
+The image digest and every capture hash are recorded in
+[`docs/assets/capture-manifest.json`](./docs/assets/capture-manifest.json).
+
+| Surface | Current capture |
+| --- | --- |
+| Main canvas | <img src="docs/assets/server/server-main.png" alt="Server Edition main canvas with an honest empty state and project actions" /> |
+| Agent settings | <img src="docs/assets/server/server-settings-agents.png" alt="Server Edition Agents settings with available agent choices and launch commands" /> |
+| Notifications | <img src="docs/assets/server/server-notifications.png" alt="Server Edition notification settings with local sound and paired-phone controls" /> |
+| Remote access | <img src="docs/assets/server/server-remote-access.png" alt="Server Edition Remote access settings with hosting and pairing controls" /> |
+| Browser control | <img src="docs/assets/server/server-browser-control.png" alt="Server Edition Browser control status explaining that browser driving requires the Windows desktop application" /> |
+| Canvas control | <img src="docs/assets/server/server-canvas-control.png" alt="Server Edition Canvas control identity requirement with the current enforcement date" /> |
+
+</details>
+
 #### 🔔 Get push notifications from any SSH host
 
 The same server also runs **headless** as a background notification host: install it on any
@@ -237,6 +256,10 @@ npm test                 # vitest unit + integration suite
 npm run dist:win         # unsigned Squirrel.Windows package
 npm run server:dev       # build + run the browser Server Edition
 ```
+
+All checked-in UI captures are covered by a hand-written manifest. Run
+`npm run verify:captures` to decode every image, verify hashes and dimensions, enforce the complete
+21-file inventory, and confirm that animated keyframes remain readable at 3 to 4.5 seconds each.
 
 Full product release readiness is tracked in the
 [fail-closed release completeness audit](docs/release/completeness-audit.md). A green Windows build

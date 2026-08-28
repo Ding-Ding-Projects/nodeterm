@@ -35,6 +35,19 @@ The renderer never opens a remote announcement URL automatically. Remote data is
 sanitized by the main process before it reaches the renderer. Promotional feed items cannot create
 buttons, overlays, dialogs, banners, or external navigation.
 
+## Built evidence
+
+The current Windows desktop tour includes the resulting main canvas without a promotional banner:
+
+![Windows desktop main canvas with no promotional startup surface](../../stale-frame.png)
+
+The same notification settings are captured from the real Server Edition container:
+
+![Server Edition notification settings](../assets/server/server-notifications.png)
+
+Capture provenance, hashes, dimensions, and animation timing are recorded in
+[`../assets/capture-manifest.json`](../assets/capture-manifest.json).
+
 ## Verification
 
 Run the focused policy suite:
@@ -42,6 +55,8 @@ Run the focused policy suite:
 ```powershell
 npm exec vitest run src/renderer/components/AnnouncementBanner.test.tsx
 ```
+
+Run `npm run verify:captures` to verify the complete current capture inventory and animation timing.
 
 The suite proves that informational and success items are refused, warning items become internal
 notification payloads, the notifier renders no DOM surface, and delivered warning identifiers are

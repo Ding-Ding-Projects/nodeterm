@@ -10,6 +10,37 @@ unchanged. It boots the same Electron-free core services (`src/core/`) through a
 > **Phase 2 scope: terminals only.** This is a real, usable terminal canvas over the
 > network, but it is deliberately narrow — see [Limitations](#phase-2-limitations).
 
+## Current container captures
+
+The following surfaces were captured from the real container image built from commit
+[`ed7ed9cf`](https://github.com/Ding-Ding-Projects/nodeterm/commit/ed7ed9cf0332560790a07912e8dbe198d44c6aec),
+with image manifest digest
+`sha256:d0ff1b7bab2246b390af77aeb4f340d3b40f39f1ed222b0bc8ab93a95653472c`.
+The exact file hashes, dimensions, and source provenance live in
+[`assets/capture-manifest.json`](assets/capture-manifest.json).
+
+<details>
+<summary><strong>Main canvas and settings</strong></summary>
+
+![Server Edition main canvas with an honest empty state and project actions](assets/server/server-main.png)
+
+![Server Edition Agents settings with available agent choices and launch commands](assets/server/server-settings-agents.png)
+
+![Server Edition notification settings with local sound and paired-phone controls](assets/server/server-notifications.png)
+
+</details>
+
+<details>
+<summary><strong>Remote and control surfaces</strong></summary>
+
+![Server Edition Remote access settings with hosting and pairing controls](assets/server/server-remote-access.png)
+
+![Server Edition Browser control status explaining the permanent capability boundary](assets/server/server-browser-control.png)
+
+![Server Edition Canvas control identity requirement with the current enforcement date](assets/server/server-canvas-control.png)
+
+</details>
+
 ## Quickstart
 
 ```bash

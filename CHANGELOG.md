@@ -16,6 +16,8 @@ Code name: [Classic Har Gow · 蝦餃](https://github.com/Ding-Ding-Projects/dim
   permission-answer coverage.
 - Added release-grade unsigned Squirrel.Windows verification, byte count, SHA-256 reporting, and a
   reproducible surviving-line counter.
+- Added a fail-closed 21-file capture manifest covering the Windows desktop and six Server Edition
+  states, including Remote access, Browser control, Canvas control, and notifications.
 
 ### Changed
 
@@ -29,6 +31,10 @@ Code name: [Classic Har Gow · 蝦餃](https://github.com/Ding-Ding-Projects/dim
   notification path. Informational and success feed items now remain silent.
 - Corrected the Server Edition container context so its required relay build script is available
   during a clean image build.
+- Re-recorded every checked-in UI still, animation, and video from real built surfaces. Animated
+  WebP keyframes now remain visible for 3 to 4.5 seconds instead of racing past the reader.
+- Made the Server Edition Browser control screen state its permanent capability boundary, removed
+  the unusable stop action, and disabled its project browser-driving switch.
 
 ### Removed
 

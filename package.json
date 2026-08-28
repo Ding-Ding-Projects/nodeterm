@@ -28,6 +28,7 @@
     "server:dev": "npm run build && npm run server:build && node out/server/main.cjs",
     "make-icon": "node scripts/make-icon.mjs",
     "make-social": "node scripts/make-social.mjs",
+    "verify:captures": "node scripts/verify-capture-media.mjs",
     "dist": "npm run dist:win",
     "dist:win": "npm run make-icon && npm run build && electron-builder --win squirrel --x64 --publish never",
     "release": "npm run dist:win",

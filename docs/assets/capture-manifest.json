@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-28T21:29:11.583Z",
+  "desktopExecutableSha256": "6a15311ed1b4e2a564e7b3abad0ec549abffd51f1dc6b1e2685b6d4ea9d9182c",
+  "serverImageManifest": "sha256:d0ff1b7bab2246b390af77aeb4f340d3b40f39f1ed222b0bc8ab93a95653472c",
+  "animationPolicy": "Readable keyframes held for 3000 to 4500 milliseconds; MP4 tours use 4 fps.",
+  "files": [
+    {
+      "path": "docs/assets/hero.png",
+      "bytes": 105299,
+      "sha256": "d93270ccf97c79152718c7653ce091f58f7528d3b7f70e39c300587d714d3b94",
+      "width": 1200,
+      "height": 720,
+      "frames": 1
+    },
+    {
+      "path": "site/assets/hero.png",
+      "bytes": 105299,
+      "sha256": "d93270ccf97c79152718c7653ce091f58f7528d3b7f70e39c300587d714d3b94",
+      "width": 1200,
+      "height": 720,
+      "frames": 1
+    },
+    {
+      "path": "docs/assets/kanban-board.png",
+      "bytes": 98254,
+      "sha256": "afe83d16f0a94d76476a1a33ef696fc94f9f7c3d1255b23b6713f2fa8dce5933",
+      "width": 1920,
+      "height": 1080,
+      "frames": 1
+    },
+    {
+      "path": "docs/assets/card-modal.png",
+      "bytes": 112388,
+      "sha256": "113c283b82ef637c27c3588e83ba779e8560a577259db615ab88e2aed96ac61c",
+      "width": 1920,
+      "height": 1080,
+      "frames": 1
+    },
+    {
+      "path": "docs/assets/card-assign.png",
+      "bytes": 107353,
+      "sha256": "c6c809f04232f5bd602c3b9110a61357418620e1e9fd22fd23d0ad992e732c7b",
+      "width": 1920,
+      "height": 1080,
+      "frames": 1
+    },
+    {
+      "path": "stale-frame.png",
+      "bytes": 19302,
+      "sha256": "90d5b031889ceb5b4f03e3ba9d7bb7323190ba3d60f382fc0695925d663228fb",
+      "width": 520,
+      "height": 360,
+      "frames": 1
+    },
+    {
+      "path": "wt-dialog.png",
+      "bytes": 168878,
+      "sha256": "c6238e2ec782bcce80c10447ed3a784a0560401c50e1be1ba84c30fb4a925fd3",
+      "width": 1400,
+      "height": 1000,
+      "frames": 1
+    },
+    {
+      "path": "docs/assets/hero-tour.webp",
+      "bytes": 76516,
+      "sha256": "98cb4fe7c9b5ae9343f331a55e2ce17a08a2d47fea64f195de4ec490c9904580",
+      "width": 880,
+      "height": 495,
+      "frames": 10,
+      "durationMs": 30000
+    },
+    {
+      "path": "docs/assets/hero-tour.mp4",
+      "bytes": 326920,
+      "sha256": "7ea2de7d2863f02906800c0fd2b4de1e34860784f2ad9dbf612e7a3a50582946",
+      "width": 880,
+      "height": 496,
+      "frames": 120,
+      "fps": 4,
+      "durationMs": 30000
+    },
+    {
+      "path": "docs/assets/canvas-tour.webp",
+      "bytes": 26222,
+      "sha256": "430f1a08a324a1cfef940102e38c060c6ccb28fc9bbac485ad14cda5316e0135",
+      "width": 800,
+      "height": 450,
+      "frames": 4,
+      "durationMs": 14000
+    },
+    {
+      "path": "docs/assets/agents-tour.webp",
+      "bytes": 27278,
+      "sha256": "de8fafb1b3c3f3a897146e06baab9e2be797c9e1f6caebaa762f48280f686705",
+      "width": 800,
+      "height": 450,
+      "frames": 3,
+      "durationMs": 13500
+    },
+    {
+      "path": "docs/assets/dictation-tour.webp",
+      "bytes": 31616,
+      "sha256": "f6ec4d1e00cbed683665319a6a0639ab6aa584a0c3b1761996d831a1cbd89ccb",
+      "width": 800,
+      "height": 450,
+      "frames": 3,
+      "durationMs": 13500
+    },
+    {
+      "path": "docs/assets/kanban-launch.webp",
+      "bytes": 18210,
+      "sha256": "6484891223167055eda323ebf36fb0bfb72fdb17c6dde4fb2573dc0a9006667f",
+      "width": 800,
+      "height": 450,
+      "frames": 4,
+      "durationMs": 15000
+    },
+    {
+      "path": "docs/assets/kanban-launch.mp4",
+      "bytes": 134734,
+      "sha256": "93d8e7afd071c22d0d5ee273636eff2ef06aa4ec38b211318718b55ed94d7a7a",
+      "width": 800,
+      "height": 450,
+      "frames": 64,
+      "fps": 4,
+      "durationMs": 16000
+    },
+    {
+      "path": "docs/assets/remote-tour.webp",
+      "bytes": 33888,
+      "sha256": "de5b615e29ae583f9ad182fd1a78e148dc709f6ffb774611cef05fb8e4088a36",
+      "width": 800,
+      "height": 450,
+      "frames": 5,
+      "durationMs": 15000
+    },
+    {
+      "path": "docs/assets/server/server-main.png",
+      "bytes": 67718,
+      "sha256": "2d9c02c6244b3e2ac45c873ed059d07b83b640814d997ff3d40ca8febbefd88e",
+      "width": 1400,
+      "height": 900,
+      "frames": 1
+    },
+    {
+      "path": "docs/assets/server/server-settings-agents.png",
+      "bytes": 165131,
+      "sha256": "d6872acd044acd5df7b9b3258774cb4ddeacc5eb4cbe77715d3d871572c69920",
+      "width": 1400,
+      "height": 900,
+      "frames": 1
+    },
+    {
+      "path": "docs/assets/server/server-notifications.png",
+      "bytes": 212418,
+      "sha256": "2ee5a4ed32e3320c254c8e9c4d9053b85ce82ea2fee65065f9f57c559e1da7fc",
+      "width": 1400,
+      "height": 900,
+      "frames": 1
+    },
+    {
+      "path": "docs/assets/server/server-remote-access.png",
+      "bytes": 117156,
+      "sha256": "32e028cc58070ba6517be346f8286ae47f5bb7c4d1df0eaf27add5fc3f1e44d7",
+      "width": 1400,
+      "height": 900,
+      "frames": 1
+    },
+    {
+      "path": "docs/assets/server/server-browser-control.png",
+      "bytes": 109350,
+      "sha256": "3f2396de51465a1792739eda38be8954454205e71c92c08511fdc0d3c7591c4d",
+      "width": 1400,
+      "height": 900,
+      "frames": 1
+    },
+    {
+      "path": "docs/assets/server/server-canvas-control.png",
+      "bytes": 170224,
+      "sha256": "701f1872867c32b763769e64705f54c66a5a37101717ca274f7dde1a3e1abbc6",
+      "width": 1400,
+      "height": 900,
+      "frames": 1
+    }
+  ],
+  "desktopSourceCommit": "1e34b3746b22dc0fe2cd7f5053df79d619879b34",
+  "serverSourceCommit": "ed7ed9cf0332560790a07912e8dbe198d44c6aec"
+}

@@ -9,7 +9,7 @@
 - [x] Add native PowerShell hooks for every locally integrated agent and retain POSIX scripts only for Linux SSH or Server Edition hosts.
 - [x] Convert desktop chrome, notifications, shortcuts, clipboard transfer, file opening, native rebuilds, account paths, and palette defaults to Windows behavior.
 - [x] Remove retired desktop packaging, entitlement, launcher, credential-service, bundled tmux, shortcut-glyph, toolchain, and historical promotion paths.
-- [x] Verify type checking and the complete retained suite with 592 passing files, 7,714 passing tests, 2 skipped files, and 49 skipped tests.
+- [x] Verify type checking and the complete retained suite with 594 passing files, 7,719 passing tests, 2 skipped files, and 49 skipped tests.
 - [x] Verify the native `cmd.exe` hook wrapper through a real loopback receiver and permission-answer flow.
 - [x] Verify `build.bat /s` produces every required main, preload, renderer, session-host, and relay output.
 - [x] Verify version `0.3.4` through `build-installer.bat /s`, including unsigned setup, `RELEASES`, full package, bytes, and SHA-256.
@@ -17,6 +17,9 @@
 - [x] Add and test a reproducible release line counter based on surviving `git blame` lines.
 - [x] Remove automatic promotional startup surfaces and route functional remote warnings through the internal notification path.
 - [x] Repair the clean Server Edition container context so every declared build step receives its required script.
+- [x] Replace all 21 checked-in UI captures with current Windows desktop and Server Edition evidence.
+- [x] Capture the Server Edition main, Agents, notifications, Remote access, Browser control, and Canvas control states from one verified container image.
+- [x] Slow every animated WebP to readable 3 to 4.5 second keyframes and enforce timing, hashes, dimensions, and inventory with `npm run verify:captures`.
 
 ## Release automation and documentation
 
