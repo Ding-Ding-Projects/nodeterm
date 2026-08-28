@@ -1025,7 +1025,7 @@ export class SshProjectManager {
       // alias) create different locks beside the same target and race. Basename makes them
       // converge without a realpath check that can itself go stale.
       const candidate = path.basename(finalPath).normalize('NFC')
-      const caseInsensitive = process.platform === 'win32' || process.platform === 'darwin'
+      const caseInsensitive = process.platform === 'win32'
       const normalized = caseInsensitive ? candidate.toLowerCase() : candidate
       const key = createHash('sha256').update(normalized).digest('hex').slice(0, 20)
       const lockPath = path.join(destDir, `.nodeterm-download-${key}.lock`)

@@ -409,7 +409,8 @@ export function parseSessionList(stdout: string): SessionInfo[] {
  * `kern.memorystatus_vm_pressure_level`, or the `memory_pressure` tool — rather than a byte count.
  */
 export function hostMemReader(platform: NodeJS.Platform = process.platform): () => MemInfo | null {
-  return platform === 'darwin' ? (): null => null : readMemInfo
+  void platform
+  return readMemInfo
 }
 
 export interface SessionReaperOpts {
