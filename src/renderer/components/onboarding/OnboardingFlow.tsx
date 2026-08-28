@@ -40,9 +40,8 @@ function formatSize(mb: number): string {
   return mb >= 1000 ? `${(mb / 1000).toFixed(1)} GB` : `${Math.round(mb)} MB`
 }
 
-/** Info step + the setting it configures, one per screen. Step 0 is the welcome cover; the last
- *  step is the mobile-app announcement (info-only). Steps are addressed by ID, not index, because
- *  the notch step only exists on macOS — an index-keyed tour would shift under it. */
+/** Info step and the setting it configures, one per screen. Step 0 is the welcome cover; the last
+ *  step is the mobile-app announcement. Steps are addressed by stable IDs rather than indexes. */
 const STEPS = [
   'cover',
   'agents',
