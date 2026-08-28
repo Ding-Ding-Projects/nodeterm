@@ -206,15 +206,13 @@ detects your platform. Everything is also listed at
 - **iOS** — **nodeterm mobile** on the
   [App Store](https://apps.apple.com/app/nodeterm/id6790581233).
 
-**Trying it out?** Removal is one script — it stops every process nodeterm started, reverts
-the status-hook/skill entries it merged into your agent CLIs' config (your own hooks and
-credentials are never touched), and deletes all of nodeterm's own state. Run it with
-`--dry-run` first to see the full list of what it found:
+**Trying it out?** Double-click `uninstall.bat` to run the installed Squirrel.Windows uninstaller.
+Application data is kept by default. Use `uninstall.bat --purge` to remove the local nodeterm data
+directories too, or `uninstall.bat --dry-run` to inspect the exact plan without changing anything.
+Automation may use `uninstall.bat /s`, with `--purge` added only when data removal is intended.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/eneskirca/nodeterm/main/scripts/uninstall.sh | bash -s -- --dry-run
-curl -fsSL https://raw.githubusercontent.com/eneskirca/nodeterm/main/scripts/uninstall.sh | bash -s -- --yes
-```
+The Linux Server Edition keeps its separate systemd cleanup route in `scripts/uninstall.sh`; it is
+not the Deen No desktop uninstaller.
 
 The full inventory of what nodeterm writes where (and what the script keeps, like the
 `.nodeterm/` canvas folders inside your own repos) is documented in

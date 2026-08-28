@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# nodeterm uninstaller — removes the app and every trace it leaves on this machine.
+# nodeterm Linux uninstaller, including Server Edition state and agent integrations.
 #
 #   curl -fsSL https://nodeterm.dev/uninstall.sh | bash -s -- --dry-run   # list what would happen
 #   curl -fsSL https://nodeterm.dev/uninstall.sh | bash -s -- --yes       # actually uninstall
@@ -24,9 +24,7 @@
 #        ~/.grok/hooks/nodeterm-status.json    (owned file)
 #        ~/.config/opencode/plugins/nodeterm-status.js (owned, marker-checked) + AGENTS.md blocks
 #      Your agents' credentials, sessions and own settings are never touched.
-#   4. Deletes nodeterm's own state: ~/.nodeterm, the Electron user-data dir, caches, prefs,
-#      logs, the Keychain entry, /Applications/nodeterm.app (or the brew cask), and the Server
-#      Edition checkout + data dir if present.
+#   4. Deletes nodeterm's own Linux state, caches, and Server Edition checkout/data if present.
 #   5. Reports what it deliberately does NOT delete: the per-project `.nodeterm/` folders inside
 #      your repos (they are your canvas layouts, and may be committed/shared), and anything on
 #      remote SSH hosts.
@@ -35,8 +33,7 @@
 #   - JSON/TOML surgery needs a JS runtime (node). Without one those entries are left in place
 #     with a warning — they are harmless: the installed hook command is self-guarded and becomes
 #     a silent no-op once the script it points to is deleted.
-#   - macOS and Linux. On Windows use the NSIS uninstaller (Add/Remove Programs), then delete
-#     %APPDATA%\nodeterm and %USERPROFILE%\.nodeterm.
+#   - Windows desktop removal uses the repository root uninstall.bat script.
 set -u
 
 DRY_RUN=0
@@ -59,16 +56,13 @@ note()  { printf '  \033[2m%s\033[0m\n' "$1"; }
 
 HOME="${HOME:-$(cd ~ && pwd)}"
 
+[ "$OS" = "Linux" ] || { printf 'This shell uninstaller requires Linux. On Windows use uninstall.bat.\n' >&2; exit 1; }
+
 # ---- locations (must mirror what the app writes; see docs/uninstall.md) ----------------------
-if [ "$OS" = "Darwin" ]; then
-  USER_DATA="$HOME/Library/Application Support/nodeterm"
-else
-  USER_DATA="${XDG_CONFIG_HOME:-$HOME/.config}/nodeterm"
-fi
+USER_DATA="${XDG_CONFIG_HOME:-$HOME/.config}/nodeterm"
 NT_HOME="$HOME/.nodeterm"                       # agent-hooks, ssh-cm sockets, acks, push-grants…
 SERVER_APP="${NODETERM_APP_DIR:-$HOME/.nodeterm-server-app}"
 SERVER_DATA="${NODETERM_DATA_DIR:-$HOME/.nodeterm-server}"
-APP_BUNDLE="/Applications/nodeterm.app"
 GROK_HOME="${GROK_HOME:-$HOME/.grok}"
 COPILOT_HOME="${COPILOT_HOME:-$HOME/.copilot}"
 if [ -n "${XDG_CONFIG_HOME:-}" ] && [ "${XDG_CONFIG_HOME#\/}" != "$XDG_CONFIG_HOME" ]; then
@@ -298,8 +292,7 @@ echo
 FOUND_ANY=0
 
 # -- processes / services
-APP_PGREP="$APP_BUNDLE/Contents/MacOS"
-[ "$OS" != "Darwin" ] && APP_PGREP='/opt/nodeterm/nodeterm|nodeterm.*\.AppImage'
+APP_PGREP='/opt/nodeterm/nodeterm|nodeterm.*\.AppImage'
 if pgrep -f "$APP_PGREP" >/dev/null 2>&1; then
   plan "Quit the running nodeterm app"; FOUND_ANY=1
 fi
@@ -356,33 +349,9 @@ DIRS_TO_REMOVE=()
 add_dir() { [ -e "$1" ] && { DIRS_TO_REMOVE+=("$1"); plan "Delete $1"; FOUND_ANY=1; }; }
 add_dir "$NT_HOME"
 add_dir "$USER_DATA"
-if [ "$OS" = "Darwin" ]; then
-  add_dir "$HOME/Library/Caches/nodeterm"
-  add_dir "$HOME/Library/Caches/com.nodeterm.app"
-  add_dir "$HOME/Library/Caches/com.nodeterm.app.ShipIt"
-  add_dir "$HOME/Library/Application Support/Caches/nodeterm-updater"
-  add_dir "$HOME/Library/Preferences/com.nodeterm.app.plist"
-  add_dir "$HOME/Library/Saved Application State/com.nodeterm.app.savedState"
-  add_dir "$HOME/Library/HTTPStorages/com.nodeterm.app"
-  add_dir "$HOME/Library/Logs/nodeterm"
-else
-  add_dir "${XDG_CACHE_HOME:-$HOME/.cache}/nodeterm"
-fi
+add_dir "${XDG_CACHE_HOME:-$HOME/.cache}/nodeterm"
 add_dir "$SERVER_APP"
 add_dir "$SERVER_DATA"
-
-BREW_CASK=0
-if [ "$OS" = "Darwin" ]; then
-  if command -v brew >/dev/null 2>&1 && brew list --cask nodeterm >/dev/null 2>&1; then
-    BREW_CASK=1
-    plan "Uninstall the Homebrew cask 'nodeterm' (removes $APP_BUNDLE)"; FOUND_ANY=1
-  elif [ -d "$APP_BUNDLE" ]; then
-    plan "Delete $APP_BUNDLE"; FOUND_ANY=1
-  fi
-  if security find-generic-password -s "nodeterm Safe Storage" >/dev/null 2>&1; then
-    plan "Delete the 'nodeterm Safe Storage' Keychain entry"; FOUND_ANY=1
-  fi
-fi
 
 # -- per-project data: enumerate BEFORE the workspace index is deleted; never auto-deleted.
 PROJECT_DIRS=""
@@ -444,8 +413,7 @@ if [ -n "$SYSTEMD_SCOPE" ]; then
 fi
 
 if pgrep -f "$APP_PGREP" >/dev/null 2>&1; then
-  [ "$OS" = "Darwin" ] && osascript -e 'quit app "nodeterm"' >/dev/null 2>&1
-  [ "$OS" != "Darwin" ] && pkill -TERM -f "$APP_PGREP" 2>/dev/null
+  pkill -TERM -f "$APP_PGREP" 2>/dev/null
   for _ in 1 2 3 4 5 6 7 8 9 10; do
     pgrep -f "$APP_PGREP" >/dev/null 2>&1 || break
     sleep 1
@@ -498,18 +466,6 @@ done
 for d in ${DIRS_TO_REMOVE[@]+"${DIRS_TO_REMOVE[@]}"}; do
   rm -rf "$d" && ok "Deleted $d"
 done
-if [ "$OS" = "Darwin" ]; then
-  if [ "$BREW_CASK" = 1 ]; then
-    brew uninstall --cask nodeterm >/dev/null 2>&1 && ok "Homebrew cask uninstalled" \
-      || warn "brew uninstall --cask nodeterm failed — run it manually"
-  elif [ -d "$APP_BUNDLE" ]; then
-    rm -rf "$APP_BUNDLE" && ok "Deleted $APP_BUNDLE" \
-      || warn "Could not delete $APP_BUNDLE — drag it to the Trash"
-  fi
-  security delete-generic-password -s "nodeterm Safe Storage" >/dev/null 2>&1 || true
-  defaults delete com.nodeterm.app >/dev/null 2>&1 || true
-fi
-
 # ================================ 5. WHAT REMAINS =============================================
 echo
 ok "nodeterm has been removed from this machine."
@@ -526,9 +482,7 @@ note "    under the host's agent dirs, and tmux sessions on the 'nodeterm-rmt' s
 note "    On each host: tmux -L nodeterm-rmt kill-server; rm -rf ~/.nodeterm  (then re-run this"
 note "    script's agent-integration steps there if you used agents on that host)."
 note "  • The tmux/agent CLIs themselves (claude, codex, …) — nodeterm never owned them."
-if [ "$OS" != "Darwin" ]; then
-  if command -v dpkg >/dev/null 2>&1 && dpkg -s nodeterm >/dev/null 2>&1; then
-    note "  • The .deb package needs root to remove: sudo apt remove nodeterm"
-  fi
-  note "  • If you used the AppImage, delete the nodeterm-*.AppImage file you downloaded."
+if command -v dpkg >/dev/null 2>&1 && dpkg -s nodeterm >/dev/null 2>&1; then
+  note "  • The .deb package needs root to remove: sudo apt remove nodeterm"
 fi
+note "  • If you used the AppImage, delete the nodeterm-*.AppImage file you downloaded."
