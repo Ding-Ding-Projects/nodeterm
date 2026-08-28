@@ -76,7 +76,7 @@
     },
     "squirrelWindows": {
       "artifactName": "${productName}-Setup-${version}.${ext}",
-      "iconUrl": "https://raw.githubusercontent.com/eneskirca/nodeterm/main/docs/assets/mark.svg",
+      "iconUrl": "https://raw.githubusercontent.com/Ding-Ding-Projects/nodeterm/3dd1ca024f89afdb54e6d97dc8ce13004e8eeac8/build/icon.ico",
       "msi": false
     },
     "publish": {
