@@ -30,7 +30,7 @@
 - [x] Restrict release publication to `main` so preserving a task branch cannot create a duplicate release.
 - [x] Make release automation build through `build-installer.bat /s`, count lines, publish timing and hashes, and download assets for verification.
 - [x] Validate retained workflow structure with `actionlint` and parse every embedded PowerShell block.
-- [ ] Integrate into `main` only after the product-wide release blockers below are resolved or explicitly respecified by the product owner.
+- [x] Integrate into `main` after the product owner explicitly respecified integration as independent from the product-wide release blockers.
 - [ ] Publish and verify exactly one non-draft release for the final integrated commit.
 
 ## Product-wide release blockers

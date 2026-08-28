@@ -19,9 +19,10 @@ ed7ed9cf0332560790a07912e8dbe198d44c6aec  honest Server Edition browser-control 
 ```
 
 Release candidate metadata remains version `0.3.4`, code name
-`Classic Har Gow · 蝦餃`. The product owner explicitly requested integration into `main` after
-the final local checks. That integration is separate from release readiness and does not claim that
-the product-wide completeness audit is green.
+`Classic Har Gow · 蝦餃`. The verified task tip
+`fb88cfdd0d12f2d7b8408a4f1a3489bd6914658c` was fast-forwarded into local `main` after the product
+owner explicitly requested integration. This integration is separate from release readiness and
+does not claim that the product-wide completeness audit is green.
 
 ## User-facing headline
 
@@ -161,8 +162,8 @@ target, extension page, restored tab, or visible desktop surface was inspected o
 
 ## Release readiness boundary
 
-The Windows conversion and its requested evidence are locally verified and ready for the requested
-`main` integration. The full product release is still blocked by the fail-closed inventory in
+The Windows conversion and its requested evidence are locally verified and integrated into `main`.
+The full product release is still blocked by the fail-closed inventory in
 `docs/release/completeness-audit.md`.
 
 The remaining product-wide work includes complete implementations and built interaction proof for
