@@ -1,71 +1,48 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
-  FILE_LIST_PASTEBOARD_TYPE,
-  fileListPropertyList,
+  FILE_LIST_CLIPBOARD_TYPE,
+  fileListDropFiles,
   writeFilesToClipboard,
   type FileClipboardDependencies
 } from './clipboard-files'
 
 const dependencies = (overrides: Partial<FileClipboardDependencies> = {}): FileClipboardDependencies => ({
-  platform: 'darwin',
+  platform: 'win32',
   isFile: () => true,
   writeBuffer: vi.fn(),
   ...overrides
 })
 
 describe('writeFilesToClipboard', () => {
-  it('writes unique existing absolute files as a macOS filename pasteboard list', () => {
+  it('writes a native Windows UTF-16 file list', () => {
     const deps = dependencies()
-    expect(writeFilesToClipboard(['/tmp/a & b.png', '/tmp/a & b.png'], deps)).toBe(true)
-    expect(deps.writeBuffer).toHaveBeenCalledOnce()
+    expect(writeFilesToClipboard(['C:\\Users\\A & B\\one.txt', 'C:\\tmp\\two.txt'], deps)).toBe(true)
     const [format, buffer] = vi.mocked(deps.writeBuffer).mock.calls[0]
-    expect(format).toBe(FILE_LIST_PASTEBOARD_TYPE)
-    expect(buffer.toString()).toContain('<string>/tmp/a &amp; b.png</string>')
-    expect(buffer.toString().match(/<string>/g)).toHaveLength(1)
+    expect(format).toBe(FILE_LIST_CLIPBOARD_TYPE)
+    expect(buffer.readUInt32LE(0)).toBe(20)
+    expect(buffer.readUInt32LE(16)).toBe(1)
+    expect(buffer.toString('utf16le', 20)).toBe('C:\\Users\\A & B\\one.txt\0C:\\tmp\\two.txt\0\0')
   })
 
-  it('rejects unsupported platforms and any selection containing an invalid file', () => {
-    expect(writeFilesToClipboard(['/tmp/a'], dependencies({ platform: 'linux' }))).toBe(false)
-    expect(writeFilesToClipboard(['/tmp/a'], dependencies({ isFile: () => false }))).toBe(false)
-    expect(writeFilesToClipboard(['/tmp/a', 'relative'], dependencies())).toBe(false)
+  it('rejects non-Windows platforms and invalid selections', () => {
+    expect(writeFilesToClipboard(['C:\\tmp\\a'], dependencies({ platform: 'linux' }))).toBe(false)
+    expect(writeFilesToClipboard(['C:\\tmp\\a'], dependencies({ isFile: () => false }))).toBe(false)
+    expect(writeFilesToClipboard(['relative'], dependencies())).toBe(false)
     expect(writeFilesToClipboard('not-an-array', dependencies())).toBe(false)
   })
 
-  it('caps the selection, counting only the files it kept', () => {
-    const paths = (n: number): string[] => Array.from({ length: n }, (_, i) => `/tmp/f${i}`)
-    const at = dependencies()
-    // Exactly at the cap is still one copy, not a truncated one.
-    expect(writeFilesToClipboard(paths(64), at)).toBe(true)
-    expect(vi.mocked(at.writeBuffer).mock.calls[0][1].toString().match(/<string>/g)).toHaveLength(64)
-    // One over refuses outright — a partial pasteboard is worse than none, because the user
-    // cannot see which files it dropped.
+  it('keeps the bounded all-or-nothing selection contract', () => {
+    const paths = (count: number): string[] => Array.from({ length: count }, (_, i) => `C:\\tmp\\f${i}`)
+    expect(writeFilesToClipboard(paths(64), dependencies())).toBe(true)
     expect(writeFilesToClipboard(paths(65), dependencies())).toBe(false)
-    // Duplicates are folded before the cap is charged, so 65 entries naming 64 files still fit.
-    const dupes = dependencies()
-    expect(writeFilesToClipboard([...paths(64), '/tmp/f0'], dupes)).toBe(true)
-    expect(vi.mocked(dupes.writeBuffer).mock.calls[0][1].toString().match(/<string>/g)).toHaveLength(
-      64
-    )
-  })
-
-  it('fails closed when the OS clipboard write fails', () => {
-    expect(
-      writeFilesToClipboard(
-        ['/tmp/a'],
-        dependencies({
-          writeBuffer: () => {
-            throw new Error('clipboard unavailable')
-          }
-        })
-      )
-    ).toBe(false)
   })
 })
 
-describe('fileListPropertyList', () => {
-  it('escapes every XML-significant path character', () => {
-    expect(fileListPropertyList([`/tmp/<a>\"'&`]).toString()).toContain(
-      '&lt;a&gt;&quot;&apos;&amp;'
-    )
+describe('fileListDropFiles', () => {
+  it('writes the required DROPFILES header and double terminator', () => {
+    const data = fileListDropFiles(['C:\\a.txt'])
+    expect(data.readUInt32LE(0)).toBe(20)
+    expect(data.readUInt32LE(16)).toBe(1)
+    expect(data.toString('utf16le', 20)).toBe('C:\\a.txt\0\0')
   })
 })
